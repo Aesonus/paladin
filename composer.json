@@ -22,7 +22,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Aesonus\\Paladin\\": "src\\"
+            "Aesonus\\Paladin\\": "src/",
+            "Aesonus\\Tests\\": "tests/"
         }
     }
 }
