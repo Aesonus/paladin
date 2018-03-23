@@ -18,7 +18,7 @@ trait Validatable
      * [TODO: Link to documentation]
      * @var array 
      */
-    protected $validatableTypes = ['int', 'integer', 'string', 'float', 'null'];
+    protected $validatableTypes = ['int', 'integer', 'string', 'float', 'null', 'mixed'];
 
     /**
      * Should always be called like:
@@ -108,5 +108,10 @@ trait Validatable
     protected function validateNull($param)
     {
         return $param === NULL;
+    }
+    
+    final protected function validateMixed($param)
+    {
+        return TRUE;
     }
 }

@@ -78,4 +78,13 @@ class ValidatableTestHelper
     {
         $this->v(__METHOD__, func_get_args());
     }
+    
+    /**
+     * 
+     * @param mixed $mixed
+     */
+    public function testMethodMixedType($mixed)
+    {
+        $this->v(__METHOD__, func_get_args());
+    }
 }

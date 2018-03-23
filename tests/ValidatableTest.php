@@ -131,4 +131,10 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
         }
         
     }
+    
+    public function testMixedValidator()
+    {
+        $this->testObj->testMethodMixedType(3);
+        $this->assertTrue(TRUE);
+    }
 }
