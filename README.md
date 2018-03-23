@@ -13,6 +13,7 @@ class MyClass {
 ```
 
 Create a docblock for your methods. Use the pipe operator to define multiple types.
+Validate arguments with the same line of code.
 
 ```php
 /**
