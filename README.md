@@ -18,10 +18,23 @@ Validate arguments with the same line of code.
 ```php
 /**
  * @param int|string|float|integer|null|mixed $paramName
+ * @throws \InvalidArgumentException
  * ...
  */
 public function myMethod($paramName, ...) {
     $this->v(__METHOD__, func_get_args());
     ...
 }
+```
+
+## Extending Paladin
+
+Coming soon...
+
+Paladin throws an exception when an argument does not validate
+
+## Tests
+
+```
+phpunit
 ```
