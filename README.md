@@ -27,11 +27,13 @@ public function myMethod($paramName, ...) {
 }
 ```
 
+Paladin throws an exception when an argument does not validate
+
 ## Extending Paladin
 
 Coming soon...
 
-Paladin throws an exception when an argument does not validate
+
 
 ## Tests
 
