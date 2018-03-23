@@ -14,10 +14,6 @@ class ValidatableTestHelper
 {
     use \Aesonus\Paladin\Traits\Validatable;
     
-    public function __construct()
-    {
-        $this->validatableTypes = array_merge(['invalid'], $this->validatableTypes);
-    }
     /**
      * 
      * @param int $param
@@ -48,10 +44,10 @@ class ValidatableTestHelper
     
     /**
      * 
-     * @param integer|float $floatstring
-     * @param null|string $nullstring
+     * @param integer|string $stringint
+     * @param null|array $nullarray
      */
-    public function testMethodMultiTypeMultiParams($floatstring, $nullstring)
+    public function testMethodMultiTypeMultiParams($stringint, $nullarray)
     {
         $this->v(__METHOD__, func_get_args());
     }
@@ -84,6 +80,15 @@ class ValidatableTestHelper
      * @param mixed $mixed
      */
     public function testMethodMixedType($mixed)
+    {
+        $this->v(__METHOD__, func_get_args());
+    }
+    
+    /**
+     * 
+     * @param custom $param
+     */
+    public function testMethodCustomType($param)
     {
         $this->v(__METHOD__, func_get_args());
     }

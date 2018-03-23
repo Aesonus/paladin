@@ -73,36 +73,36 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
             'floatstring' => ["3.141"],
         ];
     }
-    
+
     /**
      * @dataProvider multiTypeMultiParamsDataProvider
-     * @param integer|float $givenFloatString
-     * @param null|string $givenNullString
+     * @param integer|float $givenStringInt
+     * @param null|string $givenNullArray
      */
-    public function testMultiTypeMultiParams($givenFloatString, $givenNullString)
+    public function testMultiTypeMultiParams($givenStringInt, $givenNullArray)
     {
-        $this->testObj->testMethodMultiTypeMultiParams($givenFloatString, $givenNullString);
+        $this->testObj->testMethodMultiTypeMultiParams($givenStringInt, $givenNullArray);
         $this->assertTrue(TRUE);
     }
-    
+
     public function multiTypeMultiParamsDataProvider()
     {
         return [
-            [4, "you"],
+            [4, ['you']],
             ["2", NULL],
-            [3.2 , "3"],
-            [5.3, NULL]
+            ["purple", ["3" => 5]],
+            ["good", NULL]
         ];
     }
-    
+
     public function testManyParamMethod()
     {
-        $this->testObj->testManyParamMethod(1,"h",3);
+        $this->testObj->testManyParamMethod(1, "h", 3);
         $this->assertTrue(TRUE);
         $this->expectException(\InvalidArgumentException::class);
-        $this->testObj->testManyParamMethod("h",1,"person");
+        $this->testObj->testManyParamMethod("h", 1, "person");
     }
-    
+
     /**
      * @dataProvider noDocMethodDataProvider
      * @param type $given
@@ -112,29 +112,63 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
         $this->testObj->testNoDocMethod($given);
         $this->assertTrue(true);
     }
-    
+
     public function noDocMethodDataProvider()
     {
         return [
-            [3],[[3,4]],["idowhatiwantttt"],[4.2348],[new \stdClass()]
+            [3], [[3, 4]], ["idowhatiwantttt"], [4.2348], [new \stdClass()]
+        ];
+    }
+
+    public function testInvalidValidator()
+    {
+        $this->expectException(\Aesonus\Paladin\Exceptions\ValidatorMethodNotFoundException::class);
+        $this->expectExceptionMessage('validateInvalid');
+        $this->testObj->addCustomParameterType('invalid');
+
+        $this->testObj->testCustomValidatorMethod(3);
+    }
+
+    /**
+     * @dataProvider noDocMethodDataProvider
+     */
+    public function testMixedType($given)
+    {
+        $this->testObj->testMethodMixedType($given);
+        $this->assertTrue(TRUE);
+    }
+    
+    /**
+     * 
+     * @dataProvider invalidCustomTypeDataProvider
+     */
+    public function testInvalidCustomType($rulename)
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('string');
+        $this->testObj->addCustomParameterType($rulename);
+    }
+    
+    public function invalidCustomTypeDataProvider()
+    {
+        return [
+            [[4]],[5423],[1.234],[null]
         ];
     }
     
-    public function testInvalidValidator()
+    public function testCustomType()
     {
-        $this->expectException(\Aesonus\Paladin\Exceptions\ValidatorNotFoundException::class);
-        try {
-            $this->testObj->testCustomValidatorMethod(3);
-        } catch (Aesonus\Paladin\Exceptions\ValidatorNotFoundException $e) {
-            //TODO: Looks at the message!
-            throw $e;
-        }
+        $testvalue = 'customdsafdsfg';
         
-    }
-    
-    public function testMixedValidator()
-    {
-        $this->testObj->testMethodMixedType(3);
-        $this->assertTrue(TRUE);
+        $mock = $this->getMockBuilder(get_class($this->testObj))->setMethods(['validateCustom'])
+            ->getMock();
+        $mock->expects($this->once())->method('validateCustom')->with($testvalue);
+        
+        $mock->addCustomParameterType('custom');
+        try {
+            $mock->testMethodCustomType($testvalue);
+        } catch (\InvalidArgumentException $e) {
+            //It's gonna throw an exception, since we are just mocking a particular function it doesn't return anything
+        }
     }
 }

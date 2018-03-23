@@ -10,7 +10,7 @@ namespace Aesonus\Paladin\Exceptions;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class ValidatorNotFoundException extends \Exception
+class ValidatorMethodNotFoundException extends \Exception
 {
     //put your code here
 }

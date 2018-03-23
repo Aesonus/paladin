@@ -5,7 +5,7 @@
 
 namespace Aesonus\Paladin\Traits;
 
-use Aesonus\Paladin\Exceptions\ValidatorNotFoundException;
+use Aesonus\Paladin\Exceptions\ValidatorMethodNotFoundException;
 
 /**
  *
@@ -18,7 +18,13 @@ trait Validatable
      * [TODO: Link to documentation]
      * @var array 
      */
-    protected $validatableTypes = ['int', 'integer', 'string', 'float', 'null', 'mixed'];
+    private $validatableTypes = ['mixed', 'int', 'integer', 'string', 'float', 'array', 'null'];
+    
+    /**
+     *
+     * @var $customTypes array Custom validation types. Must be an array of strings.
+     */
+    protected $customTypes = [];
 
     /**
      * Should always be called like:
@@ -26,7 +32,7 @@ trait Validatable
      * @param string $method_name
      * @param array $args
      */
-    protected function v($method_name, array $args)
+    final protected function v($method_name, array $args)
     {
         $reflector = new \ReflectionMethod($method_name);
         foreach ($reflector->getParameters() as $param) {
@@ -40,6 +46,21 @@ trait Validatable
             $this->callValidator($ruleset, $param_name, $param_value);
         }
     }
+    
+    /**
+     * Adds a type for Paladin to validate. 
+     * @param string $type
+     * @return $this
+     * @throws \InvalidArgumentException
+     */
+    final public function addCustomParameterType($type)
+    {
+        if (!is_string($type)) {
+            $this->throwException('type', ['string'], $type);
+        }
+        $this->customTypes[] = $type;
+        return $this;
+    }
 
     private function getParamTypes(\ReflectionMethod $reflector)
     {
@@ -52,8 +73,8 @@ trait Validatable
         $arg_types = [];
         foreach ($preg_matches[0] as $raw_param_doc) {
             $param_doc = explode(' ', $raw_param_doc);
-            $types = array_filter(explode('|', trim($param_doc[1])), function ($value) {
-                return in_array(strtolower($value), $this->validatableTypes);
+            $types = array_filter(explode('|', trim($param_doc[1])), function ($param_type) {
+                return $this->isValidatable($param_type);
             });
             // Strip the '$'
             $key = substr(trim($param_doc[2]), 1);
@@ -62,6 +83,11 @@ trait Validatable
         //Output like: [param_name => [index => 'type', index => 'type', ...], ...]
         return $arg_types;
     }
+    
+    private function isValidatable($param_type)
+    {
+        return in_array(strtolower($param_type), array_merge($this->validatableTypes, $this->customTypes));
+    }
 
     private function callValidator(array $ruleset, $param_name, $param_value)
     {
@@ -69,7 +95,7 @@ trait Validatable
         foreach ($ruleset as $rule) {
             $callable = [$this, 'validate' . ucfirst($rule)];
             if (!is_callable($callable)) {
-                throw new ValidatorNotFoundException(sprintf("Validatable type %s needs a validator method named '%s'", $rule, $callable[1]));
+                throw new ValidatorMethodNotFoundException(sprintf("Validatable type %s needs a validator method named '%s'", $rule, $callable[1]));
             }
             if ($callable($param_value)) {
                 $hasFailed = false;
@@ -78,39 +104,49 @@ trait Validatable
             $hasFailed = true;
         }
         if ($hasFailed) {
-            throw new \InvalidArgumentException(sprintf("$%s should be of type(s) %s, %s given", $param_name, implode('|', $ruleset), gettype($param_value)));
+            $this->throwException($param_name, $ruleset, $param_value);
         }
     }
-
-    protected function validateInteger($param)
+    
+    private function throwException($param_name, $ruleset, $param_value)
     {
-        return $this->validateInt($param);
+        throw new \InvalidArgumentException(sprintf("$%s should be of type(s) %s, %s given", $param_name, implode('|', $ruleset), gettype($param_value)));
     }
 
-    protected function validateInt($param)
+    protected function validateInteger($param_value)
     {
-        return is_numeric($param) === TRUE 
+        return $this->validateInt($param_value);
+    }
+
+    protected function validateInt($param_value)
+    {
+        return is_numeric($param_value) === TRUE 
         // We use this trick to ensure we really are getting an int without
         // having to write another function
-        && is_int($param - (int)$param) === TRUE;
+        && is_int($param_value - (int)$param_value) === TRUE;
     }
 
-    protected function validateString($param)
+    protected function validateString($param_value)
     {
-        return is_string($param) === TRUE;
+        return is_string($param_value) === TRUE;
     }
 
-    protected function validateFloat($param)
+    protected function validateFloat($param_value)
     {
-        return is_numeric($param) === TRUE && is_float((float)$param) === TRUE;
+        return is_numeric($param_value) === TRUE && is_float((float)$param_value) === TRUE;
     }
 
-    protected function validateNull($param)
+    protected function validateNull($param_value)
     {
-        return $param === NULL;
+        return $param_value === NULL;
     }
     
-    final protected function validateMixed($param)
+    protected function validateArray($param_value)
+    {
+        return is_array($param_value) === TRUE;
+    }
+    
+    final protected function validateMixed($param_value)
     {
         return TRUE;
     }
