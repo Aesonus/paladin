@@ -68,6 +68,7 @@ trait Validatable
         if ($docs === FALSE) {
             return [];
         }
+        //Get all @param docblock tags
         preg_match_all("/@param [a-z0-9 |$]+/i", $docs, $preg_matches);
 
         $arg_types = [];

@@ -91,8 +91,8 @@ They use the same rules as custom types and validators:
 } //End Class
 ```
 
-These are the types that have methods associated with them:
-int, string, float, integer, array, null, mixed
+These are the types that have overridable methods associated with them:
+int, string, float, integer, array, null
 
 
 ## Tests
