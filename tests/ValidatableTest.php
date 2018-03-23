@@ -5,6 +5,8 @@
 
 namespace Aesonus\Tests;
 
+use \Aesonus\Paladin\Traits\Validatable;
+
 /**
  * Description of ValidatableTest
  *
@@ -14,161 +16,177 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
 {
 
     protected $testObj;
+    protected $testObjReflection;
+    protected $mockReflectionMethod;
+    protected $objName = 'TestObjia9O8W375YTDFSKGH';
+    protected $methodName = 'testMethod';
+    protected $methodForV;
 
     protected function setUp()
     {
-        $this->testObj = new ValidatableTestHelper();
+        $this->methodForV = $this->objName . "::" . $this->methodName;
+
+        $this->testObj = $this->getMockForTrait(Validatable::class, [], $this->objName, true, true, true, [$this->methodName, 'getReflector']);
+
+        $this->mockReflectionMethod = $this->getMockBuilder(\ReflectionMethod::class)
+                ->setMethods(['getDocComment', 'getParameters'])
+                ->disableOriginalConstructor()->getMock();
     }
 
-    /**
-     * @dataProvider invalidArgumentDataProvider
-     */
-    public function testInvalidArgument($given)
+    private function getMockReflectionParameters($param_names)
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->testObj->testMethodSingleTypeParam($given);
+        foreach ($param_names as $i => $paramname) {
+            $return[$i] = $this->getMockBuilder(\ReflectionParameter::class)
+                ->disableOriginalConstructor()
+                ->setMethods(['getName'])
+                ->getMock();
+            $return[$i]->expects($this->any())->method('getName')->willReturn($paramname);
+        }
+        return $return;
     }
 
-    public function invalidArgumentDataProvider()
+    private function expectMockMethod()
     {
-        return [
-            'string' => ["FU"],
-            'array' => [['nope']],
-            'float' => [1.2],
-        ];
+        $this->testObj->expects($this->once())->method($this->methodName)->will($this->returnCallback(function () {
+                $this->invokeMethod($this->testObj, 'v', [$this->methodForV, func_get_args()]);
+            }));
     }
 
-    /**
-     * @dataProvider validArgumentDataProvider
-     */
-    public function testValidArgument($given)
+    private function expectMockReflectionMethods($docblock, $param_names)
     {
-        $this->testObj->testMethodSingleTypeParam($given);
-        $this->assertTrue(true);
-    }
-
-    public function validArgumentDataProvider()
-    {
-        return [
-            'int' => [3],
-            'intstring' => ["3"],
-        ];
-    }
-
-    /**
-     * @dataProvider validMultiTypeArgumentDataProvider
-     */
-    public function testValidMultiTypeArgument($given)
-    {
-        $this->testObj->testMethodMultiTypeParam($given);
-        $this->assertTrue(true);
-    }
-
-    public function validMultiTypeArgumentDataProvider()
-    {
-        return [
-            'int' => [3],
-            'intstring' => ["3"],
-            'float' => [3.141],
-            'floatstring' => ["3.141"],
-        ];
-    }
-
-    /**
-     * @dataProvider multiTypeMultiParamsDataProvider
-     * @param integer|float $givenStringInt
-     * @param null|string $givenNullArray
-     */
-    public function testMultiTypeMultiParams($givenStringInt, $givenNullArray)
-    {
-        $this->testObj->testMethodMultiTypeMultiParams($givenStringInt, $givenNullArray);
-        $this->assertTrue(TRUE);
-    }
-
-    public function multiTypeMultiParamsDataProvider()
-    {
-        return [
-            [4, ['you']],
-            ["2", NULL],
-            ["purple", ["3" => 5]],
-            ["good", NULL]
-        ];
-    }
-
-    public function testManyParamMethod()
-    {
-        $this->testObj->testManyParamMethod(1, "h", 3);
-        $this->assertTrue(TRUE);
-        $this->expectException(\InvalidArgumentException::class);
-        $this->testObj->testManyParamMethod("h", 1, "person");
-    }
-
-    /**
-     * @dataProvider noDocMethodDataProvider
-     * @param type $given
-     */
-    public function testNoDocMethod($given)
-    {
-        $this->testObj->testNoDocMethod($given);
-        $this->assertTrue(true);
-    }
-
-    public function noDocMethodDataProvider()
-    {
-        return [
-            [3], [[3, 4]], ["idowhatiwantttt"], [4.2348], [new \stdClass()]
-        ];
-    }
-
-    public function testInvalidValidator()
-    {
-        $this->expectException(\Aesonus\Paladin\Exceptions\ValidatorMethodNotFoundException::class);
-        $this->expectExceptionMessage('validateInvalid');
-        $this->testObj->addCustomParameterType('invalid');
-
-        $this->testObj->testCustomValidatorMethod(3);
-    }
-
-    /**
-     * @dataProvider noDocMethodDataProvider
-     */
-    public function testMixedType($given)
-    {
-        $this->testObj->testMethodMixedType($given);
-        $this->assertTrue(TRUE);
+        $this->mockReflectionMethod->expects($this->any())->method('getDocComment')->willReturn($docblock);
+        $this->mockReflectionMethod->expects($this->any())->method('getParameters')->willReturn($this->getMockReflectionParameters($param_names));
+        $this->testObj->expects($this->any())->method('getReflector')->willReturn($this->mockReflectionMethod);
     }
     
+    /**
+     * @dataProvider validArgumentsDataProvider
+     **/
+    public function testValidArguments($docblock, $param_names, $given)
+    {
+        // We need to control the doc blocks and parameter names that are put into the system
+        $this->expectMockReflectionMethods($docblock, $param_names);
+        $this->expectMockMethod();
+        call_user_func_array([$this->testObj, $this->methodName], $given);
+        $this->assertTrue(true);
+    }
+
+    public function validArgumentsDataProvider()
+    {
+
+        $data = function ($givenNames, $givenTypes, $givenArgs) {
+            if ($givenTypes === null) {
+                $docs = false;
+            } else {
+                $docs = "\t/**\n"
+                    . "\t  * \n";
+                foreach ($givenTypes as $i => $type) {
+                    $name = $givenNames[$i];
+                    $docs .= "\t * @param  $type \$$name\n";
+                }    
+                $docs .="\t\t */";
+            }
+            return [$docs, $givenNames, $givenArgs];
+        };
+        return [
+            'string' => $data(['param'], ['int|string'], ["FU"]),
+            'string,int' => $data(['param','intparam'], ['string','null|int'], ["FU",4]),
+            'none' => $data(['param'],null,['avalue']),
+            'string,int,array,mixed' => $data(
+                ['param','nullparam','arrayparam', 'mixedparam'], 
+                ['string','null|int', 'string|int|array', 'mixed'], 
+                ["FU", null, [4, 5, 3], new \stdClass()]
+            ),
+        ];
+    }
+
+    /**
+     * @dataProvider invalidArgumentsDataProvider
+     */
+    public function testInvalidArguments($docblock, $param_names, $given)
+    {
+        // We need to control the doc blocks and parameter names that are put into the system
+        $this->expectMockReflectionMethods($docblock, $param_names);
+        $this->expectMockMethod();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->testObj->testMethod($given);
+    }
+
+    public function invalidArgumentsDataProvider()
+    {
+        $docblock = function ($type) {
+            return "\t/**\n"
+                . "\t * \n"
+                . "\t * @param  $type \$param\n"
+                . "\t */";
+        };
+        $param_names = ['param'];
+        return [
+            'string' => [$docblock('int'), $param_names, "FU"],
+            'array' => [$docblock('integer|string'), $param_names, ['nope']],
+            'float' => [$docblock('int|string|array'), $param_names, 1.2],
+            'null' => [$docblock('string|array'), $param_names, NULL],
+            'object' => [$docblock('array|float|null|string'), $param_names, new \stdClass()],
+        ];
+    }
+
     /**
      * 
-     * @dataProvider invalidCustomTypeDataProvider
+     * @dataProvider malformedDocBlockDataProvider
      */
-    public function testInvalidCustomType($rulename)
+    public function testMalformedDocBlock($docblock, $param_names, $given)
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('string');
-        $this->testObj->addCustomParameterType($rulename);
+        $this->expectException(\Aesonus\Paladin\Exceptions\DocBlockSyntaxException::class);
+        $this->expectExceptionMessage($docblock);
+        // We need to control the doc blocks and parameter names that are put into the system
+        $this->expectMockReflectionMethods($docblock, $param_names);
+        $this->expectMockMethod();
+        $this->testObj->testMethod($given);
     }
-    
-    public function invalidCustomTypeDataProvider()
+
+    public function malformedDocBlockDataProvider()
     {
+        $docblock = function ($type) {
+            return "\t/**\n"
+                . "\t * \n"
+                . "\t * @param  $type \$param\n"
+                . "\t */";
+        };
+        $param_names = ['param'];
         return [
-            [[4]],[5423],[1.234],[null]
+            'string' => [$docblock('int| string'), $param_names, "FU"],
+            'array' => [$docblock('int|string| array'), $param_names, ['nope']],
+            'float' => [$docblock('int| string|array'), $param_names, 1.2],
+            'null' => [$docblock('string|array |null| float'), $param_names, NULL],
+            'object' => [$docblock('array |float'), $param_names, new \stdClass()],
         ];
     }
-    
-    public function testCustomType()
+
+    public function testGetReflector()
     {
-        $testvalue = 'customdsafdsfg';
-        
-        $mock = $this->getMockBuilder(get_class($this->testObj))->setMethods(['validateCustom'])
-            ->getMock();
-        $mock->expects($this->once())->method('validateCustom')->with($testvalue);
-        
-        $mock->addCustomParameterType('custom');
-        try {
-            $mock->testMethodCustomType($testvalue);
-        } catch (\InvalidArgumentException $e) {
-            //It's gonna throw an exception, since we are just mocking a particular function it doesn't return anything
-        }
+        $mock = $this->getMockForTrait(Validatable::class);
+        $reflector = $this->invokeMethod($mock, 'getReflector', [$this->objName . '::addCustomParameterType']);
+        $this->assertInstanceOf(\ReflectionMethod::class, $reflector
+        );
+        $this->assertSame($reflector, $this->invokeMethod($mock, 'getReflector')
+        );
+    }
+
+    /**
+     * Call protected/private method of a class.
+     *
+     * @param object &$object    Instantiated object that we will run method on.
+     * @param string $methodName Method name to call
+     * @param array  $parameters Array of parameters to pass into method.
+     *
+     * @return mixed Method return.
+     */
+    public function invokeMethod(&$object, $methodName, array $parameters = array())
+    {
+        $reflection = new \ReflectionClass(get_class($object));
+        $method = $reflection->getMethod($methodName);
+        $method->setAccessible(true);
+        return $method->invokeArgs($object, $parameters);
     }
 }

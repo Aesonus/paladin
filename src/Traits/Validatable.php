@@ -25,6 +25,12 @@ trait Validatable
      * @var $customTypes array Custom validation types. Must be an array of strings.
      */
     protected $customTypes = [];
+    
+    /**
+     *
+     * @var \ReflectionMethod
+     */
+    protected $reflector;
 
     /**
      * Should always be called like:
@@ -34,11 +40,13 @@ trait Validatable
      */
     final protected function v($method_name, array $args)
     {
-        $reflector = new \ReflectionMethod($method_name);
-        foreach ($reflector->getParameters() as $param) {
-            $params[] = $param->name;
+        if (!is_string($method_name) && isset($method_name)) {
+            $this->throwException('method_name', ['string','null'], $method_name);
         }
-        $validators = $this->getParamTypes($reflector);
+        //This also initializes the reflector
+        $this->getReflector($method_name);
+        $params = $this->getParamNames();
+        $validators = $this->getParamTypes();
         //Cycle thru all $paramTypes
         foreach ($validators as $param_name => $ruleset) {
             $index = array_search($param_name, $params);
@@ -61,19 +69,64 @@ trait Validatable
         $this->customTypes[] = $type;
         return $this;
     }
-
-    private function getParamTypes(\ReflectionMethod $reflector)
+    
+    /**
+     * 
+     * @param string|null $method_name
+     * @return \ReflectionMethod
+     */
+    protected function getReflector($method_name = NULL)
     {
-        $docs = $reflector->getDocComment();
-        if ($docs === FALSE) {
+        if (isset($method_name)) {
+            $this->reflector = new \ReflectionMethod($method_name);
+        }
+        return $this->reflector;
+    }
+    
+    private function getParamNames()
+    {
+        $reflector = $this->getReflector();
+        $params = [];
+        foreach ($reflector->getParameters() as $param) {
+            $params[] = $param->getName();
+        }
+        return $params;
+    }
+
+    private function getParamTypes()
+    {
+        $docs = $this->getRawDocs();
+        if (FALSE === $docs) {
             return [];
         }
         //Get all @param docblock tags
-        preg_match_all("/@param [a-z0-9 |$]+/i", $docs, $preg_matches);
+        $param_docs = $this->getParamDocs($docs);
 
+        $arg_types = $this->parseParamDocs($param_docs);
+        return $arg_types;
+    }
+    
+    private function getRawDocs()
+    {
+        $docs = $this->getReflector()->getDocComment();
+        if (preg_match("/([[:blank:]]+[|]+)|([|]+[[:blank:]]+)/", $docs) === 1) {
+            //Syntax Error
+            throw new \Aesonus\Paladin\Exceptions\DocBlockSyntaxException("Syntax error in doc block:\n$docs");
+        }
+        return $docs;
+    }
+    
+    private function getParamDocs($docs)
+    {
+        preg_match_all("/@param [a-z0-9 |$]+/i", $docs, $preg_matches);
+        return $preg_matches[0];
+    }
+    
+    private function parseParamDocs($param_docs)
+    {
         $arg_types = [];
-        foreach ($preg_matches[0] as $raw_param_doc) {
-            $param_doc = explode(' ', $raw_param_doc);
+        foreach ($param_docs as $raw_param_doc) {
+            $param_doc = preg_split("/[[:blank:]]+/", $raw_param_doc);
             $types = array_filter(explode('|', trim($param_doc[1])), function ($param_type) {
                 return $this->isValidatable($param_type);
             });
