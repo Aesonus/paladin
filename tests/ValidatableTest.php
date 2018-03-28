@@ -172,6 +172,30 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($reflector, $this->invokeMethod($mock, 'getReflector')
         );
     }
+    
+    /**
+     * @dataProvider testMapTypeDataProvider
+     **/
+    public function testMapType($type, $mapTo, $expectedValidatorMappings)
+    {
+        $this->assertInstanceOf($this->testObj,
+            $this->testObj->mapType($type, $mapTo));
+        $this->assertEquals($expectedValidatorMappings,
+               $this->getPropertyValue($this->testObj,
+               'validatorMappings')
+            );
+    }
+
+    public function testMapTypeDataProvider()
+    {
+        $test_data = [];
+        
+        $testarr = ['testMap', 'testMapTo'];
+        $testarr[] = $testarr;
+        $test_data[] = $testarr;
+        
+        return $test_data;
+    }
 
     /**
      * Call protected/private method of a class.
@@ -182,11 +206,24 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
      *
      * @return mixed Method return.
      */
-    public function invokeMethod(&$object, $methodName, array $parameters = array())
+    public function invokeMethod(&$object, $methodName, array $parameters = [])
     {
         $reflection = new \ReflectionClass(get_class($object));
         $method = $reflection->getMethod($methodName);
         $method->setAccessible(true);
         return $method->invokeArgs($object, $parameters);
+    }
+    
+    /**
+     * Call protected and private properties of an object
+     * @param \StdClass $object
+     * @param string $propertyName
+     * @return mixed
+     */
+    public function getPropertyValue(&$object, $propertyName)
+    {
+        $reflection = new \ReflectionProperty(get_class($object), $propertyName);
+        $reflection->setAccessible(true);
+        return $reflection->getValue($object);
     }
 }
