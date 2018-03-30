@@ -20,8 +20,8 @@ trait Validatable
      * [TODO: Link to documentation]
      * @var array 
      */
-    private $validatableTypes = ['mixed', 'int', 'integer', 'string', 'float', 'array', 'null'];
-    private $validatorMappings;
+    protected $validatableTypes = ['mixed', 'scalar', 'int', 'string', 'float', 'array', 'null', 'bool'];
+    protected $validatorMappings;
 
     /**
      *
@@ -62,19 +62,22 @@ trait Validatable
     /**
      * Allows using more than one validator to use one validation method
      * @param string $type
-     * @param string $mapTo
+     * @param string $mapToType
      * @return $this
      * @throws \InvalidArgumentException
      */
-    final public function mapType($type, $mapTo)
+    final public function mapType($type, $mapToType)
     {
         foreach(func_get_args() as $i => $value) {
-            $names = ['type', 'mapTo'];
+            $names = ['type', 'mapToType'];
             if (!is_string($value)) {
                 $this->throwException($names, ['string'], $type);
             }
         }
-        $this->validatorMappings[$type] = $mapTo;
+        $mappings = $this->getValidatorMappings();
+        $mappings[$type] = $mapToType;
+        
+        $this->validatorMappings = $mappings;
         return $this;
     }
 
@@ -104,6 +107,17 @@ trait Validatable
             $this->reflector = new \ReflectionMethod($method_name);
         }
         return $this->reflector;
+    }
+    
+    public function getValidatorMappings()
+    {
+        if (!isset($this->validatorMappings)) {
+            $this->validatorMappings = [
+                'integer' => 'int',
+                'boolean' => 'bool'
+            ];
+        }
+        return $this->validatorMappings;
     }
 
     private function getParamNames()
@@ -169,10 +183,10 @@ trait Validatable
             $types = array_filter(explode('|', trim($param_doc[1])), function ($param_type) {
                 return $this->isValidatable($param_type);
             });
-            // Add a filtering option so that we can validate namespaces
-            $types = array_map(function($value) {
-                return str_replace('\\', '', $value);
-            }, $types);
+            
+            //Strips out any backslashes so functions can be called using the type
+            $types = $this->sanitizeParamDocs($types);
+            
             // Strip the '$'
             $key = substr(trim($param_doc[2]), 1);
             $arg_types[$key] = $types;
@@ -183,17 +197,21 @@ trait Validatable
 
     private function isValidatable($param_type)
     {
-        return in_array(strtolower($param_type), array_merge($this->validatableTypes, $this->customTypes));
+        return in_array(strtolower($param_type), 
+            array_merge($this->validatableTypes, $this->customTypes, array_keys($this->getValidatorMappings())));
     }
 
     private function callValidator(array $ruleset, $param_name, $param_value)
     {
         $hasFailed = false;
-        foreach ($ruleset as $rule) {
-            //Search for and find mappings
+        foreach ($ruleset as $original_rule) {
+            //Get our mapping
+            $mapped_rule = $this->getMapping($original_rule);
+            
+            $rule = $mapped_rule === NULL ? $original_rule : $mapped_rule;
             $callable = [$this, 'validate' . ucfirst($rule)];
             if (!is_callable($callable)) {
-                throw new ValidatorMethodNotFoundException(sprintf("Validatable type %s needs a validator method named '%s'", $rule, $callable[1]));
+                throw new ValidatorMethodNotFoundException(sprintf("Validatable type %s needs a validator method named '%s'", $original_rule, $callable[1]));
             }
             if ($callable($param_value)) {
                 $hasFailed = false;
@@ -205,15 +223,30 @@ trait Validatable
             $this->throwException($param_name, $ruleset, $param_value);
         }
     }
+    
+    /**
+     * 
+     * @param string $param_name
+     * @return string|null Returns null if no mapping exists
+     */
+    private function getMapping($param_name)
+    {
+        if (!key_exists($param_name, $this->getValidatorMappings())) {
+            return NULL;
+        }
+        return $this->getValidatorMappings()[$param_name];
+    }
+    
+    private function sanitizeParamDocs($types)
+    {
+        return array_map(function($value) {
+            return str_replace('\\', '', $value);
+        }, $types);
+    }
 
     private function throwException($param_name, $ruleset, $param_value)
     {
         throw new \InvalidArgumentException(sprintf("$%s should be of type(s) %s, %s given", $param_name, implode('|', $ruleset), gettype($param_value)));
-    }
-
-    protected function validateInteger($param_value)
-    {
-        return $this->validateInt($param_value);
     }
 
     protected function validateInt($param_value)
@@ -242,6 +275,16 @@ trait Validatable
     protected function validateArray($param_value)
     {
         return is_array($param_value) === TRUE;
+    }
+    
+    protected function validateScalar($param_value)
+    {
+        return is_scalar($param_value) === TRUE;
+    }
+    
+    protected function validateBool($param_value)
+    {
+        return is_bool($param_value);
     }
 
     final protected function validateMixed($param_value)

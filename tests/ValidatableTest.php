@@ -89,12 +89,12 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
             return [$docs, $givenNames, $givenArgs];
         };
         return [
-            'string' => $data(['param'], ['int|string'], ["FU"]),
-            'string,int' => $data(['param','intparam'], ['string','null|int'], ["FU",4]),
+            'string' => $data(['param'], ['integer|string'], ["FU"]),
+            'string,int' => $data(['param','intparam'], ['string','null|bool'], ["FU",TRUE]),
             'none' => $data(['param'],null,['avalue']),
-            'string,int,array,mixed' => $data(
+            'scalar,int,array,mixed' => $data(
                 ['param','nullparam','arrayparam', 'mixedparam'], 
-                ['string','null|int', 'string|int|array', 'mixed'], 
+                ['scalar','null|int', 'string|int|array', 'mixed'], 
                 ["FU", null, [4, 5, 3], new \stdClass()]
             ),
         ];
@@ -178,7 +178,7 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
      **/
     public function testMapType($type, $mapTo, $expectedValidatorMappings)
     {
-        $this->assertInstanceOf($this->testObj,
+        $this->assertInstanceOf(get_class($this->testObj),
             $this->testObj->mapType($type, $mapTo));
         $this->assertEquals($expectedValidatorMappings,
                $this->getPropertyValue($this->testObj,
@@ -190,8 +190,10 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
     {
         $test_data = [];
         
-        $testarr = ['testMap', 'testMapTo'];
-        $testarr[] = $testarr;
+        $testarr = ['testMap', 'testMapTo',['testMap' => 'testMapTo',
+                'integer' => 'int',
+                'boolean' => 'bool'
+            ]];
         $test_data[] = $testarr;
         
         return $test_data;
