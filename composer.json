@@ -1,6 +1,6 @@
 {
     "name": "aesonus/paladin",
-    "description": "Paladin parameter validation will eventually use PHP Reflection to validate method parameters",
+    "description": "Paladin parameter validation uses Reflection classes to read docblocks to validate method parameters",
     "authors": [
         {
             "name": "Aesonus",
