@@ -26,7 +26,7 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
     {
         $this->methodForV = $this->objName . "::" . $this->methodName;
 
-        $this->testObj = $this->getMockForTrait(Validatable::class, [], $this->objName, true, true, true, [$this->methodName, 'getReflector']);
+        $this->testObj = $this->getMockForTrait(Validatable::class, [], $this->objName, true, true, true, [$this->methodName, 'getReflector', 'validateCustom']);
 
         $this->mockReflectionMethod = $this->getMockBuilder(\ReflectionMethod::class)
                 ->setMethods(['getDocComment', 'getParameters'])
@@ -97,6 +97,62 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
                 ['scalar','null|int', 'string|int|array', 'mixed'], 
                 ["FU", null, [4, 5, 3], new \stdClass()]
             ),
+        ];
+    }
+    
+        /**
+     * @dataProvider customTypesDataProvider
+     **/
+    public function testCustomTypes($docblock, $param_names, $given)
+    {
+        // We need to control the doc blocks and parameter names that are put into the system
+        $this->expectMockReflectionMethods($docblock, $param_names);
+        $this->expectMockMethod();
+        $this->testObj->addCustomParameterType('custom');
+        $this->assertEquals($this->getPropertyValue($this->testObj, 'customTypes'), ['custom']);
+        $this->testObj->expects($this->once())->method('validateCustom')->willReturn(TRUE);
+        call_user_func_array([$this->testObj, $this->methodName], $given);
+        $this->assertTrue(true);
+    }
+
+    public function customTypesDataProvider()
+    {
+
+        $data = function ($givenNames, $givenTypes, $givenArgs) {
+            if ($givenTypes === null) {
+                $docs = false;
+            } else {
+                $docs = "\t/**\n"
+                    . "\t  * \n";
+                foreach ($givenTypes as $i => $type) {
+                    $name = $givenNames[$i];
+                    $docs .= "\t * @param  $type \$$name\n";
+                }    
+                $docs .="\t\t */";
+            }
+            return [$docs, $givenNames, $givenArgs];
+        };
+        return [
+            'custom' => $data(['param'], ['custom'], ["FU"]),
+            'string,int|custom' => $data(['param','intcustomparam'], ['string','int|custom'], ["FU",TRUE]),
+        ];
+    }
+    
+    /**
+     * @dataProvider invalidArgumentsOnMethodsInTraitDataProvider
+     */
+    public function testInvalidArgumentsOnMethodsInTrait($callback, $params)
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->invokeMethod($this->testObj, $callback, $params);
+    }
+    
+    public function invalidArgumentsOnMethodsInTraitDataProvider()
+    {
+        return [
+            ['addCustomParameterType', [3]],
+            ['mapType', [54,43]],
+            ['v', [34, []]],
         ];
     }
 

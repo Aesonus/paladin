@@ -5,7 +5,6 @@
 
 namespace Aesonus\Paladin\Traits;
 
-use Aesonus\Paladin\Exceptions\ValidatorMethodNotFoundException;
 use \Aesonus\Paladin\Exceptions\DocBlockSyntaxException;
 
 /**
@@ -71,7 +70,7 @@ trait Validatable
         foreach(func_get_args() as $i => $value) {
             $names = ['type', 'mapToType'];
             if (!is_string($value)) {
-                $this->throwException($names, ['string'], $type);
+                $this->throwException($names[$i], ['string'], $type);
             }
         }
         $mappings = $this->getValidatorMappings();
@@ -211,7 +210,7 @@ trait Validatable
             $rule = $mapped_rule === NULL ? $original_rule : $mapped_rule;
             $callable = [$this, 'validate' . ucfirst($rule)];
             if (!is_callable($callable)) {
-                throw new ValidatorMethodNotFoundException(sprintf("Validatable type %s needs a validator method named '%s'", $original_rule, $callable[1]));
+                throw new \BadMethodCallException(sprintf("Validatable type %s needs a validator method named '%s'", $original_rule, $callable[1]));
             }
             if ($callable($param_value)) {
                 $hasFailed = false;
