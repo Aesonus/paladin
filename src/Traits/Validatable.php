@@ -239,7 +239,7 @@ trait Validatable
     private function sanitizeParamDocs($types)
     {
         return array_map(function($value) {
-            return str_replace('\\', '', $value);
+            return str_replace("\\", '', $value);
         }, $types);
     }
 
