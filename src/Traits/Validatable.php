@@ -196,8 +196,8 @@ trait Validatable
 
     private function isValidatable($param_type)
     {
-        return in_array(strtolower($param_type), 
-            array_merge($this->validatableTypes, $this->customTypes, array_keys($this->getValidatorMappings())));
+        return in_array($this->sanitizeParamDocs([strtolower($param_type)])[0], 
+        array_merge($this->validatableTypes, $this->customTypes, array_keys($this->getValidatorMappings())));
     }
 
     private function callValidator(array $ruleset, $param_name, $param_value)
@@ -236,7 +236,7 @@ trait Validatable
         return $this->getValidatorMappings()[$param_name];
     }
     
-    private function sanitizeParamDocs($types)
+    private function sanitizeParamDocs(array $types)
     {
         return array_map(function($value) {
             return str_replace("\\", '', $value);

@@ -179,7 +179,7 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
         };
         $param_names = ['param'];
         return [
-            'string' => [$docblock('int'), $param_names, "FU"],
+            'string' => [$docblock('boolean'), $param_names, "FU"],
             'array' => [$docblock('integer|string'), $param_names, ['nope']],
             'float' => [$docblock('int|string|array'), $param_names, 1.2],
             'null' => [$docblock('string|array'), $param_names, NULL],
