@@ -74,7 +74,7 @@ trait Validatable
             }
         }
         $mappings = $this->getValidatorMappings();
-        $mappings[$type] = $mapToType;
+        $mappings[strtolower($type)] = strtolower($mapToType);
         
         $this->validatorMappings = $mappings;
         return $this;
@@ -91,7 +91,7 @@ trait Validatable
         if (!is_string($type)) {
             $this->throwException('type', ['string'], $type);
         }
-        $this->customTypes[] = $type;
+        $this->customTypes[] = strtolower($type);
         return $this;
     }
 
@@ -196,10 +196,12 @@ trait Validatable
 
     private function isValidatable($param_type)
     {
-        return in_array($this->sanitizeParamDocs([strtolower($param_type)])[0], 
+        //TODO: Make this upper case friendly
+        $type = $this->sanitizeParamDocs([strtolower($param_type)])[0];
+        return in_array($type, 
         array_merge($this->validatableTypes, $this->customTypes, array_keys($this->getValidatorMappings())));
     }
-
+    
     private function callValidator(array $ruleset, $param_name, $param_value)
     {
         $hasFailed = false;

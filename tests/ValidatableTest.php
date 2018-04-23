@@ -89,7 +89,7 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
             return [$docs, $givenNames, $givenArgs];
         };
         return [
-            'string' => $data(['param'], ['integer|string'], ["FU"]),
+            'string' => $data(['param'], ["integer|string"], ["FU"]),
             'string,int' => $data(['param','intparam'], ['string','null|bool'], ["FU",TRUE]),
             'none' => $data(['param'],null,['avalue']),
             'scalar,int,array,mixed' => $data(
@@ -108,8 +108,8 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
         // We need to control the doc blocks and parameter names that are put into the system
         $this->expectMockReflectionMethods($docblock, $param_names);
         $this->expectMockMethod();
-        $this->testObj->addCustomParameterType('custom');
-        $this->assertEquals($this->getPropertyValue($this->testObj, 'customTypes'), ['custom']);
+        $this->testObj->addCustomParameterType('Custom');
+        $this->assertEquals(['custom'], $this->getPropertyValue($this->testObj, 'customTypes'));
         $this->testObj->expects($this->once())->method('validateCustom')->willReturn(TRUE);
         call_user_func_array([$this->testObj, $this->methodName], $given);
         $this->assertTrue(true);
@@ -133,8 +133,8 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
             return [$docs, $givenNames, $givenArgs];
         };
         return [
-            'custom' => $data(['param'], ['custom'], ["FU"]),
-            'string,int|custom' => $data(['param','intcustomparam'], ['string','int|custom'], ["FU",TRUE]),
+            'custom' => $data(['param'], ['Custom'], ["FU"]),
+            'string,int|custom' => $data(['param','intcustomparam'], ['string','int|Custom'], ["FU",TRUE]),
         ];
     }
     
@@ -246,7 +246,7 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
     {
         $test_data = [];
         
-        $testarr = ['testMap', 'testMapTo',['testMap' => 'testMapTo',
+        $testarr = ['testMap', 'testMapTo',['testmap' => 'testmapto',
                 'integer' => 'int',
                 'boolean' => 'bool'
             ]];
