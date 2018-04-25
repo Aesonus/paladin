@@ -109,7 +109,7 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
         $this->expectMockReflectionMethods($docblock, $param_names);
         $this->expectMockMethod();
         $this->testObj->addCustomParameterType('Custom');
-        $this->assertEquals(['custom'], $this->getPropertyValue($this->testObj, 'customTypes'));
+        $this->assertEquals(['Custom'], $this->getPropertyValue($this->testObj, 'customTypes'));
         $this->testObj->expects($this->once())->method('validateCustom')->willReturn(TRUE);
         call_user_func_array([$this->testObj, $this->methodName], $given);
         $this->assertTrue(true);
@@ -246,7 +246,7 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
     {
         $test_data = [];
         
-        $testarr = ['testMap', 'testMapTo',['testmap' => 'testmapto',
+        $testarr = ['testMap', 'testMapTo',['testMap' => 'testMapTo',
                 'integer' => 'int',
                 'boolean' => 'bool'
             ]];
