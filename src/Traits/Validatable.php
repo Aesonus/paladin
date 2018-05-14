@@ -60,21 +60,21 @@ trait Validatable
 
     /**
      * Allows using more than one validator to use one validation method
+     * @param string $alias
      * @param string $type
-     * @param string $mapToType
      * @return $this
      * @throws \InvalidArgumentException
      */
-    final public function mapType($type, $mapToType)
+    final public function mapType($alias, $type)
     {
         foreach(func_get_args() as $i => $value) {
             $names = ['type', 'mapToType'];
             if (!is_string($value)) {
-                $this->throwException($names[$i], ['string'], $type);
+                $this->throwException($names[$i], ['string'], $alias);
             }
         }
         $mappings = $this->getValidatorMappings();
-        $mappings[$type] = $mapToType;
+        $mappings[$alias] = $type;
         
         $this->validatorMappings = $mappings;
         return $this;

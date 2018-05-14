@@ -1,5 +1,5 @@
 # Paladin
-This library includes functionality to validate parameters for methods in classes
+This library provides functionality to validate parameters for methods in classes using docblocks.
 
 ## Usage
 
@@ -11,11 +11,12 @@ class MyClass {
     ...
 ```
 
-Create a docblock for your methods. Use the pipe operator to define multiple types:
+Create a docblock for your methods.
+Use the pipe operator to allow for multiple types:
 ```php
     ...
     /**
-     * @param int|string|float|integer|array|null|mixed $paramName
+     * @param int|string|float|integer|scalar|array|null|mixed $paramName
      * @throws \InvalidArgumentException
      * ...
      */
@@ -51,6 +52,8 @@ class MyClass {
     ...
 ```
 
+Note that any \ will be stripped. This can be useful for namespacing validatable types.
+
 Create a validate method in the class:
 
 ```php
@@ -62,7 +65,7 @@ Create a validate method in the class:
     ...
 ```
 
-Use your new parameter type:
+Use your new parameter type in the docblock:
 
 ```php
     ...
@@ -94,6 +97,17 @@ They use the same rules as custom types and validators:
 These are the types that have overridable methods associated with them:
 int, string, float, integer, array, null
 
+### Mapping a type to a docblock alias
+
+You can define multiple aliases to validate as one type. Internally, Paladin maps
+integer to int:
+
+```php
+    public function __construct() {
+        //mapToType($alias, $type)
+        $this->mapToType('integer','int');
+    }
+```
 
 ## Tests
 
