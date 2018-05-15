@@ -1,6 +1,12 @@
 # Paladin
 This library provides functionality to validate parameters for methods in classes using docblocks.
 
+## Installation
+
+```
+composer require aesonus/paladin
+```
+
 ## Usage
 
 Use Validatable in your class:
@@ -16,7 +22,7 @@ Use the pipe operator to allow for multiple types:
 ```php
     ...
     /**
-     * @param int|string|float|integer|scalar|array|null|mixed $paramName
+     * @param int|string|float|integer|boolean|bool|scalar|array|null|mixed $paramName
      * @throws \InvalidArgumentException
      * ...
      */
@@ -54,7 +60,7 @@ class MyClass {
 
 Note that any \ will be stripped. This can be useful for namespacing validatable types.
 
-Create a validate method in the class:
+Create a validate method in the class using validateCamelCaseTypeName of the type name:
 
 ```php
     ...
@@ -83,7 +89,7 @@ Use your new parameter type in the docblock:
 
 ### Overriding default validators
 
-They use the same rules as custom types and validators:
+You may override the default validators:
 
 ```php
     ...
@@ -94,8 +100,8 @@ They use the same rules as custom types and validators:
 } //End Class
 ```
 
-These are the types that have overridable methods associated with them:
-int, string, float, integer, array, null
+These are the types that have override-able methods associated with them:
+int, string, float, array, scalar, boolean, and null
 
 ### Mapping a type to a docblock alias
 
@@ -106,6 +112,14 @@ integer to int:
     public function __construct() {
         //mapToType($alias, $type)
         $this->mapToType('integer','int');
+    }
+```
+
+You can do this for your own types:
+```php
+    public function __construct() {
+        //mapToType($alias, $type)
+        $this->mapToType('NamespaceMyType','MyType');
     }
 ```
 
