@@ -1,5 +1,2 @@
 language: php
-addons:
-    apt:
-      update: true
 before_script: composer update
