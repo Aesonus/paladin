@@ -1,4 +1,4 @@
 language: php
-script: composer update
+before_script: composer update
 php:
     - '5.6'
