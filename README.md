@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Aesonus/paladin.svg?branch=master)](https://travis-ci.org/Aesonus/paladin)
+
 # Paladin
 This library provides functionality to validate parameters for methods in classes using docblocks.
 
