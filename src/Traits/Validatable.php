@@ -32,7 +32,7 @@ trait Validatable
      *
      * @var \ReflectionMethod
      */
-    protected $reflector;
+    private $reflector;
 
     /**
      * Should always be called like:
