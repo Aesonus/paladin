@@ -1,2 +1,2 @@
 language: php
-before_script: composer update
+script: composer update
