@@ -1,2 +1,4 @@
 language: php
 script: composer update
+php:
+    - '5.6'
