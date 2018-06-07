@@ -49,6 +49,7 @@ trait Validatable
         $this->getReflector($method_name);
         $params = $this->getParamNames();
         $validators = $this->getParamTypes();
+        $defaults = $this->getParamDefaults();
         //Cycle thru all $paramTypes
         foreach ($validators as $param_name => $ruleset) {
             $index = array_search($param_name, $params);
@@ -57,7 +58,7 @@ trait Validatable
             if (array_key_exists($index, $args)) {
                 $param_value = $args[$index];
             } else {
-                continue;
+                $param_value = $defaults[$index];
             }
             $this->callValidator($ruleset, $param_name, $param_value);
         }
@@ -146,6 +147,17 @@ trait Validatable
         $arg_types = $this->parseParamDocs($param_docs);
         return $arg_types;
     }
+    
+    protected function getParamDefaults()
+    {
+        $reflector = $this->getReflector();
+        $defaults = [];
+        foreach ($reflector->getParameters() as $param) {
+            //if (!$param->isOptional()) continue;
+            $defaults[] = $param->getDefaultValue();
+        }
+        return $defaults;
+    }
 
     /**
      * Performs validation on doc comments
@@ -201,7 +213,6 @@ trait Validatable
 
     private function isValidatable($param_type)
     {
-        //TODO: Make this upper case friendly
         $type = $this->sanitizeParamDocs([$param_type])[0];
         return in_array($type, 
         array_merge($this->customTypes, array_keys($this->getValidatorMappings()))) || in_array(strtolower($type), $this->validatableTypes);

@@ -42,6 +42,26 @@ Validate arguments with the same line of code:
 
 Paladin throws an exception when an argument does not validate
 
+Note that when arguments are omitted they are also validated. Consider:
+
+```php
+    /**
+     * @param int $paramName
+     * @throws \InvalidArgumentException
+     * ...
+     */
+    public function myMethod($paramName = 'randomdefault', ...) {...}
+
+```
+
+When the function is called:
+
+```php
+    $this->myMethod();
+```
+
+The default value will throw an exception because it isn't a string
+
 ## Extending Paladin
 
 ### Adding a custom parameter type

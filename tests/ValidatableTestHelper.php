@@ -16,7 +16,7 @@ class ValidatableTestHelper
     
     /**
      * 
-     * @param int $param
+     * @param int|null $param
      */
     public function testMethodSingleTypeParam($param = null)
     {
@@ -27,7 +27,7 @@ class ValidatableTestHelper
     /**
      * 
      * @param int|null $param
-     * @param int $arg2
+     * @param int|null $arg2
      */
     public function testMethodMulitpleArgsSingleTypeParam($param = null, $arg2 = null)
     {

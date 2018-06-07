@@ -26,10 +26,10 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
     {
         $this->methodForV = $this->objName . "::" . $this->methodName;
 
-        $this->testObj = $this->getMockForTrait(Validatable::class, [], $this->objName, true, true, true, [$this->methodName, 'getReflector', 'validateCustom']);
+        $this->testObj = $this->getMockForTrait(Validatable::class, [], $this->objName, true, true, true, [$this->methodName, 'getReflector', 'validateCustom', 'getParamDefaults']);
 
         $this->mockReflectionMethod = $this->getMockBuilder(\ReflectionMethod::class)
-                ->setMethods(['getDocComment', 'getParameters'])
+                ->setMethods(['getDocComment', 'getParameters', 'getDefaultValue', 'isOptional'])
                 ->disableOriginalConstructor()->getMock();
     }
 
@@ -47,6 +47,7 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
 
     private function expectMockMethod()
     {
+        $this->testObj->expects($this->any())->method('getParamDefaults')->willReturn([]);
         $this->testObj->expects($this->once())->method($this->methodName)->will($this->returnCallback(function () {
                 $this->invokeMethod($this->testObj, 'v', [$this->methodForV, func_get_args()]);
             }));
