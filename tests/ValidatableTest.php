@@ -100,7 +100,35 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
         ];
     }
     
-        /**
+    /**
+     * @test
+     */
+    public function methodWithDefaultParametersDefinedValidateWithNoErrors()
+    {
+        $testClass = new ValidatableTestHelper();
+        $this->assertTrue($testClass->testMethodSingleTypeParam());
+        return $testClass;
+    }
+    
+    /**
+     * @test
+     * @depends methodWithDefaultParametersDefinedValidateWithNoErrors
+     */
+    public function methodWithTwoParametersWithOneDefaultedValidatesOk(ValidatableTestHelper $testClass)
+    {
+        $this->assertTrue($testClass->testMethodMulitpleArgsSingleTypeParam(3));
+    }
+    
+    /**
+     * @test
+     * @depends methodWithDefaultParametersDefinedValidateWithNoErrors
+     */
+    public function methodWithTwoParametersWithLastParameterSetValidates(ValidatableTestHelper $testClass)
+    {
+        $this->assertTrue($testClass->testMethodMulitpleArgsSingleTypeParam(null, 3));
+    }
+    
+    /**
      * @dataProvider customTypesDataProvider
      **/
     public function testCustomTypes($docblock, $param_names, $given)

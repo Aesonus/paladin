@@ -18,78 +18,20 @@ class ValidatableTestHelper
      * 
      * @param int $param
      */
-    public function testMethodSingleTypeParam($param)
+    public function testMethodSingleTypeParam($param = null)
     {
         $this->v(__METHOD__, func_get_args());
+        return true;
     }
     
     /**
      * 
-     * @param int|float $param
+     * @param int|null $param
+     * @param int $arg2
      */
-    public function testMethodMultiTypeParam($param)
+    public function testMethodMulitpleArgsSingleTypeParam($param = null, $arg2 = null)
     {
         $this->v(__METHOD__, func_get_args());
-    }
-    
-    /**
-     * 
-     * @param string $string
-     * @param integer $int
-     */
-    public function testMethodSingleTypeMuliParams($string, $int)
-    {
-        $this->v(__METHOD__, func_get_args());
-    }
-    
-    /**
-     * 
-     * @param integer|string $stringint
-     * @param null|array $nullarray
-     */
-    public function testMethodMultiTypeMultiParams($stringint, $nullarray)
-    {
-        $this->v(__METHOD__, func_get_args());
-    }
-    
-    /**
-     * 
-     * @param int $param
-     */
-    public function testManyParamMethod(...$param)
-    {
-        $this->v(__METHOD__, func_get_args());
-    }
-    
-    public function testNoDocMethod($param)
-    {
-        $this->v(__METHOD__, func_get_args());
-    }
-    
-    /**
-     * 
-     * @param invalid $param
-     */
-    public function testCustomValidatorMethod($param)
-    {
-        $this->v(__METHOD__, func_get_args());
-    }
-    
-    /**
-     * 
-     * @param mixed $mixed
-     */
-    public function testMethodMixedType($mixed)
-    {
-        $this->v(__METHOD__, func_get_args());
-    }
-    
-    /**
-     * 
-     * @param custom $param
-     */
-    public function testMethodCustomType($param)
-    {
-        $this->v(__METHOD__, func_get_args());
+        return true;
     }
 }

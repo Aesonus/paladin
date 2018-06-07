@@ -43,7 +43,6 @@ trait Validatable
     final protected function v($method_name, array $args)
     {
         if (!is_string($method_name) && isset($method_name)) {
-            //TODO: Write a test for this
             $this->throwException('method_name', ['string', 'null'], $method_name);
         }
         //This also initializes the reflector
@@ -53,7 +52,13 @@ trait Validatable
         //Cycle thru all $paramTypes
         foreach ($validators as $param_name => $ruleset) {
             $index = array_search($param_name, $params);
-            $param_value = $args[$index];
+            //If the argument was not provided, then the default is
+            //okay to accept
+            if (array_key_exists($index, $args)) {
+                $param_value = $args[$index];
+            } else {
+                continue;
+            }
             $this->callValidator($ruleset, $param_name, $param_value);
         }
     }
