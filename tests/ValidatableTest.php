@@ -29,7 +29,7 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
         $this->testObj = $this->getMockForTrait(Validatable::class, [], $this->objName, true, true, true, [$this->methodName, 'getReflector', 'validateCustom', 'getParamDefaults']);
 
         $this->mockReflectionMethod = $this->getMockBuilder(\ReflectionMethod::class)
-                ->setMethods(['getDocComment', 'getParameters', 'getDefaultValue', 'isOptional'])
+                ->setMethods(['getDocComment', 'getParameters'])
                 ->disableOriginalConstructor()->getMock();
     }
 
