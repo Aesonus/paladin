@@ -153,7 +153,7 @@ trait Validatable
         $reflector = $this->getReflector();
         $defaults = [];
         foreach ($reflector->getParameters() as $param) {
-            //if (!$param->isOptional()) continue;
+            if (!$param->isOptional()) continue;
             $defaults[] = $param->getDefaultValue();
         }
         return $defaults;
