@@ -19,7 +19,7 @@ trait Validatable
      * [TODO: Link to documentation]
      * @var array 
      */
-    protected $validatableTypes = ['mixed', 'scalar', 'int', 'string', 'float', 'array', 'null', 'bool'];
+    protected $validatableTypes = ['mixed', 'scalar', 'int', 'string', 'float', 'array', 'null', 'bool', 'object', 'callable'];
     protected $validatorMappings;
 
     /**
@@ -302,6 +302,16 @@ trait Validatable
     protected function validateBool($param_value)
     {
         return is_bool($param_value);
+    }
+    
+    protected function validateObject($param_value)
+    {
+        return is_object($param_value);
+    }
+    
+    protected function validateCallable($param_value)
+    {
+        return is_callable($param_value);
     }
 
     final protected function validateMixed($param_value)

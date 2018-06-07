@@ -98,6 +98,9 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
                 ['scalar','null|int', 'string|int|array', 'mixed'], 
                 ["FU", null, [4, 5, 3], new \stdClass()]
             ),
+            'object' => $data(['param'] , ['object'], [new \stdClass()]),
+            'callable' => $data(['param'], ['string|callable'], ['count']),
+            'callable2' => $data(['param'], ['string|callable'], [[$this, 'testCustomTypes']])
         ];
     }
     

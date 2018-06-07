@@ -24,7 +24,7 @@ Use the pipe operator to allow for multiple types:
 ```php
     ...
     /**
-     * @param int|string|float|integer|boolean|bool|scalar|array|null|mixed $paramName
+     * @param int|string|float|integer|boolean|bool|scalar|array|callable|object|null|mixed $paramName
      * @throws \InvalidArgumentException
      * ...
      */
@@ -123,7 +123,7 @@ You may override the default validators:
 ```
 
 These are the types that have override-able methods associated with them:
-int, string, float, array, scalar, boolean, and null
+int, string, float, array, scalar, boolean, object, callable and null
 
 ### Mapping a type to a docblock alias
 
