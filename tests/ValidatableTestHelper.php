@@ -16,9 +16,9 @@ class ValidatableTestHelper
     
     /**
      * 
-     * @param int|null $param
+     * @param int|string|null $param
      */
-    public function testMethodSingleTypeParam($param = null)
+    public function testMethodSingleTypeParam($param = 'null')
     {
         $this->v(__METHOD__, func_get_args());
         return true;
@@ -27,9 +27,9 @@ class ValidatableTestHelper
     /**
      * 
      * @param int|null $param
-     * @param int|null $arg2
+     * @param int|null $arg_number2
      */
-    public function testMethodMulitpleArgsSingleTypeParam($param = null, $arg2 = null)
+    public function testMethodMulitpleArgsSingleTypeParam($param = null, $arg_number2 = null)
     {
         $this->v(__METHOD__, func_get_args());
         return true;

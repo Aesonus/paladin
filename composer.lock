@@ -1,12 +1,50 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d6b58979c4000a4e0ef8225d5b63aa9c",
+    "content-hash": "0ecbe9a24cd24cbe852841272f0d648f",
     "packages": [],
     "packages-dev": [
+        {
+            "name": "aesonus/test-lib",
+            "version": "v1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Aesonus/test-lib.git",
+                "reference": "54150b3e366539606da18999d30476f1b18cd7c2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Aesonus/test-lib/zipball/54150b3e366539606da18999d30476f1b18cd7c2",
+                "reference": "54150b3e366539606da18999d30476f1b18cd7c2",
+                "shasum": ""
+            },
+            "require": {
+                "mikey179/vfsstream": "~1",
+                "phpunit/phpunit": "^5.7"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Aesonus\\TestLib\\": "src/",
+                    "Aesonus\\TestLib\\Tests\\": "tests/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Aesonus",
+                    "email": "corylcomposinger@gmail.com"
+                }
+            ],
+            "description": "Defines a base test case with some nice methods",
+            "time": "2018-06-17T07:05:05+00:00"
+        },
         {
             "name": "doctrine/instantiator",
             "version": "1.0.5",
@@ -60,6 +98,52 @@
                 "instantiate"
             ],
             "time": "2015-06-14T21:17:01+00:00"
+        },
+        {
+            "name": "mikey179/vfsStream",
+            "version": "v1.6.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mikey179/vfsStream.git",
+                "reference": "d5fec95f541d4d71c4823bb5e30cf9b9e5b96145"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mikey179/vfsStream/zipball/d5fec95f541d4d71c4823bb5e30cf9b9e5b96145",
+                "reference": "d5fec95f541d4d71c4823bb5e30cf9b9e5b96145",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.5"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.6.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "org\\bovigo\\vfs\\": "src/main/php"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Frank Kleine",
+                    "homepage": "http://frankkleine.de/",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Virtual file system to mock the real file system in unit tests.",
+            "homepage": "http://vfs.bovigo.org/",
+            "time": "2017-08-01T08:02:14+00:00"
         },
         {
             "name": "myclabs/deep-copy",

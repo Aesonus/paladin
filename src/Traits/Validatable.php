@@ -152,9 +152,9 @@ trait Validatable
     {
         $reflector = $this->getReflector();
         $defaults = [];
-        foreach ($reflector->getParameters() as $param) {
+        foreach ($reflector->getParameters() as $i => $param) {
             if (!$param->isOptional()) {continue;}
-            $defaults[] = $param->getDefaultValue();
+            $defaults[$i] = $param->getDefaultValue();
         }
         return $defaults;
     }
@@ -182,7 +182,7 @@ trait Validatable
      */
     private function getParamDocs($docs)
     {
-        preg_match_all("/@param [a-z0-9\\ |$]+/i", $docs, $preg_matches);
+        preg_match_all("/@param [a-z0-9_\\ |$]+/i", $docs, $preg_matches);
         return $preg_matches[0];
     }
 

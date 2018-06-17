@@ -116,6 +116,15 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
     
     /**
      * @test
+     */
+    public function methodWithDefaultParameterDefinedSetsProperValueIfParameterIsGiven()
+    {
+        $testClass = new ValidatableTestHelper();
+        $this->assertTrue($testClass->testMethodMulitpleArgsSingleTypeParam(23));
+    }
+    
+    /**
+     * @test
      * @depends methodWithDefaultParametersDefinedValidateWithNoErrors
      */
     public function methodWithTwoParametersWithOneDefaultedValidatesOk(ValidatableTestHelper $testClass)
