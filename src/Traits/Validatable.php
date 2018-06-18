@@ -71,7 +71,7 @@ trait Validatable
      * @return $this
      * @throws \InvalidArgumentException
      */
-    final public function mapType($alias, $type)
+    public function mapType($alias, $type)
     {
         foreach(func_get_args() as $i => $value) {
             $names = ['type', 'mapToType'];
@@ -92,7 +92,7 @@ trait Validatable
      * @return $this
      * @throws \InvalidArgumentException
      */
-    final public function addCustomParameterType($type)
+    public function addCustomParameterType($type)
     {
         if (!is_string($type)) {
             $this->throwException('type', ['string'], $type);
