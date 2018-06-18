@@ -91,6 +91,7 @@ trait Validatable
      * @param string $type
      * @return $this
      * @throws \InvalidArgumentException
+     * @deprecated since version 0
      */
     final public function addCustomParameterType($type)
     {
@@ -215,7 +216,8 @@ trait Validatable
     {
         $type = $this->sanitizeParamDocs([$param_type])[0];
         return in_array($type, 
-        array_merge($this->customTypes, array_keys($this->getValidatorMappings()))) || in_array(strtolower($type), $this->validatableTypes);
+        array_merge($this->customTypes, array_keys($this->getValidatorMappings()))) || in_array(strtolower($type), $this->validatableTypes) ||
+            method_exists($this, 'validate' . ucfirst($param_type));
     }
     
     private function callValidator(array $ruleset, $param_name, $param_value)

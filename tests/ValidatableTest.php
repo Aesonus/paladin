@@ -69,7 +69,6 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
         $this->expectMockReflectionMethods($docblock, $param_names);
         $this->expectMockMethod();
         call_user_func_array([$this->testObj, $this->methodName], $given);
-        $this->assertTrue(true);
     }
 
     public function validArgumentsDataProvider()
@@ -154,6 +153,54 @@ class ValidatableTest extends \PHPUnit\Framework\TestCase
         $this->testObj->expects($this->once())->method('validateCustom')->willReturn(TRUE);
         call_user_func_array([$this->testObj, $this->methodName], $given);
         $this->assertTrue(true);
+    }
+    
+    /**
+     * @test
+     * @dataProvider customTypesDataProvider
+     **/
+    public function customTypeThatIsntDefinedCallsADefinedValidateMethod($docblock, $param_names, $given)
+    {
+        // We need to control the doc blocks and parameter names that are put into the system
+        $this->expectMockReflectionMethods($docblock, $param_names);
+        $this->expectMockMethod();
+        $this->testObj->expects($this->once())->method('validateCustom')->willReturn(TRUE);
+        call_user_func_array([$this->testObj, $this->methodName], $given);
+        //$this->assertTrue(true);
+    }
+    
+    public function invalidCustomTypesDataProvider()
+    {
+        $data = function ($givenNames, $givenTypes, $givenArgs) {
+            if ($givenTypes === null) {
+                $docs = false;
+            } else {
+                $docs = "\t/**\n"
+                    . "\t  * \n";
+                foreach ($givenTypes as $i => $type) {
+                    $name = $givenNames[$i];
+                    $docs .= "\t * @param  $type \$$name\n";
+                }    
+                $docs .="\t\t */";
+            }
+            return [$docs, $givenNames, $givenArgs];
+        };
+        return [
+            'badcustom' => $data(['param'], ['badcustom'], ["FU"]),
+            'string,int|badcustom' => $data(['param','intcustomparam'], ['string','BadCustom'], ["FU",TRUE]),
+        ];
+    }
+    
+    /**
+     * @test
+     * @dataProvider invalidCustomTypesDataProvider
+     **/
+    public function customTypeThatIsntDefinedWithNoValidationMethodDoesNothing($docblock, $param_names, $given)
+    {
+        $this->expectMockReflectionMethods($docblock, $param_names);
+        //$this->expectException(\BadMethodCallException::class);
+        $this->expectMockMethod();
+        call_user_func_array([$this->testObj, $this->methodName], $given);
     }
 
     public function customTypesDataProvider()
