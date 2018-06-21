@@ -6,11 +6,11 @@
 namespace Aesonus\Paladin\Exceptions;
 
 /**
- * Description of ParameterMismatchException
+ * Description of TypeNotDefinedException
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class ParameterMismatchException extends \RuntimeException
+class TypeNotDefinedException extends \Exception
 {
     
 }
