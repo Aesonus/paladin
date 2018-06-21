@@ -10,13 +10,13 @@ namespace Aesonus\Tests;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class ValidatableTestHelper extends CoreTestHelperParent
+class CoreTestHelper extends CoreTestHelperParent
 {
-    use \Aesonus\Paladin\Traits\Validatable;
+    use \Aesonus\Paladin\Traits\Core;
     
     /**
      * 
-     * @param string $string
+     * @param \stdClass $string
      * @param int $int
      * @param bool $bool
      */
@@ -64,13 +64,12 @@ class ValidatableTestHelper extends CoreTestHelperParent
         parent::testRecursiveInheritedMethod($test, $param);
     }
     
-    /**
-     * 
-     * @param integer $no_default_int
-     * @param float $pi
-     * @param string $string
-     */
-    public function testMethodWithSomeDefaults($no_default_int, $pi = 3.141, $string = 'string')
+    protected function getValidatorMappings()
+    {
+        return [];
+    }
+    
+    public function testMethodWithSomeDefaults($no_default, $pi = 3.141, $string = 'string')
     {
         
     }
@@ -78,5 +77,15 @@ class ValidatableTestHelper extends CoreTestHelperParent
     public function testMethodWithAllDefaults($default = 'default', $ten = 10)
     {
         
+    }
+
+    protected function v($method, array $args)
+    {
+        
+    }
+
+    public function mapType($alias, $type)
+    {
+        return $this;
     }
 }
