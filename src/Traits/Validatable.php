@@ -23,10 +23,15 @@ trait Validatable
     protected $customTypes = [];
     
     /**
+     * This method validates the arguments against the doc comment of
+     * the method given. This also will use documentation inheritance if
+     * the inherit doc annotation is used for the doc comment
      * Should always be called like:
      * $this->v(__METHOD__, func_get_args());
      * @param string $method_name
      * @param array $args
+     * @throws \InvalidArgumentException
+     * @return void
      */
     final protected function v($method_name, array $args)
     {
@@ -53,7 +58,8 @@ trait Validatable
     }
 
     /**
-     * Allows using more than one validator to use one validation method
+     * Allows the use of an alias in doc comments to validate as if it were of 
+     * the type given.
      * @param string $alias
      * @param string $type
      * @return $this
@@ -79,7 +85,7 @@ trait Validatable
         return $this;
     }
     /**
-     * 
+     * Returns a keyed array of aliases to types.
      * @return array
      */
     public function getValidatorMappings()

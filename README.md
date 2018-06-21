@@ -66,23 +66,9 @@ The default value will throw an exception because it isn't a string
 
 ### Adding a custom parameter type
 
-Add the parameter type, usually you should do this in the construct of the class using Validatable:
-
-```php
-use Aesonus\Paladin\Validatable;
-
-class MyClass {
-    use Validatable;
-    
-    public function __construct() {
-        $this->addCustomParameterType('myType');
-    }
-    ...
-```
-
-Note that any \ will be stripped. This can be useful for namespacing validatable types.
-
-Create a validate method in the class using validateCamelCaseTypeName of the type name:
+To add additional validatable type, simply create a validate method in the class using
+validateCamelCaseTypeName of the type name where CamelCaseTypeName is the name
+you wish to use:
 
 ```php
     ...
@@ -93,7 +79,8 @@ Create a validate method in the class using validateCamelCaseTypeName of the typ
     ...
 ```
 
-Use your new parameter type in the docblock:
+Use your new parameter type in the docblock. Please note that the type name can
+start with a lower case or upper case letter:
 
 ```php
     ...
@@ -123,7 +110,7 @@ You may override the default validators:
 ```
 
 These are the types that have override-able methods associated with them:
-int, string, float, array, scalar, boolean, object, callable and null
+int, string, float, array, scalar, bool, object, callable and null
 
 ### Mapping a type to a docblock alias
 
