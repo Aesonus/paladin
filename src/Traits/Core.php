@@ -59,7 +59,7 @@ trait Core
      */
     protected function getReflector($method_name = NULL)
     {
-        if (isset($method_name)) {
+        if (isset($method_name) || !isset($this->reflector)) {
             $this->reflector = new \ReflectionMethod($method_name);
         }
         return $this->reflector;
@@ -193,7 +193,7 @@ trait Core
         }
         if (isset($has_failed)) {
             $this->throwException($param_name, $valid_types, $param_value);
-        } 
+        }
     }
 
     /**

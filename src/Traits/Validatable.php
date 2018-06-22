@@ -38,7 +38,7 @@ trait Validatable
         if (!is_string($method_name)) {
             $this->throwException('method_name', ['string'], $method_name);
         }
-        //This also initializes the reflector
+        //This initializes the reflector
         $this->getReflector($method_name);
         $params = $this->getParamNames();
         $validators = $this->getParamTypes();
