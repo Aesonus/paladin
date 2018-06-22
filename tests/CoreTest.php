@@ -29,11 +29,14 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
     {
         $this->traitMockBuilder = $this->getMockBuilder(CoreTestHelper::class);
     }
-
-    /////TEST GET REFLECTOR
+    
+    ////
+    //// GET REFLECTOR TEST
+    ////
+    
     private $reflectionMethodName = CoreTestHelper::class . '::testMethod';
 
-    private function reflectionMethod()
+    private function reflectionMethodFactory()
     {
         return new \ReflectionMethod($this->reflectionMethodName);
     }
@@ -49,7 +52,7 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
     public function getReflectorReturnsANewReflectionMethod()
     {
         $this->setUpGetReflectorTests();
-        $expected = $this->reflectionMethod();
+        $expected = $this->reflectionMethodFactory();
         $actual = $this
             ->invokeMethod($this->testObj, 'getReflector', [
             $this->reflectionMethodName
@@ -65,10 +68,31 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
     public function getReflectorReturnsPreviouslySetReflectionMethod($coreTraitObject)
     {
         $this->setUpGetReflectorTests();
-        $expected = $this->reflectionMethod();
+        $expected = $this->reflectionMethodFactory();
         $actual = $this
             ->invokeMethod($coreTraitObject, 'getReflector');
         $this->assertEquals($expected, $actual);
+    }
+    
+    /**
+     * @test
+     * @dataProvider badMethodNameDataProvider
+     */
+    public function getReflectorThrowsReflectionExceptionIfMethodNameIsInvalid($method_name)
+    {
+        $this->setUpGetReflectorTests();
+        $this->expectException(\ReflectionException::class);
+        $this->expectExceptionMessage("Invalid method name $method_name");
+        $this->invokeMethod($this->testObj, 'getReflector', [$method_name]);
+    }
+    
+    public function badMethodNameDataProvider()
+    {
+        return [
+            'null' => [null],
+            'space in method name' => ['randomNotAcu dsflk'],
+            'generic bad method name' => ['badMethodNameShouldNeverExistsForRealz']
+        ];
     }
 
     /**
@@ -80,9 +104,10 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
         $this->expectException(\ReflectionException::class);
         $this->invokeMethod($this->testObj, 'getReflector', ['badMethodName']);
     }
-
-    ////TEST GET PARAM NAMES
-
+    ////
+    //// GET PARAM NAMES
+    ////
+    
     private function setUpGetParamNamesTests()
     {
         $this->testObj = $this->traitMockBuilder
@@ -92,13 +117,13 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
     /**
      * @test
      */
-    public function getParamNamesReturnsCorrectArrayOfNames()
+    public function getParamNamesReturnsArrayOfNames()
     {
         $this->setUpGetParamNamesTests();
         $this->testObj
             ->expects($this->once())
             ->method('getReflector')
-            ->willReturn($this->reflectionMethod());
+            ->willReturn($this->reflectionMethodFactory());
         $expected = ['string', 'int', 'bool'];
         $actual = $this->invokeMethod($this->testObj, 'getParamNames');
         $this->assertEquals($expected, $actual);
@@ -118,10 +143,11 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
         $actual = $this->invokeMethod($this->testObj, 'getParamNames');
         $this->assertEquals($expected, $actual);
     }
+    ////
+    //// GET RAW DOCS TESTS
+    ////
 
-    ////TEST GET RAW DOCS
-
-    private function setUpGetRawDocsTest($method)
+    private function setUpGetRawDocsTests($method)
     {
         $this->testObj = $this->
             traitMockBuilder->setMethods(['getReflector'])->getMock();
@@ -137,7 +163,7 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
     public function getRawDocsReturnsTheDocs()
     {
         $testMethod = CoreTestHelper::class . '::testMethod';
-        $this->setUpGetRawDocsTest($testMethod);
+        $this->setUpGetRawDocsTests($testMethod);
         $expected = (new \ReflectionMethod($this->reflectionMethodName))->getDocComment();
 
         $actual = $this->invokeMethod($this->testObj, 'getRawDocs');
@@ -151,7 +177,7 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
     public function getRawDocsReturnsInheritedMethodDocOnOveriddenMethod($methodname, $expectedMethodName)
     {
         $testMethod = CoreTestHelper::class . "::$methodname";
-        $this->setUpGetRawDocsTest($testMethod);
+        $this->setUpGetRawDocsTests($testMethod);
         $expected = (new \ReflectionMethod($expectedMethodName))->getDocComment();
         $actual = $this->invokeMethod($this->testObj, 'getRawDocs');
 
@@ -164,7 +190,7 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
     public function getRawDocsOnNonOveriddenMethod()
     {
         $testMethod = CoreTestHelper::class . '::testParentDoc';
-        $this->setUpGetRawDocsTest($testMethod);
+        $this->setUpGetRawDocsTests($testMethod);
         $expected = (new \ReflectionMethod(CoreTestHelperParent::class . '::testParentDoc'))->getDocComment();
         $actual = $this->invokeMethod($this->testObj, 'getRawDocs');
         $this->assertEquals($expected, $actual);
@@ -189,12 +215,15 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
     public function getRawDocsWithNoDocsReturnsFalse()
     {
         $testMethod = CoreTestHelper::class . '::noDocTestMethod';
-        $this->setUpGetRawDocsTest($testMethod);
+        $this->setUpGetRawDocsTests($testMethod);
         $this->assertFalse($this->invokeMethod($this->testObj, 'getRawDocs'));
     }
-
-    ////TEST GET PARAM DOCS
-    private function setUpGetParamDocs()
+    
+    ////
+    //// GET PARAM DOCS TESTS
+    ////
+    
+    private function setUpGetParamDocsTests()
     {
         $this->testObj = $this->
             traitMockBuilder->setMethods()->getMock();
@@ -204,9 +233,9 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
      * @test
      * @dataProvider paramDocsDataProvider
      */
-    public function getParamDocsReturnsOnlyParamTaggedLinesInDoc($docs, $expected)
+    public function getParamDocsReturnsOnlyParamTaggedLinesInDocAsArray($docs, $expected)
     {
-        $this->setUpGetParamDocs();
+        $this->setUpGetParamDocsTests();
         $actual = $this->invokeMethod($this->testObj, 'getParamDocs', [$docs]);
         $this->assertEquals($expected, $actual);
     }
@@ -234,13 +263,15 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
             ]
         ];
     }
-    ////SANITIZE PARAMTYPES TESTS
-
+    ////
+    //// SANITIZE PARAMTYPES TESTS
+    ////
+    
     /**
      * @test
      * @dataProvider sanitizeParamTypesStripsSlashesDataProvider
      */
-    public function sanitizeParamTypesStripsSlashes($data, $expected)
+    public function sanitizeParamTypesStripsSlashesFromElementsInAnArray($data, $expected)
     {
         $this->testObj = $this->traitMockBuilder->setMethods()->getMock();
         $actual = $this->invokeMethod($this->testObj, 'sanitizeParamTypes', [$data]);
@@ -255,9 +286,11 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
             [['Test\Type', 'Yay \IT WOrks\\'], ['TestType', 'Yay IT WOrks']]
         ];
     }
-
-    ////TEST ISVALIDATABLE
-
+    
+    ////
+    //// ISVALIDATABLE TESTS
+    ////
+    
     private function setUpIsValidatableTests()
     {
         $this->testObj = $this->traitMockBuilder
@@ -313,11 +346,14 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
             ['string'],
             ['object'],
             ['bool'],
-            ['\stdClass']
+            'class' => ['\stdClass']
         ];
     }
 
-    ////GET VALIDATOR CALLABLE
+    ////
+    //// GET VALIDATOR CALLABLE TESTS
+    ////
+    
     /**
      * @test
      * @dataProvider getValidatorCallableDataProvider
@@ -337,8 +373,11 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
             ['stdClass', 'validateStdClass']
         ];
     }
-
+    
+    ////
     ////GET MAPPING TESTS
+    ////
+    
     private function setUpGetMappingTests()
     {
         $this->testObj = $this->traitMockBuilder
@@ -369,7 +408,9 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
         $actual = $this->invokeMethod($this->testObj, 'getMapping', ['notFound']);
         $this->assertNull($actual);
     }
+    ////
     ////THROW EXCEPTION TESTS
+    ////
 
     /**
      * @test
@@ -401,8 +442,10 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
             ]
         ];
     }
-
-    ////TEST PARSE PARAM TYPES
+    
+    ////
+    //// PARSE PARAM TYPES TEST
+    ////
 
     private function setUpParseParamTypesTests(array $param_names)
     {
@@ -506,7 +549,9 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
         ];
     }
 
-    ////TEST GET PARAM DEFAULTS
+    ////
+    //// TEST GET PARAM DEFAULTS
+    ////
 
     private function setUpGetParamDefaultsTests($method_name)
     {
@@ -546,8 +591,10 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
             ]
         ];
     }
-
-    ////TEST GET PARAM TYPES
+    
+    ////
+    //// TEST GET PARAM TYPES
+    ////
 
     private function setUpGetParamTypesTests($reflector)
     {
@@ -583,8 +630,10 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
         $actual = $this->invokeMethod($this->testObj, 'getParamTypes');
         $this->assertEmpty($actual);
     }
-
-    ////TEST CALL VALIDATOR
+    
+    ////
+    //// TEST CALL VALIDATOR
+    ////
     
     private function setUpCallValidatorTest($mappings = [])
     {
