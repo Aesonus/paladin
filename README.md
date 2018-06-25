@@ -11,11 +11,13 @@ composer require aesonus/paladin
 
 ## Usage
 
-Use Validatable in your class:
+Use Validatable or StrictValidatable in your class:
 
 ```php
 class MyClass {
-    use Aesonus\Paladin\Validatable;
+    use Aesonus\Paladin\Traits\Validatable;
+    // OR
+    use Aesonus\Paladin\Traits\StrictValidatable;
     ...
 ```
 
@@ -32,7 +34,18 @@ Use the pipe operator to allow for multiple types:
     ...
 ```
 
-Validate arguments with the same line of code:
+You can also validate instances of a class:
+```php
+    /**
+     * @param \stdClass
+     * @throws \InvalidArgumentException
+     * ...
+     */
+     public function myMethod($paramName, ...) {
+    ...
+```
+
+Validate arguments with a single line of code:
 ```php
         ...
         $this->v(__METHOD__, func_get_args());
@@ -61,6 +74,11 @@ When the function is called:
 ```
 
 The default value will throw an exception because it isn't a string
+
+### Strict Validation
+
+The StrictValidator trait does not allow strings to validate as ints, floats, or
+classes of.
 
 ## Extending Paladin
 
