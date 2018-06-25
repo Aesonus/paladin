@@ -28,7 +28,7 @@ class ValidatableTestHelper extends CoreTestHelperParent
     /**
      * 
      * @param \stdClass $object
-     * @param \Aesonus\Paladin\Service\AbstractValidator $coreTest
+     * @param \SplFileInfo $coreTest
      */
     public function testObjectOfClassType($object, $coreTest)
     {

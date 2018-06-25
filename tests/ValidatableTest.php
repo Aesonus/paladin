@@ -158,7 +158,7 @@ class ValidatableTest extends \Aesonus\TestLib\BaseTestCase
                     $this->equalTo('object'),
                     $this->equalTo($args[0])
                 ], [
-                    $this->equalTo(['\Aesonus\Paladin\Service\Validator']),
+                    $this->equalTo(['\SplFileInfo']),
                     $this->equalTo('coreTest'),
                     $this->equalTo($args[1])
                 ]
