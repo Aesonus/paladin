@@ -10,14 +10,14 @@ namespace Aesonus\Tests;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class CoreValidatorsTest extends \Aesonus\TestLib\BaseTestCase
+class ValidatorsTest extends \Aesonus\TestLib\BaseTestCase
 {
 
     protected $testObj;
 
     protected function setUp()
     {
-        $this->testObj = new CoreTestHelper();
+        $this->testObj = $this->getMockForTrait(\Aesonus\Paladin\Traits\DefaultValidators::class);
         parent::setUp();
     }
     ////VALIDATE INT
@@ -352,6 +352,46 @@ class CoreValidatorsTest extends \Aesonus\TestLib\BaseTestCase
     {
         return [
             [[]], [null], ['new \stdClass()'], [false]
+        ];
+    }
+    
+    ////IS CLASS OF TESTS
+
+    /**
+     * @test
+     * @dataProvider isClassOfReturnsTrueOnValidTypeDataProvider
+     */
+    public function isClassOfReturnsTrueOnValidType($param, $type)
+    {
+        $actual = $this->invokeMethod($this->testObj, 'isClassOf', [$param, $type]);
+        $this->assertTrue($actual);
+    }
+
+    public function isClassOfReturnsTrueOnValidTypeDataProvider()
+    {
+        return [
+            [\stdClass::class, \stdClass::class],
+            [new \stdClass(), \stdClass::class],
+            [new \SplFileInfo(''), \SplFileInfo::class],
+            [get_class($this->getMockBuilder(\stdClass::class)->getMock()), \stdClass::class]
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider isClassReturnsFalseOnInvalidTypeDataProvider
+     */
+    public function isClassReturnsFalseOnInvalidType($param, $type)
+    {
+        $this->invokeMethod($this->testObj, 'isClassOf', [$param, $type]);
+    }
+
+    public function isClassReturnsFalseOnInvalidTypeDataProvider()
+    {
+        return [
+            
+            ['no good', \stdClass::class],
+            [23, \stdClass::class]
         ];
     }
 }

@@ -25,7 +25,6 @@ trait Core
      */
     protected $validatableTypes = ['mixed', 'scalar', 'int', 'string', 'float', 'array', 'null', 'bool', 'object', 'callable'];
 
-        
     /**
      * 
      * @param string $method
@@ -39,7 +38,7 @@ trait Core
      * @return array
      */
     abstract protected function getValidatorMappings();
-    
+
     /**
      * 
      * @param string $alias
@@ -151,7 +150,7 @@ trait Core
             );
 
             //Strips out any backslashes so functions can be called using the type
-            $types = $this->sanitizeParamTypes($types);
+            //$types = $this->sanitizeParamTypes($types);
 
             $key = $this->getParamNames()[$i];
             // Strip the '$'
@@ -167,10 +166,11 @@ trait Core
      */
     protected function isValidatable($param_type)
     {
-        $type = $this->sanitizeParamTypes([$param_type])[0];
+
+        $type = $param_type;
         return in_array($type, array_keys($this->getValidatorMappings())) ||
-            in_array(strtolower($type), $this->validatableTypes) ||
-            is_callable($this->getValidatorCallable($type));
+            is_callable($this->getValidatorCallable($type)) ||
+            class_exists($type);
     }
 
     protected function getValidatorCallable($type)
@@ -185,13 +185,17 @@ trait Core
             $mapped_type = $this->getMapping($original_type);
 
             $type = $mapped_type === NULL ? $original_type : $mapped_type;
-            $callable = $this->getValidatorCallable($type);
-            $has_failed = !$callable($param_value);
-            if (!$has_failed) {
-                return ;
+            $validate = $this->getValidatorCallable($type);
+            if (!is_callable($validate)) {
+                //Let's see if we should 
+            }
+            $is_successful = is_callable($validate) && $validate($param_value) || $this->isClassOf($param_value, $type);
+            if ($is_successful) {
+                return;
             }
         }
-        if (isset($has_failed)) {
+        //If the while loop has ran then $is_successful will be set
+        if (isset($is_successful)) {
             $this->throwException($param_name, $valid_types, $param_value);
         }
     }
@@ -221,58 +225,24 @@ trait Core
         throw new \InvalidArgumentException(sprintf("$%s should be of type(s) %s, %s given", $param_name, implode('|', $ruleset), gettype($param_value))
         );
     }
-
-    protected function validateInt($param_value)
-    {
-        return is_numeric($param_value) === TRUE
-            // We use this trick to ensure we really are getting an int without
-            // having to write another function
-            && is_int($param_value - (int) $param_value) === TRUE;
-    }
-
-    protected function validateString($param_value)
-    {
-        return is_string($param_value) === TRUE;
-    }
-
-    protected function validateFloat($param_value)
-    {
-        return is_numeric($param_value) === TRUE && is_float((float) $param_value) === TRUE;
-    }
-
-    protected function validateNull($param_value)
-    {
-        return $param_value === NULL;
-    }
-
-    protected function validateArray($param_value)
-    {
-        return is_array($param_value) === TRUE;
-    }
-
-    protected function validateScalar($param_value)
-    {
-        return is_scalar($param_value) === TRUE;
-    }
-
-    protected function validateBool($param_value)
-    {
-        return is_bool($param_value);
-    }
-
-    protected function validateObject($param_value)
-    {
-        return is_object($param_value);
-    }
-
-    protected function validateCallable($param_value)
-    {
-        return is_callable($param_value);
-    }
-
-    final protected function validateMixed($param_value)
-    {
-        return TRUE;
-    }
-
+    
+    abstract protected function validateInt($param);
+    
+    abstract protected function validateFloat($param);
+    
+    abstract protected function validateString($param);
+    
+    abstract protected function validateNull($param);
+    
+    abstract protected function validateArray($param);
+    
+    abstract protected function validateScalar($param);
+    
+    abstract protected function validateBool($param);
+    
+    abstract protected function validateObject($param);
+    
+    abstract protected function validateCallable($param);
+    
+    abstract protected function isClassOf($object, $type);
 }

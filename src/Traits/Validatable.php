@@ -12,6 +12,7 @@ namespace Aesonus\Paladin\Traits;
 trait Validatable
 {
     use Core;
+    use DefaultValidators;
     
     protected $validatorMappings;
 
@@ -84,11 +85,12 @@ trait Validatable
         $this->validatorMappings = $mappings;
         return $this;
     }
+    
     /**
      * Returns a keyed array of aliases to types.
      * @return array
      */
-    public function getValidatorMappings()
+    protected function getValidatorMappings()
     {
         if (!isset($this->validatorMappings)) {
             $this->validatorMappings = [
@@ -111,7 +113,4 @@ trait Validatable
     {
         return $this;
     }
-
-
-
 }

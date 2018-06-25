@@ -12,7 +12,7 @@ namespace Aesonus\Tests;
  */
 class ValidatableTestHelper extends CoreTestHelperParent
 {
-    use \Aesonus\Paladin\Traits\Validatable;
+    use \Aesonus\Paladin\Traits\StrictValidatable;
     
     /**
      * 
@@ -21,6 +21,16 @@ class ValidatableTestHelper extends CoreTestHelperParent
      * @param bool $bool
      */
     public function testMethod($string, $int, $bool)
+    {
+        
+    }
+    
+    /**
+     * 
+     * @param \stdClass $object
+     * @param \Aesonus\Paladin\Service\AbstractValidator $coreTest
+     */
+    public function testObjectOfClassType($object, $coreTest)
     {
         
     }

@@ -31,17 +31,19 @@ class ValidatableTest extends \Aesonus\TestLib\BaseTestCase
         $this->testObj = $this->traitMockBuilder->setMethods(['callValidator'])->getMock();
     }
 
-    ////GET VALIDATOR MAPPING TESTS
+    ////
+    //// GET VALIDATOR MAPPING TESTS
+    ////
     /**
      * @test
      */
-    public function getValidatorMappingsReturnsDefaultOfIntegerAndBoolean()
+    public function getValidatorMappingsReturnsDefaultOfIntegerAndBooleanAndAClassAliases()
     {
         $expected = [
             'integer' => 'int',
-            'boolean' => 'bool'
+            'boolean' => 'bool',
         ];
-        $actual = $this->testObj->getValidatorMappings();
+        $actual = $this->invokeMethod($this->testObj, 'getValidatorMappings');
         $this->assertEquals($expected, $actual);
     }
 
@@ -52,7 +54,7 @@ class ValidatableTest extends \Aesonus\TestLib\BaseTestCase
     public function getValidatorMappingsReturnsPropertyIfItIsSet($expected)
     {
         $this->setPropertyValue($this->testObj, 'validatorMappings', $expected);
-        $actual = $this->testObj->getValidatorMappings();
+        $actual = $this->invokeMethod($this->testObj,'getValidatorMappings');
         $this->assertEquals($expected, $actual);
     }
 
@@ -70,7 +72,9 @@ class ValidatableTest extends \Aesonus\TestLib\BaseTestCase
             ]
         ];
     }
-    ////MAP TYPE TESTS
+    ////
+    //// MAP TYPE TESTS
+    ////
 
     /**
      * @test
@@ -144,23 +148,19 @@ class ValidatableTest extends \Aesonus\TestLib\BaseTestCase
      */
     public function vCallsCallValidatorWithCorrectArguments()
     {
-        $method_name = ValidatableTestHelper::class . "::testMethod";
+        $method_name = ValidatableTestHelper::class . "::testObjectOfClassType";
         $args = ['stringarg', 34, true];
-        $this->testObj->expects($this->exactly(3))
+        $this->testObj->expects($this->exactly(2))
             ->method('callValidator')
             ->withConsecutive(
                 [
-                    $this->equalTo(['string']),
-                    $this->equalTo('string'),
+                    $this->equalTo(['\stdClass']),
+                    $this->equalTo('object'),
                     $this->equalTo($args[0])
                 ], [
-                    $this->equalTo(['int']),
-                    $this->equalTo('int'),
+                    $this->equalTo(['\Aesonus\Paladin\Service\Validator']),
+                    $this->equalTo('coreTest'),
                     $this->equalTo($args[1])
-                ], [
-                    $this->equalTo(['bool']),
-                    $this->equalTo('bool'),
-                    $this->equalTo($args[2])
                 ]
         );
         $this->invokeMethod($this->testObj, 'v', [$method_name, $args]);
@@ -230,7 +230,7 @@ class ValidatableTest extends \Aesonus\TestLib\BaseTestCase
         );
         $this->invokeMethod($this->testObj, 'v', [$method_name, $args]);
     }
-    
+
     /**
      * @test
      */

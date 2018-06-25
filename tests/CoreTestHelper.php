@@ -13,14 +13,15 @@ namespace Aesonus\Tests;
 class CoreTestHelper extends CoreTestHelperParent
 {
     use \Aesonus\Paladin\Traits\Core;
+    use \Aesonus\Paladin\Traits\DefaultValidators;
     
     /**
      * 
-     * @param \stdClass $string
+     * @param \stdClass $stdClass
      * @param int $int
      * @param bool $bool
      */
-    public function testMethod($string, $int, $bool)
+    public function testMethod($stdClass, $int, $bool)
     {
         
     }

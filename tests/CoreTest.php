@@ -94,16 +94,6 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
             'generic bad method name' => ['badMethodNameShouldNeverExistsForRealz']
         ];
     }
-
-    /**
-     * @test
-     */
-    public function invalidMethodName()
-    {
-        $this->setUpGetReflectorTests();
-        $this->expectException(\ReflectionException::class);
-        $this->invokeMethod($this->testObj, 'getReflector', ['badMethodName']);
-    }
     ////
     //// GET PARAM NAMES
     ////
@@ -124,7 +114,7 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
             ->expects($this->once())
             ->method('getReflector')
             ->willReturn($this->reflectionMethodFactory());
-        $expected = ['string', 'int', 'bool'];
+        $expected = ['stdClass', 'int', 'bool'];
         $actual = $this->invokeMethod($this->testObj, 'getParamNames');
         $this->assertEquals($expected, $actual);
     }
@@ -246,7 +236,7 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
             'testhelper' => [
                 (new \ReflectionMethod(CoreTestHelper::class . "::testMethod"))->getDocComment(),
                 [
-                    '@param \stdClass $string',
+                    '@param \stdClass $stdClass',
                     '@param int $int',
                     '@param bool $bool',
                 ]
@@ -294,10 +284,9 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
     private function setUpIsValidatableTests()
     {
         $this->testObj = $this->traitMockBuilder
-            ->setMethods(['validateCustom', 'validateStdClass', 'getValidatorMappings'])
+            ->setMethods(['validateCustom', 'getValidatorMappings'])
             ->getMock();
         $this->testObj->expects($this->any())->method('validateCustom')->willReturn(true);
-        $this->testObj->expects($this->any())->method('validateStdClass')->willReturn(true);
         $this->testObj->expects($this->any())->method('getValidatorMappings')->willReturn([
             'integer' => 'int'
         ]);
@@ -346,7 +335,7 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
             ['string'],
             ['object'],
             ['bool'],
-            'class' => ['\stdClass']
+            'named class' => ['\stdClass']
         ];
     }
 
@@ -496,7 +485,7 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
                 ['@param \stdClass $stdclassvar', '@param int $intvar'],
                 [
                     'stdclassvar' => [
-                        'stdClass'
+                        '\stdClass'
                     ],
                     'intvar' => [
                         'int'
@@ -524,7 +513,7 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
                 ['@param \stdClass $stdclassvar', '@param badType $badvar'],
                 [
                     'stdclassvar' => [
-                        'stdClass'
+                        '\stdClass'
                     ],
                     'badvar' => []
                 ]
@@ -533,7 +522,7 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
                 ['@param \stdClass $stdclassvar', '@param badType|int $badvar'],
                 [
                     'stdclassvar' => [
-                        'stdClass'
+                        '\stdClass'
                     ],
                     'badvar' => [
                         1 => 'int'
@@ -613,7 +602,7 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
             new \ReflectionMethod(CoreTestHelper::class . "::testMethod")
         );
         $expected = [
-            'string' => [],
+            'stdClass' => ['\stdClass'],
             'int' => ['int'],
             'bool' => ['bool']
         ];
@@ -659,6 +648,7 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
             'with_mapping' => [['integer'], 'intparam', 54, ['integer' => 'int']],
             'no_params' => [[], '', '', []],
             'multiple_types' => [['int', 'string'], 'intstringparam', 'hello', []],
+            'class_type' => [['\stdClass'], 'goodStdClassParam', new \stdClass(), []]
         ];
     }
 
@@ -694,6 +684,12 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
                 false,
                 []
             ],
+            'class validation' => [
+                ['\stdClass'],
+                'stdclassParam',
+                34,
+                []
+            ]
         ];
     }
 }
