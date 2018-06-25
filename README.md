@@ -84,7 +84,7 @@ classes of.
 
 ### Adding a custom parameter type
 
-To add additional validatable type, simply create a validate method in the class using
+You may add additional validatable types; simply create a validate method in the class using
 validateCamelCaseTypeName of the type name where CamelCaseTypeName is the name
 you wish to use:
 
@@ -98,12 +98,12 @@ you wish to use:
 ```
 
 Use your new parameter type in the docblock. Please note that the type name can
-start with a lower case or upper case letter:
+start with a lower case or upper case letter but are otherwise case sensitive:
 
 ```php
     ...
     /**
-     * @param myType $paramName
+     * @param myType|MyType $paramName
      * @throws \InvalidArgumentException
      * ...
      */
@@ -112,6 +112,49 @@ start with a lower case or upper case letter:
         ...
     }
     ...
+```
+
+### Paladins
+
+Grouping validators together in their own trait is a great way to re-use types
+
+```php
+// Use the *\Paladins namespace paradigm
+namespace Aesonus\Paladin\Paladins;
+
+trait Files
+{
+    protected function validateFile($param_value)
+    {
+        return is_string($param_value) &&
+            file_exists($param_value) &&
+            !is_dir($param_value);
+    }
+
+    protected function validateDir($param_value)
+    {
+        return $this->validateFile($param_value) && is_dir($param_value);
+    }
+}
+```
+
+Then use it in your class:
+
+```php
+use Aesonus\Paladin\Paladins;
+
+class MyClass {
+    use Aesonus\Paladin\Traits\Validatable;
+    use Paladins\Files;
+
+    /**
+     * 
+     * @param dir $param
+     */
+    public function myFunction($param) {
+        $this->v(__METHOD__, func_get_args());
+        ...
+    }
 ```
 
 ### Overriding default validators
