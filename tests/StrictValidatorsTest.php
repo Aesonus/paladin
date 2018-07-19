@@ -153,7 +153,7 @@ class StrictValidatorsTest extends \Aesonus\TestLib\BaseTestCase
      */
     public function isClassReturnsFalseOnInvalidType($param, $type)
     {
-        $this->invokeMethod($this->testObj, 'isClassOf', [$param, $type]);
+        $this->assertFalse($this->invokeMethod($this->testObj, 'isClassOf', [$param, $type]));
     }
 
     public function isClassReturnsFalseOnInvalidTypeDataProvider()

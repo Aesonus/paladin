@@ -629,7 +629,7 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
         $this->testObj = $this->traitMockBuilder->setMethods(['getValidatorMappings'])->getMock();
         $this->testObj->expects($this->any())->method('getValidatorMappings')->willReturn($mappings);
     }
-
+    
     /**
      * @test
      * @dataProvider callValidatorDoesNothingOnSuccessfulValidationDataProvider
@@ -639,6 +639,7 @@ class CoreTest extends \Aesonus\TestLib\BaseTestCase
     {
         $this->setUpCallValidatorTest($mappings);
         $this->invokeMethod($this->testObj, 'callValidator', [$valid_types, $param_name, $param_value]);
+        $this->assertTrue(true);
     }
 
     public function callValidatorDoesNothingOnSuccessfulValidationDataProvider()
