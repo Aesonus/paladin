@@ -21,12 +21,12 @@ trait Core
     /**
      * Contains valid data types for phpdocs. You can make your own if you wish.
      * [TODO: Link to documentation]
-     * @var array 
+     * @var array
      */
     protected $validatableTypes = ['mixed', 'scalar', 'int', 'string', 'float', 'array', 'null', 'bool', 'object', 'callable'];
 
     /**
-     * 
+     *
      * @param string $method
      * @param array $args
      * @throws \InvalidArgumentException
@@ -34,13 +34,13 @@ trait Core
     abstract protected function v($method, array $args);
 
     /**
-     * 
+     *
      * @return array
      */
     abstract protected function getValidatorMappings();
 
     /**
-     * 
+     *
      * @param string $alias
      * @param string $type
      * @throws \InvalidArgumentException
@@ -125,7 +125,7 @@ trait Core
     }
 
     /**
-     * 
+     *
      * @param string $docs
      * @return array
      */
@@ -136,7 +136,7 @@ trait Core
     }
 
     /**
-     * 
+     *
      * @param array $param_docs
      * @return array
      */
@@ -186,10 +186,7 @@ trait Core
 
             $type = $mapped_type === NULL ? $original_type : $mapped_type;
             $validate = $this->getValidatorCallable($type);
-            if (!is_callable($validate)) {
-                //Let's see if we should 
-            }
-            $is_successful = is_callable($validate) && $validate($param_value) || $this->isClassOf($param_value, $type);
+            $is_successful = method_exists($validate[0], $validate[1]) && $validate($param_value) || $this->isClassOf($param_value, $type);
             if ($is_successful) {
                 return;
             }
@@ -201,7 +198,7 @@ trait Core
     }
 
     /**
-     * 
+     *
      * @param string $param_name
      * @return string|null Returns null if no mapping exists
      */
@@ -225,24 +222,24 @@ trait Core
         throw new \InvalidArgumentException(sprintf("$%s should be of type(s) %s, %s given", $param_name, implode('|', $ruleset), gettype($param_value))
         );
     }
-    
+
     abstract protected function validateInt($param);
-    
+
     abstract protected function validateFloat($param);
-    
+
     abstract protected function validateString($param);
-    
+
     abstract protected function validateNull($param);
-    
+
     abstract protected function validateArray($param);
-    
+
     abstract protected function validateScalar($param);
-    
+
     abstract protected function validateBool($param);
-    
+
     abstract protected function validateObject($param);
-    
+
     abstract protected function validateCallable($param);
-    
+
     abstract protected function isClassOf($object, $type);
 }
