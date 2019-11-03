@@ -10,10 +10,10 @@
     "type": "library",
     "license": "MIT",
     "require": {
-        "php": ">=5.6 || >=7"
+        "php": ">=7"
     },
     "require-dev": {
-        "aesonus/test-lib": "^2.0"
+        "aesonus/test-lib": "^3.1.2"
     },
     "autoload": {
         "psr-4": {

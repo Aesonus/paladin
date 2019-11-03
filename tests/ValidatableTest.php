@@ -58,6 +58,9 @@ class ValidatableTest extends \Aesonus\TestLib\BaseTestCase
         $this->assertEquals($expected, $actual);
     }
 
+    /**
+     * Data provider
+     */
     public function getValidatorMappingsReturnsPropertyIfItIsSetDataProvider()
     {
         return [
@@ -89,7 +92,10 @@ class ValidatableTest extends \Aesonus\TestLib\BaseTestCase
         $actual = $this->getPropertyValue($this->testObj, 'validatorMappings');
         $this->assertEquals($expected, $actual);
     }
-
+    
+    /**
+     * Data provider
+     */
     public function mapTypeAppendsMappingToPropertyDefaultsDataProvider()
     {
         return [
@@ -112,6 +118,9 @@ class ValidatableTest extends \Aesonus\TestLib\BaseTestCase
         $this->testObj->mapType($alias, $type);
     }
 
+    /**
+     * Data provider
+     */
     public function invalidParamsPassedToMapTypeThrowsExceptionDataProvider()
     {
         return [
