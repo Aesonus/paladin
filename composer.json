@@ -1,6 +1,6 @@
 {
     "name": "aesonus/paladin",
-    "description": "Paladin parameter validation uses Reflection classes to read docblocks to validate method parameters",
+    "description": "Validate method parameters based on their doc blocks",
     "authors": [
         {
             "name": "Aesonus",
@@ -10,14 +10,21 @@
     "type": "library",
     "license": "MIT",
     "require": {
-        "php": ">=7"
+        "php": "^7.4"
     },
     "require-dev": {
-        "aesonus/test-lib": "^3.1.2"
+        "aesonus/test-lib": "^4.01"
     },
     "autoload": {
         "psr-4": {
-            "Aesonus\\Paladin\\": "src/",
+            "Aesonus\\Paladin\\": "src/"
+        },
+        "files": [
+            "src/functions.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
             "Aesonus\\Tests\\": "tests/"
         }
     }
