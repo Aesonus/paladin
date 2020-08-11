@@ -23,11 +23,12 @@
  * THE SOFTWARE.
  */
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Aesonus\Paladin;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
+use RuntimeException;
 use const Aesonus\Paladin\FUNCTION_NAMESPACE;
 
 /**
@@ -51,14 +52,14 @@ class DocBlockParameter implements ParameterInterface
 
     /**
      *
-     * @var (string|DocBlockParameter)array
+     * @var (string|DocBlockParameter)[]
      */
     private $types;
 
     /**
      *
      * @param string $name
-     * @param array $types
+     * @param (string|DocBlockParameter)[] $types
      * @param bool $required
      */
     public function __construct(string $name, array $types, bool $required)
@@ -109,7 +110,7 @@ class DocBlockParameter implements ParameterInterface
             return [$type, 'validate'];
         }
         if ('mixed' === $type) {
-            return fn() => true;
+            return fn () => true;
         }
         $builtInCallable = 'is_' . $type;
         if (function_exists($builtInCallable)) {
@@ -124,7 +125,8 @@ class DocBlockParameter implements ParameterInterface
             return $simplePsalmTypeCallable;
         }
         if (is_class_string($type)) {
-            return fn($value) => is_a($value, $type);
+            return fn ($value) => is_a($value, $type);
         }
+        throw new RuntimeException("Could not validate for type '$type'");
     }
 }

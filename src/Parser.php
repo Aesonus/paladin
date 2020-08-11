@@ -22,12 +22,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Aesonus\Paladin;
 
 use Aesonus\Paladin\Contracts\UseContextInterface;
 use Exception;
+use RuntimeException;
 use function Aesonus\Paladin\Utilities\str_contains_chars;
 use function Aesonus\Paladin\Utilities\str_contains_str;
 use function Aesonus\Paladin\Utilities\str_count;
@@ -48,9 +49,16 @@ class Parser
      */
     private $useContext;
 
-    public function __construct(?UseContextInterface $useContext = null)
+    /**
+     *
+     * @var TypeLinter
+     */
+    private $typeLinter;
+
+    public function __construct(UseContextInterface $useContext, ?TypeLinter $typeLinter = null)
     {
         $this->useContext = $useContext;
+        $this->typeLinter = $typeLinter ?? new TypeLinter;
     }
 
     /**
@@ -64,13 +72,18 @@ class Parser
     {
         preg_match_all('/@param.+/', $docblock, $matches);
         $params = $this->getParamsInParts($matches[0], $numberOfRequiredParameters);
-        return $this->constructDocBlockParameters($params);
+        try {
+            return $this->constructDocBlockParameters($params);
+        } catch (\RuntimeException $exc) {
+            throw $exc;
+        }
     }
 
     protected function constructDocBlockParameters(array $paramParts): array
     {
         $return = [];
         foreach ($paramParts as $param) {
+            $this->typeLinter->lintCheck($param['name'], $param['type']);
             $return[] = new DocBlockParameter(
                 $param['name'],
                 $this->parseTypes($param['type']),
@@ -110,9 +123,9 @@ class Parser
             if (!$concat) {
                 $carry[] = $param;
             } else {
-                $carry[array_key_last($carry)] .= "|$param";
+                $carry[array_key_last($carry) ?? 0] .= "|$param";
             }
-            $new_carry = $carry[array_key_last($carry)];
+            $new_carry = $carry[array_key_last($carry) ?? 0];
             $concat = str_count('<', $new_carry) !== str_count('>', $new_carry);
             return $carry;
         }, []);
@@ -126,8 +139,7 @@ class Parser
         if (
             str_contains_chars('<>', $typeString)
             && $openingArrow < $openingParenthises
-        )
-        {
+        ) {
             if (str_contains_str($typeString, 'array')) {
                 $types = $this->parsePsalmArrayType($typeString);
                 return new DocBlockArrayParameter('array', ...$types);
@@ -149,7 +161,7 @@ class Parser
 
     private function parsePsalmClassStringTypes(string $typeString): array
     {
-        $classTypes = explode('|', substr($typeString, strpos($typeString, '<') + 1, -1));
+        $classTypes = explode('|', substr($typeString, (int)strpos($typeString, '<') + 1, -1));
         return array_map(function ($type) {
             $rawClass = (strpos($type, '\\') === 0) ? substr($type, 1): $type;
             return $this->useContext->getUsedClass($rawClass);
@@ -159,22 +171,22 @@ class Parser
     private function parsePsrArrayType(string $typeString): array
     {
         $openingParenth = strpos($typeString, '(');
+        $closingParenth = (int)strpos($typeString, ')');
         if ($openingParenth !== false) {
             return $this->parseTypes(
                 substr(
                     $typeString,
                     $openingParenth + 1,
-                    strpos($typeString, ')') - $openingParenth - 1
+                    $closingParenth - $openingParenth - 1
                 )
             );
-        } else {
-            return [substr($typeString, 0, -2)];
         }
+        return [substr($typeString, 0, -2)];
     }
 
     private function parsePsalmArrayType(string $typeString): array
     {
-        $openingArrow = strpos($typeString, '<');
+        $openingArrow = (int)strpos($typeString, '<');
         $arrayTypeString = substr($typeString, $openingArrow + 1, -1);
         $types = preg_split('`,(?![\w \[\]]+>)`', $arrayTypeString);
         //echo "Split Psalm\n", var_dump($types);
@@ -188,7 +200,7 @@ class Parser
     /**
      *
      * @param array $params
-     * @return string[]
+     * @return array<int, array<int, string>>
      */
     protected function getParamsInParts(array $params, int $numberOfRequired): array
     {
@@ -200,5 +212,4 @@ class Parser
         }
         return $return;
     }
-
 }

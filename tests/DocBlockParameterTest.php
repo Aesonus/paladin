@@ -34,6 +34,7 @@ use Aesonus\Tests\Fixtures\TestIntersectionClass;
 use Aesonus\Tests\Fixtures\TestTrait;
 use ArrayAccess;
 use Iterator;
+use RuntimeException;
 use stdClass;
 
 /**
@@ -475,6 +476,31 @@ class DocBlockParameterTest extends BaseTestCase
         return [
             'invalid class for class-string<\\stdClass>' => [[TestClass::class], stdClass::class],
             'object for class-string<\\stdClass>' => [[stdClass::class], new stdClass()],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider validateParameterThrowsExceptionIfParameterCannotBeValidatedDataProvider
+     */
+    public function validateParameterThrowsExceptionIfParameterCannotBeValidated($types, $message)
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage($message);
+        $docblockParameter = new DocBlockParameter('$testParam', $types, true);
+        $docblockParameter->validate(null);
+    }
+
+    /**
+     * Data Provider
+     */
+    public function validateParameterThrowsExceptionIfParameterCannotBeValidatedDataProvider()
+    {
+        return [
+            [
+                ['not_good'],
+                'Could not validate for type \'not_good\''
+            ]
         ];
     }
 }

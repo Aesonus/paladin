@@ -31,6 +31,7 @@ use Aesonus\Paladin\UseContext;
 use Aesonus\TestLib\BaseTestCase;
 use Aesonus\Tests\Fixtures\ParserContextClass;
 use Aesonus\Tests\Fixtures\TestClass;
+use RuntimeException;
 use stdClass;
 
 /**
@@ -523,6 +524,34 @@ class ParserTest extends BaseTestCase
                     ],
                     true
                 ]
+            ],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider malformedDocblockThrowsExceptionDataProvider
+     */
+    public function malformedDocblockThrowsException($docblock)
+    {
+        $this->expectException(RuntimeException::class);
+        $actual = $this->testObj->getDocBlock($docblock, 1);
+        var_dump($actual[0]);
+    }
+
+    /**
+     * Data Provider
+     */
+    public function malformedDocblockThrowsExceptionDataProvider()
+    {
+        return [
+            'missing closing parenthesis' => [
+                <<<'php'
+                /**
+                 *
+                 * @param (int|string[] $param
+                 */
+                php
             ],
         ];
     }
