@@ -22,28 +22,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Tests\Fixtures;
+namespace Aesonus\Paladin;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class TestClass extends \stdClass
+class DocBlockArrayParameter extends DocBlockParameter
 {
     /**
      *
-     * @param string $testString Is a string scalar type
+     * @var string
      */
-    public function simpleType($testString)
+    private $keyType;
+
+    public function __construct(string $name, string $keyType, array $valueType)
     {
+        parent::__construct($name, $valueType, true);
+        $this->keyType = $keyType;
     }
 
-    /**
-     *
-     * @param string|array $testUnion
-     */
-    public function unionType($testUnion)
+    public function validate($givenValue): bool
     {
+        if (!is_array($givenValue)) {
+            return false;
+        }
+        $valid = false;
+        foreach ($givenValue as $key => $value) {
+            $valid = parent::validate($value) && $this->validateUnionType([$this->keyType], $key);
+            if (!$valid) {
+                break;
+            }
+        }
+        return $valid;
     }
 }

@@ -22,28 +22,72 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Tests\Fixtures;
+namespace Aesonus\Tests;
+
+use Aesonus\Paladin\DocBlockParameter;
+use PHPUnit\Framework\Constraint\Constraint;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class TestClass extends \stdClass
+class ConstraintDocBlockParameter extends Constraint
 {
     /**
      *
-     * @param string $testString Is a string scalar type
+     * @var string
      */
-    public function simpleType($testString)
+    private $name;
+
+    /**
+     *
+     * @var array
+     */
+    private $type;
+
+    /**
+     *
+     * @var bool
+     */
+    private $required;
+
+    /**
+     *
+     * @param string $name
+     * @param array $type
+     * @param bool $required
+     */
+    public function __construct($name, $type, $required)
     {
+        $this->name = $name;
+        $this->type = $type;
+        $this->required = $required;
     }
 
     /**
      *
-     * @param string|array $testUnion
+     * @param DocBlockParameter $other
+     * @return bool
      */
-    public function unionType($testUnion)
+    protected function matches($other): bool
     {
+        if (!$other instanceof DocBlockParameter) {
+            return false;
+        }
+        return $other->getName() === $this->name
+            && $other->getTypes() == $this->type
+            && $other->isRequired() === $this->required;
+    }
+
+    public function toString(): string
+    {
+        return 'is ' . DocBlockParameter::class . ' with properties ' . $this->exporter()->export(
+            [
+                'name' => $this->name,
+                'required' => $this->required,
+                'types' => $this->type,
+            ]
+        );
     }
 }

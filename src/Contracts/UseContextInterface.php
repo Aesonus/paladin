@@ -22,28 +22,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Tests\Fixtures;
+namespace Aesonus\Paladin\Contracts;
 
 /**
  *
- *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class TestClass extends \stdClass
+interface UseContextInterface
 {
     /**
-     *
-     * @param string $testString Is a string scalar type
+     * Fetches a fully qualified class name from given use alias
+     * @param string $useAlias
+     * @return class-string
      */
-    public function simpleType($testString)
-    {
-    }
-
-    /**
-     *
-     * @param string|array $testUnion
-     */
-    public function unionType($testUnion)
-    {
-    }
+    public function getUsedClass(string $useAlias): string;
 }

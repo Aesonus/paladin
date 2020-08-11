@@ -22,28 +22,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Tests\Fixtures;
 
-/**
- *
- *
- * @author Aesonus <corylcomposinger at gmail.com>
- */
-class TestClass extends \stdClass
+declare (strict_types=1);
+
+namespace Aesonus\Paladin;
+
+define(__NAMESPACE__ . '\\FUNCTION_NAMESPACE', __NAMESPACE__ . '\\');
+
+function is_array_key($value): bool
 {
-    /**
-     *
-     * @param string $testString Is a string scalar type
-     */
-    public function simpleType($testString)
-    {
-    }
+    return is_int($value) || is_string($value);
+}
 
-    /**
-     *
-     * @param string|array $testUnion
-     */
-    public function unionType($testUnion)
-    {
-    }
+function is_class_string($value, ?string $ofType = null): bool
+{
+    return is_string($value) && (class_exists($value) || interface_exists($value));
+}
+
+function is_trait_string($value): bool
+{
+    return is_string($value) && trait_exists($value);
+}
+
+function is_callable_string($value): bool
+{
+    return is_string($value) && is_callable($value);
+}
+
+function is_numeric_string($value): bool
+{
+    return is_string($value) && is_numeric($value);
+}
+
+function is_true($value): bool {
+    return true === $value;
+}
+
+function is_false($value): bool {
+    return false === $value;
 }

@@ -27,12 +27,15 @@ declare (strict_types=1);
 
 namespace Aesonus\Paladin;
 
+use Aesonus\Paladin\Contracts\ParameterInterface;
+use const Aesonus\Paladin\FUNCTION_NAMESPACE;
+
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class DocBlockParameter
+class DocBlockParameter implements ParameterInterface
 {
     /**
      *
@@ -48,33 +51,51 @@ class DocBlockParameter
 
     /**
      *
-     * @var array
+     * @var (string|DocBlockParameter)array
      */
-    private $type;
+    private $types;
 
     /**
      *
      * @param string $name
-     * @param array $type
+     * @param array $types
      * @param bool $required
      */
-    public function __construct(string $name, array $type, bool $required)
+    public function __construct(string $name, array $types, bool $required)
     {
         $this->name = $name;
-        $this->type = $type;
+        $this->types = $types;
         $this->required = $required;
     }
 
     public function validate($givenValue): bool
     {
+        return $this->validateUnionType($this->getTypes(), $givenValue);
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function isRequired(): bool
+    {
+        return $this->required;
+    }
+
+    public function getTypes(): array
+    {
+        return $this->types;
+    }
+
+    protected function validateUnionType(array $types, $givenValue): bool
+    {
         $valid = false;
-        foreach ($this->type as $unionTypes) {
-            foreach ($unionTypes as $intersectionType) {
-                $valid = call_user_func(
-                    $this->getValidationCallable($intersectionType) ,
-                    $givenValue
-                );
-            }
+        foreach ($types as $unionTypes) {
+            $valid = call_user_func(
+                $this->getValidationCallable($unionTypes),
+                $givenValue
+            );
             if ($valid) {
                 break;
             }
@@ -84,8 +105,8 @@ class DocBlockParameter
 
     protected function getValidationCallable($type): callable
     {
-        if (is_array($type) && array_key_exists('array', $type)) {
-            return $this->getArrayTypeValidatorCallable($type['array']);
+        if ($type instanceof DocBlockParameter) {
+            return [$type, 'validate'];
         }
         if ('mixed' === $type) {
             return fn() => true;
@@ -94,29 +115,16 @@ class DocBlockParameter
         if (function_exists($builtInCallable)) {
             return $builtInCallable;
         }
-        $simplePsalmTypeCallable = sprintf('is_%s', str_replace('-', '_', $type));
+        $simplePsalmTypeCallable = sprintf(
+            '%sis_%s',
+            FUNCTION_NAMESPACE,
+            str_replace('-', '_', $type)
+        );
         if (function_exists($simplePsalmTypeCallable)) {
             return $simplePsalmTypeCallable;
         }
         if (is_class_string($type)) {
             return fn($value) => is_a($value, $type);
-        };
-    }
-
-    protected function getArrayTypeValidatorCallable(array $types): callable
-    {
-        $callables = [];
-        foreach ($types as $type) {
-            $callables[] = $this->getValidationCallable($type);
         }
-        return function (array $value) use ($callables) {
-            foreach ($callables as $callable) {
-                $valid = array_filter($value, $callable);
-                if ($valid) {
-                    return true;
-                }
-            }
-            return false;
-        };
     }
 }

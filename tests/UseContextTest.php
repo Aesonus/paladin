@@ -22,28 +22,53 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Tests\Fixtures;
+namespace Aesonus\Tests;
+
+use Aesonus\Paladin\Contracts\ParameterInterface;
+use Aesonus\Paladin\DocBlockParameter;
+use Aesonus\Paladin\UseContext;
+use Aesonus\TestLib\BaseTestCase;
+use Aesonus\Tests\Fixtures\TestClass;
+use Iterator;
+use ReflectionClass;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class TestClass extends \stdClass
+class UseContextTest extends BaseTestCase
 {
+
     /**
-     *
-     * @param string $testString Is a string scalar type
+     * @test
+     * @dataProvider getUsedClassReturnsFQCNOfAliasDataProvider
      */
-    public function simpleType($testString)
+    public function getUsedClassReturnsFQCNOfAlias($expected, $alias)
     {
+        $testObj = new UseContext(DocBlockParameter::class);
+        $this->assertSame($expected, $testObj->getUsedClass($alias));
     }
 
     /**
-     *
-     * @param string|array $testUnion
+     * Data Provider
      */
-    public function unionType($testUnion)
+    public function getUsedClassReturnsFQCNOfAliasDataProvider()
     {
+        return [
+            [ParameterInterface::class, 'ParameterInterface'],
+            [Iterator::class, Iterator::class],
+            [TestClass::class, TestClass::class]
+        ];
+    }
+
+    /**
+     * @test
+     */
+    public function getUsedClassReturnsAliasIfFQCNNotFound()
+    {
+        $reflection = new ReflectionClass(DocBlockParameter::class);
+        $testObj = new UseContext(DocBlockParameter::class);
+        $this->assertSame($reflection->getNamespaceName() . '\\DoesNotExist', $testObj->getUsedClass('DoesNotExist'));
     }
 }

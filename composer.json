@@ -10,7 +10,8 @@
     "type": "library",
     "license": "MIT",
     "require": {
-        "php": "^7.4"
+        "php": "^7.4",
+        "aesonus/parse-use-statements": "^1.1"
     },
     "require-dev": {
         "aesonus/test-lib": "^4.01"
@@ -20,7 +21,8 @@
             "Aesonus\\Paladin\\": "src/"
         },
         "files": [
-            "src/functions.php"
+            "src/validation_functions.php",
+            "src/utility_functions.php"
         ]
     },
     "autoload-dev": {

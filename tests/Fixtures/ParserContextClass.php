@@ -24,26 +24,14 @@
  */
 namespace Aesonus\Tests\Fixtures;
 
+use Aesonus\Tests\Fixtures\TestClass;
+
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class TestClass extends \stdClass
+class ParserContextClass
 {
-    /**
-     *
-     * @param string $testString Is a string scalar type
-     */
-    public function simpleType($testString)
-    {
-    }
-
-    /**
-     *
-     * @param string|array $testUnion
-     */
-    public function unionType($testUnion)
-    {
-    }
+    
 }

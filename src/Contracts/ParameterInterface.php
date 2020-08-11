@@ -22,52 +22,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+namespace Aesonus\Paladin\Contracts;
 
-declare (strict_types=1);
+/**
+ *
+ * @author Aesonus <corylcomposinger at gmail.com>
+ */
+interface ParameterInterface
+{
+    public function validate($param): bool;
 
-if (!function_exists('is_array_key')) {
-    function is_array_key($value): bool
-    {
-        return is_int($value) || is_string($value);
-    }
-}
+    public function getName(): string;
 
-if (!function_exists('is_class_string')) {
-    function is_class_string($value, ?string $ofType = null): bool
-    {
-        return is_string($value) && class_exists($value);
-    }
-}
+    public function getTypes(): array;
 
-if (!function_exists('is_trait_string')) {
-    function is_trait_string($value): bool
-    {
-        return is_string($value) && trait_exists($value);
-    }
-}
-
-if (!function_exists('is_callable_string')) {
-    function is_callable_string($value): bool
-    {
-        return is_string($value) && is_callable($value);
-    }
-}
-
-if (!function_exists('is_numeric_string')) {
-    function is_numeric_string($value): bool
-    {
-        return is_string($value) && is_numeric($value);
-    }
-}
-
-if (!function_exists('is_true')) {
-    function is_true($value): bool {
-        return true === $value;
-    }
-}
-
-if (!function_exists('is_false')) {
-    function is_false($value): bool {
-        return false === $value;
-    }
+    public function isRequired(): bool;
 }

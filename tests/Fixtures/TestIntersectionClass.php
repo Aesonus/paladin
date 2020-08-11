@@ -29,21 +29,25 @@ namespace Aesonus\Tests\Fixtures;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class TestClass extends \stdClass
+class TestIntersectionClass implements \ArrayAccess
 {
-    /**
-     *
-     * @param string $testString Is a string scalar type
-     */
-    public function simpleType($testString)
+    public function offsetExists($offset): bool
     {
+
     }
 
-    /**
-     *
-     * @param string|array $testUnion
-     */
-    public function unionType($testUnion)
+    public function offsetGet($offset)
     {
+
+    }
+
+    public function offsetSet($offset, $value): void
+    {
+
+    }
+
+    public function offsetUnset($offset): void
+    {
+
     }
 }

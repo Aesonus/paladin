@@ -4,8 +4,72 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c09ac9eee5e2628775881f2d43f6039a",
-    "packages": [],
+    "content-hash": "f42739dd108a2157477bcd45f34e5ad8",
+    "packages": [
+        {
+            "name": "aesonus/parse-use-statements",
+            "version": "v1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Aesonus/ParseUseStatements.git",
+                "reference": "f5896d6101f91f362c17fe6de62e2794db99e54c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Aesonus/ParseUseStatements/zipball/f5896d6101f91f362c17fe6de62e2794db99e54c",
+                "reference": "f5896d6101f91f362c17fe6de62e2794db99e54c",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4"
+            },
+            "require-dev": {
+                "nette/tester": "~1.7"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Kdyby\\ParseUseStatements\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause",
+                "GPL-2.0",
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "David Grudl",
+                    "homepage": "https://davidgrudl.com"
+                },
+                {
+                    "name": "Nette Community",
+                    "homepage": "https://nette.org/contributors"
+                },
+                {
+                    "name": "Filip Procházka",
+                    "email": "filip@prochazka.su",
+                    "homepage": "http://filip-prochazka.com"
+                }
+            ],
+            "description": "Parse use statements for a reflection object",
+            "homepage": "http://kdyby.org",
+            "keywords": [
+                "class",
+                "expand",
+                "import",
+                "kdyby",
+                "parse",
+                "reflection",
+                "statement",
+                "usages",
+                "use",
+                "uses"
+            ],
+            "time": "2020-04-05T22:09:07+00:00"
+        }
+    ],
     "packages-dev": [
         {
             "name": "aesonus/test-lib",

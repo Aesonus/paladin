@@ -22,28 +22,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Tests\Fixtures;
+namespace Aesonus\Paladin;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class TestClass extends \stdClass
+class DocBlockIntersectionParameter extends DocBlockParameter
 {
-    /**
-     *
-     * @param string $testString Is a string scalar type
-     */
-    public function simpleType($testString)
+    public function __construct(string $name, array $type)
     {
+        parent::__construct($name, $type, true);
     }
 
-    /**
-     *
-     * @param string|array $testUnion
-     */
-    public function unionType($testUnion)
+    public function validate($givenValue): bool
     {
+        $valid = false;
+        foreach ($this->getTypes() as $intersectionTypes) {
+            $valid = call_user_func(
+                $this->getValidationCallable($intersectionTypes),
+                $givenValue
+            );
+            if (!$valid) {
+                break;
+            }
+        }
+        return $valid;
     }
 }

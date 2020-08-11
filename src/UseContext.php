@@ -22,28 +22,50 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Tests\Fixtures;
+namespace Aesonus\Paladin;
+
+use Aesonus\Paladin\Contracts\UseContextInterface;
+use Kdyby\ParseUseStatements\UseStatements;
+use ReflectionClass;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class TestClass extends \stdClass
+class UseContext implements UseContextInterface
 {
     /**
      *
-     * @param string $testString Is a string scalar type
+     * @var ReflectionClass
      */
-    public function simpleType($testString)
-    {
-    }
+    private $reflectionClass;
 
     /**
      *
-     * @param string|array $testUnion
+     * @var UseStatements
      */
-    public function unionType($testUnion)
+    private $useStatementsParser;
+
+    /**
+     *
+     * @param class-string|object $contextClass
+     * @param null|UseStatements $useStatementParser [optional]
+     */
+    public function __construct($contextClass, ?UseStatements $useStatementsParser = null)
     {
+        $this->reflectionClass = new ReflectionClass($contextClass);
+        $this->useStatementsParser = $useStatementsParser ?? new UseStatements();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getUsedClass(string $useAlias): string
+    {
+        if (class_exists($useAlias) || interface_exists($useAlias)) {
+            return $useAlias;
+        }
+        return $this->useStatementsParser->expandClassName($useAlias, $this->reflectionClass);
     }
 }
