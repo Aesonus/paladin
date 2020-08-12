@@ -69,30 +69,50 @@ class DocBlockParameter implements ParameterInterface
         $this->required = $required;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function validate($givenValue): bool
     {
         return $this->validateUnionType($this->getTypes(), $givenValue);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getName(): string
     {
         return $this->name;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function isRequired(): bool
     {
         return $this->required;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getTypes(): array
     {
         return $this->types;
     }
 
+    /**
+     *
+     * @param array $types
+     * @param mixed $givenValue
+     * @return bool
+     */
     protected function validateUnionType(array $types, $givenValue): bool
     {
         $valid = false;
+        /** @var string|DocBlockParameter $unionTypes */
         foreach ($types as $unionTypes) {
+            /** @var bool $valid */
             $valid = call_user_func(
                 $this->getValidationCallable($unionTypes),
                 $givenValue
@@ -104,6 +124,12 @@ class DocBlockParameter implements ParameterInterface
         return $valid;
     }
 
+    /**
+     *
+     * @param DocBlockParameter|string $type
+     * @return callable
+     * @throws RuntimeException
+     */
     protected function getValidationCallable($type): callable
     {
         if ($type instanceof DocBlockParameter) {
@@ -125,6 +151,10 @@ class DocBlockParameter implements ParameterInterface
             return $simplePsalmTypeCallable;
         }
         if (is_class_string($type)) {
+            /**
+             * @psalm-suppress MissingClosureParamType
+             * @psalm-suppress MixedArgument
+             */
             return fn ($value) => is_a($value, $type);
         }
         throw new RuntimeException("Could not validate for type '$type'");

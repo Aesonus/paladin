@@ -30,6 +30,11 @@ namespace Aesonus\Paladin\Contracts;
  */
 interface ParameterInterface
 {
+    /**
+     *
+     * @param mixed $param
+     * @return bool
+     */
     public function validate($param): bool;
 
     public function getName(): string;

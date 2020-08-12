@@ -31,15 +31,22 @@ namespace Aesonus\Paladin;
  */
 class DocBlockIntersectionParameter extends DocBlockParameter
 {
-    public function __construct(string $name, array $type)
+    /**
+     *
+     * @param string $name
+     * @param string[] $types
+     */
+    public function __construct(string $name, array $types)
     {
-        parent::__construct($name, $type, true);
+        parent::__construct($name, $types, true);
     }
 
     public function validate($givenValue): bool
     {
         $valid = false;
+        /** @var string $intersectionTypes */
         foreach ($this->getTypes() as $intersectionTypes) {
+            /** @var bool $valid */
             $valid = call_user_func(
                 $this->getValidationCallable($intersectionTypes),
                 $givenValue

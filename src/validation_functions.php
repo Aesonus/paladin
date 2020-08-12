@@ -23,41 +23,78 @@
  * THE SOFTWARE.
  */
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Aesonus\Paladin;
 
 define(__NAMESPACE__ . '\\FUNCTION_NAMESPACE', __NAMESPACE__ . '\\');
 
+/**
+ *
+ * @param mixed $value
+ * @return bool
+ */
 function is_array_key($value): bool
 {
     return is_int($value) || is_string($value);
 }
 
+/**
+ *
+ * @param mixed $value
+ * @return bool
+ */
 function is_class_string($value, ?string $ofType = null): bool
 {
     return is_string($value) && (class_exists($value) || interface_exists($value));
 }
 
+/**
+ *
+ * @param mixed $value
+ * @return bool
+ */
 function is_trait_string($value): bool
 {
     return is_string($value) && trait_exists($value);
 }
 
+/**
+ *
+ * @param mixed $value
+ * @return bool
+ */
 function is_callable_string($value): bool
 {
     return is_string($value) && is_callable($value);
 }
 
+/**
+ *
+ * @param mixed $value
+ * @return bool
+ */
 function is_numeric_string($value): bool
 {
     return is_string($value) && is_numeric($value);
 }
 
-function is_true($value): bool {
+/**
+ *
+ * @param mixed $value
+ * @return bool
+ */
+function is_true($value): bool
+{
     return true === $value;
 }
 
-function is_false($value): bool {
+/**
+ *
+ * @param mixed $value
+ * @return bool
+ */
+function is_false($value): bool
+{
     return false === $value;
 }

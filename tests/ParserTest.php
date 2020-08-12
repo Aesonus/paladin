@@ -399,6 +399,26 @@ class ParserTest extends BaseTestCase
                 php,
                 [[new DocBlockArrayParameter('array', 'int', ['string'])], true]
             ],
+            'array<int, string[]>' => [
+                <<<'php'
+                /**
+                *
+                * @param array<int, string[]> $testArray
+                */
+                php,
+                [
+                    [
+                        new DocBlockArrayParameter(
+                            'array',
+                            'int',
+                            [
+                                new DocBlockArrayParameter('array', 'int', ['string'])
+                            ]
+                        )
+                    ],
+                    true
+                ]
+            ],
             'array<string, string|float>' => [
                 <<<'php'
                 /**

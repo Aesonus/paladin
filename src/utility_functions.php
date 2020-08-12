@@ -22,24 +22,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Aesonus\Paladin\Utilities;
-
-/**
- * Counts the number of occurrences of $needle in $haystack
- * @param string $needle
- * @param string $haystack
- * @return int
- */
-function str_count(string $needle, string $haystack): int
-{
-    return count(
-        array_filter(str_split($haystack), function ($char) use ($needle) {
-            return $needle === $char;
-        })
-    );
-}
 
 /**
  * Returns if $haystack contains any characters from $needles
@@ -59,6 +44,7 @@ function str_contains_chars(string $needles, string $haystack): bool
  * @param string $haystack
  * @param string $needle
  * @param mixed $default [optional] Defaults to false, like the normal strpos function
+ * @return int|mixed
  */
 function strpos_default(string $haystack, string $needle, $default = false)
 {
@@ -70,6 +56,23 @@ function strpos_default(string $haystack, string $needle, $default = false)
 }
 
 /**
+ * Returns all positions of $needle in $haystack. Returns empty array if none are found
+ * @param string $haystack
+ * @param string $needle
+ * @return int[]
+ */
+function strpos_all(string $haystack, string $needle): array
+{
+    $return = [];
+    $position = strpos($haystack, $needle);
+    while ($position !== false) {
+        $return[] = $position;
+        $position = strpos($haystack, $needle, $position + strlen($needle));
+    }
+    return $return;
+}
+
+/**
  * Returns if $needle occurs in $haystack
  * @param string $haystack
  * @param string $needle
@@ -78,4 +81,47 @@ function strpos_default(string $haystack, string $needle, $default = false)
 function str_contains_str(string $haystack, string $needle): bool
 {
     return strpos($haystack, $needle) !== false;
+}
+
+/**
+ * Returns the sign of given number, -1, 0, or 1
+ * @param numeric $number
+ * @return int
+ */
+function sign($number): int
+{
+    if ((float) $number > 0) {
+        return 1;
+    } elseif ((float) $number < 0) {
+        return -1;
+    }
+    return 0;
+}
+
+/**
+ * Returns the first element in the array
+ * @param array $array
+ * @return mixed
+ */
+function array_first(array $array)
+{
+    $key = array_key_first($array);
+    if ($key !== null) {
+        return $array[$key];
+    }
+    return null;
+}
+
+/**
+ * Returns the last element in the array
+ * @param array $array
+ * @return mixed
+ */
+function array_last(array $array)
+{
+    $key = array_key_last($array);
+    if ($key !== null) {
+        return $array[$key];
+    }
+    return null;
 }

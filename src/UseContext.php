@@ -66,6 +66,7 @@ class UseContext implements UseContextInterface
         if (class_exists($useAlias) || interface_exists($useAlias)) {
             return $useAlias;
         }
+        /** @var class-string */
         return $this->useStatementsParser->expandClassName($useAlias, $this->reflectionClass);
     }
 }

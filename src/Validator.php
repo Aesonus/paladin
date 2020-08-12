@@ -42,9 +42,14 @@ class Validator
      */
     public static function assert(string $method, ...$arguments): void
     {
-
     }
 
+    /**
+     *
+     * @param mixed $givenValue
+     * @param DocBlockParameter $parameter
+     * @return bool
+     */
     public static function validateParameter($givenValue, DocBlockParameter $parameter): bool
     {
         return $parameter->validate($givenValue);

@@ -27,11 +27,9 @@ declare(strict_types=1);
 namespace Aesonus\Paladin;
 
 use Aesonus\Paladin\Contracts\UseContextInterface;
-use Exception;
-use RuntimeException;
+use Aesonus\Paladin\Exceptions\TypeLintException;
 use function Aesonus\Paladin\Utilities\str_contains_chars;
 use function Aesonus\Paladin\Utilities\str_contains_str;
-use function Aesonus\Paladin\Utilities\str_count;
 use function Aesonus\Paladin\Utilities\strpos_default;
 
 /**
@@ -66,19 +64,27 @@ class Parser
      * @param string $docblock
      * @param int $numberOfRequiredParameters
      * @return DocBlockParameter[]
-     * @throws Exception
+     * @throws TypeLintException
      */
     public function getDocBlock(string $docblock, int $numberOfRequiredParameters): array
     {
         preg_match_all('/@param.+/', $docblock, $matches);
+        /**
+         * @psalm-suppress MixedArgument
+         */
         $params = $this->getParamsInParts($matches[0], $numberOfRequiredParameters);
         try {
             return $this->constructDocBlockParameters($params);
-        } catch (\RuntimeException $exc) {
+        } catch (TypeLintException $exc) {
             throw $exc;
         }
     }
 
+    /**
+     *
+     * @param array<int, array{name: string, type: string, required: bool}> $paramParts
+     * @return DocBlockParameter[]
+     */
     protected function constructDocBlockParameters(array $paramParts): array
     {
         $return = [];
@@ -93,6 +99,11 @@ class Parser
         return $return;
     }
 
+    /**
+     *
+     * @param string $typeString
+     * @return (DocBlockParameter|string)[]
+     */
     protected function parseTypes(string $typeString): array
     {
         $unionTypes = $this->parseUnionTypes($typeString);
@@ -100,6 +111,11 @@ class Parser
         return array_map([$this, 'parseParameterizedTypes'], $unionTypes);
     }
 
+    /**
+     *
+     * @param string $typeString
+     * @return string[]
+     */
     protected function parseUnionTypes(string $typeString): array
     {
         $matches = [];
@@ -110,31 +126,50 @@ class Parser
             $typeString,
             $matches
         );
+        /**
+         * @psalm-suppress MixedArgument
+         */
         return $this->processParamPatternMatches($matches[0]);
     }
 
+    /**
+     *
+     * @param array $matches
+     * @return string[]
+     */
     private function processParamPatternMatches(array $matches): array
     {
         //echo "Raw:\n", var_dump($matches[0]);
         //We want to combine split parameter types back together if the are part of a
         //compound psalm array type (whew)
         $concat = false;
-        return array_reduce($matches, function ($carry, $param) use (&$concat) {
+        /**  @var string[] $return */
+        $return = array_reduce($matches, function (array $carry, string $param) use (&$concat): array {
             if (!$concat) {
                 $carry[] = $param;
             } else {
+                /** @psalm-suppress MixedOperand */
                 $carry[array_key_last($carry) ?? 0] .= "|$param";
             }
+            /** @var string $new_carry */
             $new_carry = $carry[array_key_last($carry) ?? 0];
-            $concat = str_count('<', $new_carry) !== str_count('>', $new_carry);
+            $concat = substr_count($new_carry, '<') !== substr_count($new_carry, '>');
             return $carry;
         }, []);
+        return $return;
         //echo "Reduced:\n", var_dump($return);
     }
 
+    /**
+     *
+     * @param string $typeString
+     * @return string|DocBlockArrayParameter|DocBlockTypedClassStringParameter
+     */
     protected function parseParameterizedTypes(string $typeString)
     {
+        /** @var int $openingArrow */
         $openingArrow = strpos_default($typeString, '<', self::MAX_LENGTH);
+        /** @var int $openingParenthises */
         $openingParenthises = strpos_default($typeString, '(', self::MAX_LENGTH);
         if (
             str_contains_chars('<>', $typeString)
@@ -142,7 +177,7 @@ class Parser
         ) {
             if (str_contains_str($typeString, 'array')) {
                 $types = $this->parsePsalmArrayType($typeString);
-                return new DocBlockArrayParameter('array', ...$types);
+                return new DocBlockArrayParameter('array', $types[0], $types[1]);
             }
             if (str_contains_str($typeString, 'class-string')) {
                 //Parse class-string types
@@ -159,6 +194,11 @@ class Parser
         return $typeString;
     }
 
+    /**
+     *
+     * @param string $typeString
+     * @return string[]
+     */
     private function parsePsalmClassStringTypes(string $typeString): array
     {
         $classTypes = explode('|', substr($typeString, (int)strpos($typeString, '<') + 1, -1));
@@ -168,6 +208,11 @@ class Parser
         }, $classTypes);
     }
 
+    /**
+     *
+     * @param string $typeString
+     * @return (DocBlockParameter|string)[]
+     */
     private function parsePsrArrayType(string $typeString): array
     {
         $openingParenth = strpos($typeString, '(');
@@ -184,6 +229,11 @@ class Parser
         return [substr($typeString, 0, -2)];
     }
 
+    /**
+     *
+     * @param string $typeString
+     * @return array{0: string, 1: (DocBlockParameter|string)[]}
+     */
     private function parsePsalmArrayType(string $typeString): array
     {
         $openingArrow = (int)strpos($typeString, '<');
@@ -194,13 +244,13 @@ class Parser
             return ['array-key', $this->parseTypes($types[0])];
         }
         $keyType = array_shift($types);
-        return [$keyType, array_map('trim', $this->parseTypes($types[0]))];
+        return [$keyType, $this->parseTypes($types[0])];
     }
 
     /**
      *
-     * @param array $params
-     * @return array<int, array<int, string>>
+     * @param array<int, string> $params
+     * @return array<int, array{name: string, type: string, required: bool}>
      */
     protected function getParamsInParts(array $params, int $numberOfRequired): array
     {
@@ -208,6 +258,7 @@ class Parser
         foreach ($params as $index => $param) {
             $raw = array_slice(array_filter(preg_split('/(?<!,) /', $param)), 1, 2);
             $raw[] = $numberOfRequired > $index;
+            /** @var array{name: string, type: string, required: bool} */
             $return[] = array_combine(['type', 'name', 'required'], $raw);
         }
         return $return;

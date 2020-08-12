@@ -33,10 +33,15 @@ class DocBlockTypedClassStringParameter extends DocBlockParameter
 {
     /**
      *
-     * @var array
+     * @var string[]
      */
     private $classTypes;
 
+    /**
+     *
+     * @param string $name
+     * @param string[] $classTypes
+     */
     public function __construct(string $name, array $classTypes)
     {
         parent::__construct($name, ['class-string'], true);
@@ -50,6 +55,9 @@ class DocBlockTypedClassStringParameter extends DocBlockParameter
         }
         $valid = false;
         foreach ($this->classTypes as $className) {
+            /**
+             * @psalm-suppress MixedArgument
+             */
             $valid = is_a($givenValue, $className, true);
             if ($valid) {
                 break;

@@ -37,18 +37,30 @@ class DocBlockArrayParameter extends DocBlockParameter
      */
     private $keyType;
 
+    /**
+     *
+     * @param string $name
+     * @param string $keyType
+     * @param (string|DocBlockParameter)[] $valueType
+     */
     public function __construct(string $name, string $keyType, array $valueType)
     {
         parent::__construct($name, $valueType, true);
         $this->keyType = $keyType;
     }
 
+    /**
+     *
+     * @param mixed $givenValue
+     * @return bool
+     */
     public function validate($givenValue): bool
     {
         if (!is_array($givenValue)) {
             return false;
         }
         $valid = false;
+        /** @var mixed $value */
         foreach ($givenValue as $key => $value) {
             $valid = parent::validate($value) && $this->validateUnionType([$this->keyType], $key);
             if (!$valid) {
