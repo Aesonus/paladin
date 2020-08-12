@@ -44,7 +44,7 @@ function is_array_key($value): bool
  * @param mixed $value
  * @return bool
  */
-function is_class_string($value, ?string $ofType = null): bool
+function is_class_string($value): bool
 {
     return is_string($value) && (class_exists($value) || interface_exists($value));
 }

@@ -153,15 +153,13 @@ class TypeLinter
      */
     private function checkBars(): void
     {
-        if (
-            str_contains_str($this->typeString, '|)')
+        if (str_contains_str($this->typeString, '|)')
             || str_contains_str($this->typeString, '|>')
             || strpos($this->typeString, '|') === strlen($this->typeString) - 1
         ) {
             $this->throwExceptionWithMessage(self::TRAILING_BAR);
         }
-        if (
-            str_contains_str($this->typeString, '(|')
+        if (str_contains_str($this->typeString, '(|')
             || str_contains_str($this->typeString, '<|')
             || strpos($this->typeString, '|') === 0
         ) {
@@ -195,19 +193,19 @@ class TypeLinter
         $arrayTypePositions = strpos_all($this->typeString, 'array<');
         //var_dump($arrayTypePositions);
         $commaPositions = strpos_all($this->typeString, ',');
-        $keyTypeArrayPositions = [];
+        $keyedArrayPositions = [];
         $commaPositionsCopy = $commaPositions;
         foreach (array_reverse($arrayTypePositions) as $arrPos) {
             /** @var int $commaPos */
             $commaPos = array_last($commaPositionsCopy);
             if ($arrPos < $commaPos) {
-                array_unshift($keyTypeArrayPositions, $arrPos);
+                array_unshift($keyedArrayPositions, $arrPos);
                 array_pop($commaPositionsCopy);
             }
         }
         //echo $this->typeString . "\n";
         //echo "\n", var_dump($keyTypeArrayPositions, $commaPositions);
-        foreach ($keyTypeArrayPositions as $arrayTypePosition) {
+        foreach ($keyedArrayPositions as $arrayTypePosition) {
             $commaPos = array_shift($commaPositions);
             $foundType = substr(
                 $this->typeString,

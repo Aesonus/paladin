@@ -2,3 +2,5 @@
 /nbproject
 /.phpunit.result.cache
 /.php_cs.cache
+/cache.properties
+/build/

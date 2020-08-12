@@ -22,36 +22,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Paladin;
+namespace Aesonus\Paladin\DocBlock;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class DocBlockIntersectionParameter extends DocBlockParameter
+class TypedClassStringParameter extends UnionParameter
 {
     /**
      *
-     * @param string $name
-     * @param string[] $types
+     * @var array<array-key, string>
      */
-    public function __construct(string $name, array $types)
+    private $classTypes;
+
+    /**
+     *
+     * @param string $name
+     * @param array<array-key, string> $classTypes
+     */
+    public function __construct(string $name, array $classTypes)
     {
-        parent::__construct($name, $types, true);
+        parent::__construct($name, ['class-string'], true);
+        $this->classTypes = $classTypes;
     }
 
     public function validate($givenValue): bool
     {
+        if (!parent::validate($givenValue)) {
+            return false;
+        }
         $valid = false;
-        /** @var string $intersectionTypes */
-        foreach ($this->getTypes() as $intersectionTypes) {
-            /** @var bool $valid */
-            $valid = call_user_func(
-                $this->getValidationCallable($intersectionTypes),
-                $givenValue
-            );
-            if (!$valid) {
+        foreach ($this->classTypes as $className) {
+            /**
+             * @psalm-suppress MixedArgument
+             */
+            $valid = is_a($givenValue, $className, true);
+            if ($valid) {
                 break;
             }
         }

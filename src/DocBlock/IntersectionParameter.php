@@ -22,47 +22,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Paladin;
+namespace Aesonus\Paladin\DocBlock;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class DocBlockArrayParameter extends DocBlockParameter
+class IntersectionParameter extends UnionParameter
 {
     /**
      *
-     * @var string
-     */
-    private $keyType;
-
-    /**
-     *
      * @param string $name
-     * @param string $keyType
-     * @param (string|DocBlockParameter)[] $valueType
+     * @param array<array-key, string> $types
      */
-    public function __construct(string $name, string $keyType, array $valueType)
+    public function __construct(string $name, array $types)
     {
-        parent::__construct($name, $valueType, true);
-        $this->keyType = $keyType;
+        parent::__construct($name, $types, true);
     }
 
-    /**
-     *
-     * @param mixed $givenValue
-     * @return bool
-     */
     public function validate($givenValue): bool
     {
-        if (!is_array($givenValue)) {
-            return false;
-        }
         $valid = false;
-        /** @var mixed $value */
-        foreach ($givenValue as $key => $value) {
-            $valid = parent::validate($value) && $this->validateUnionType([$this->keyType], $key);
+        /** @var string $intersectionTypes */
+        foreach ($this->getTypes() as $intersectionTypes) {
+            /** @var bool $valid */
+            $valid = call_user_func(
+                $this->getValidationCallable($intersectionTypes),
+                $givenValue
+            );
             if (!$valid) {
                 break;
             }

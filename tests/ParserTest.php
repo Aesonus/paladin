@@ -24,8 +24,8 @@
  */
 namespace Aesonus\Tests;
 
-use Aesonus\Paladin\DocBlockArrayParameter;
-use Aesonus\Paladin\DocBlockTypedClassStringParameter;
+use Aesonus\Paladin\DocBlock\ArrayParameter;
+use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
 use Aesonus\Paladin\Parser;
 use Aesonus\Paladin\UseContext;
 use Aesonus\TestLib\BaseTestCase;
@@ -118,7 +118,7 @@ class ParserTest extends BaseTestCase
                 * @param class-string<\stdClass> $testClassString
                 */
                 php,
-                [[new DocBlockTypedClassStringParameter('class-string', [stdClass::class])], true]
+                [[new TypedClassStringParameter('class-string', [stdClass::class])], true]
             ],
             'class-string<\stdClass|Aesonus\Tests\Fixtures\TestClass>' => [
                 <<<'php'
@@ -127,7 +127,7 @@ class ParserTest extends BaseTestCase
                 * @param class-string<\stdClass|Aesonus\Tests\Fixtures\TestClass> $testClassString
                 */
                 php,
-                [[new DocBlockTypedClassStringParameter('class-string', [stdClass::class, TestClass::class])], true]
+                [[new TypedClassStringParameter('class-string', [stdClass::class, TestClass::class])], true]
             ],
             'class-string<stdClass|TestClass>' => [
                 <<<'php'
@@ -136,7 +136,7 @@ class ParserTest extends BaseTestCase
                 * @param class-string<stdClass|TestClass> $testClassString
                 */
                 php,
-                [[new DocBlockTypedClassStringParameter('class-string', [stdClass::class, TestClass::class])], true]
+                [[new TypedClassStringParameter('class-string', [stdClass::class, TestClass::class])], true]
             ],
         ];
     }
@@ -164,7 +164,7 @@ class ParserTest extends BaseTestCase
                 * @param (string|int)[] $testArray
                 */
                 php,
-                [[new DocBlockArrayParameter('array', 'int', ['string', 'int'])], true]
+                [[new ArrayParameter('array', 'int', ['string', 'int'])], true]
             ],
             'string[]' => [
                 <<<'php'
@@ -173,7 +173,7 @@ class ParserTest extends BaseTestCase
                 * @param string[] $testArray
                 */
                 php,
-                [[new DocBlockArrayParameter('array', 'int', ['string'])], true]
+                [[new ArrayParameter('array', 'int', ['string'])], true]
             ],
             '(string[]|int)[]' => [
                 <<<'php'
@@ -184,11 +184,11 @@ class ParserTest extends BaseTestCase
                 php,
                 [
                     [
-                        new DocBlockArrayParameter(
+                        new ArrayParameter(
                             'array',
                             'int',
                             [
-                                new DocBlockArrayParameter('array', 'int', ['string']),
+                                new ArrayParameter('array', 'int', ['string']),
                                 'int'
                             ]
                         )
@@ -203,7 +203,7 @@ class ParserTest extends BaseTestCase
                 * @param array<string> $testArray
                 */
                 php,
-                [[new DocBlockArrayParameter('array', 'array-key', ['string'])], true]
+                [[new ArrayParameter('array', 'array-key', ['string'])], true]
             ],
             'array<string|float>' => [
                 <<<'php'
@@ -212,7 +212,7 @@ class ParserTest extends BaseTestCase
                 * @param array<string|float> $testArray
                 */
                 php,
-                [[new DocBlockArrayParameter('array', 'array-key', ['string', 'float'])], true]
+                [[new ArrayParameter('array', 'array-key', ['string', 'float'])], true]
             ],
             'array<(string|int)[]>' => [
                 <<<'php'
@@ -223,10 +223,10 @@ class ParserTest extends BaseTestCase
                 php,
                 [
                     [
-                        new DocBlockArrayParameter(
+                        new ArrayParameter(
                             'array',
                             'array-key',
-                            [new DocBlockArrayParameter('array', 'int', ['string', 'int'])]
+                            [new ArrayParameter('array', 'int', ['string', 'int'])]
                         )
                     ],
                     true
@@ -241,12 +241,12 @@ class ParserTest extends BaseTestCase
                 php,
                 [
                     [
-                        new DocBlockArrayParameter(
+                        new ArrayParameter(
                             'array',
                             'array-key',
                             [
-                                new DocBlockArrayParameter('array', 'array-key', ['string']),
-                                new DocBlockArrayParameter('array', 'array-key', ['float']),
+                                new ArrayParameter('array', 'array-key', ['string']),
+                                new ArrayParameter('array', 'array-key', ['float']),
                             ]
                         )
                     ],
@@ -262,12 +262,12 @@ class ParserTest extends BaseTestCase
                 php,
                 [
                     [
-                        new DocBlockArrayParameter(
+                        new ArrayParameter(
                             'array',
                             'array-key',
                             [
-                                new DocBlockArrayParameter('array', 'array-key', ['string']),
-                                new DocBlockArrayParameter('array', 'int', ['float']),
+                                new ArrayParameter('array', 'array-key', ['string']),
+                                new ArrayParameter('array', 'int', ['float']),
                             ]
                         )
                     ],
@@ -283,13 +283,13 @@ class ParserTest extends BaseTestCase
                 php,
                 [
                     [
-                        new DocBlockArrayParameter(
+                        new ArrayParameter(
                             'array',
                             'array-key',
                             [
-                                new DocBlockArrayParameter('array', 'array-key', ['string']),
+                                new ArrayParameter('array', 'array-key', ['string']),
                                 'float',
-                                new DocBlockArrayParameter('array', 'string', ['mixed']),
+                                new ArrayParameter('array', 'string', ['mixed']),
                             ]
                         )
                     ],
@@ -305,13 +305,13 @@ class ParserTest extends BaseTestCase
                 php,
                 [
                     [
-                        new DocBlockArrayParameter(
+                        new ArrayParameter(
                             'array',
                             'array-key',
                             [
-                                new DocBlockArrayParameter('array', 'array-key', ['string']),
-                                new DocBlockArrayParameter('array', 'int', ['float']),
-                                new DocBlockArrayParameter('array', 'string', ['mixed']),
+                                new ArrayParameter('array', 'array-key', ['string']),
+                                new ArrayParameter('array', 'int', ['float']),
+                                new ArrayParameter('array', 'string', ['mixed']),
                             ]
                         )
                     ],
@@ -327,12 +327,12 @@ class ParserTest extends BaseTestCase
                 php,
                 [
                     [
-                        new DocBlockArrayParameter(
+                        new ArrayParameter(
                             'array',
                             'int',
                             [
-                                new DocBlockArrayParameter('array', 'array-key', ['string']),
-                                new DocBlockArrayParameter('array', 'array-key', ['float']),
+                                new ArrayParameter('array', 'array-key', ['string']),
+                                new ArrayParameter('array', 'array-key', ['float']),
                             ]
                         )
                     ],
@@ -352,15 +352,15 @@ class ParserTest extends BaseTestCase
                 php,
                 [
                     [
-                        new DocBlockArrayParameter(
+                        new ArrayParameter(
                             'array',
                             'array-key',
                             [
-                                new DocBlockArrayParameter('array', 'array-key', [
+                                new ArrayParameter('array', 'array-key', [
                                     'int',
                                 ]),
-                                new DocBlockArrayParameter('array', 'array-key', [
-                                    new DocBlockArrayParameter('array', 'array-key', ['float']),
+                                new ArrayParameter('array', 'array-key', [
+                                    new ArrayParameter('array', 'array-key', ['float']),
                                     'string'
                                 ]),
                             ]
@@ -378,12 +378,12 @@ class ParserTest extends BaseTestCase
                 php,
                 [
                     [
-                        new DocBlockArrayParameter(
+                        new ArrayParameter(
                             'array',
                             'array-key',
                             [
-                                new DocBlockArrayParameter('array', 'int', ['string']),
-                                new DocBlockArrayParameter('array', 'int', ['int']),
+                                new ArrayParameter('array', 'int', ['string']),
+                                new ArrayParameter('array', 'int', ['int']),
                             ]
                         )
                     ],
@@ -397,7 +397,7 @@ class ParserTest extends BaseTestCase
                 * @param array<int, string> $testArray
                 */
                 php,
-                [[new DocBlockArrayParameter('array', 'int', ['string'])], true]
+                [[new ArrayParameter('array', 'int', ['string'])], true]
             ],
             'array<int, string[]>' => [
                 <<<'php'
@@ -408,11 +408,11 @@ class ParserTest extends BaseTestCase
                 php,
                 [
                     [
-                        new DocBlockArrayParameter(
+                        new ArrayParameter(
                             'array',
                             'int',
                             [
-                                new DocBlockArrayParameter('array', 'int', ['string'])
+                                new ArrayParameter('array', 'int', ['string'])
                             ]
                         )
                     ],
@@ -426,7 +426,7 @@ class ParserTest extends BaseTestCase
                 * @param array<string, string|float> $testArray
                 */
                 php,
-                [[new DocBlockArrayParameter('array', 'string', ['string', 'float'])], true]
+                [[new ArrayParameter('array', 'string', ['string', 'float'])], true]
             ],
             'array<class-string>' => [
                 <<<'php'
@@ -435,7 +435,7 @@ class ParserTest extends BaseTestCase
                 * @param array<class-string> $testArray
                 */
                 php,
-                [[new DocBlockArrayParameter('array', 'array-key', ['class-string'])], true]
+                [[new ArrayParameter('array', 'array-key', ['class-string'])], true]
             ],
             'array<class-string[]>' => [
                 <<<'php'
@@ -444,10 +444,10 @@ class ParserTest extends BaseTestCase
                 * @param array<class-string[]> $testArray
                 */
                 php,
-                [[new DocBlockArrayParameter(
+                [[new ArrayParameter(
                     'array',
                     'array-key',
-                    [new DocBlockArrayParameter('array', 'int', ['class-string'])]
+                    [new ArrayParameter('array', 'int', ['class-string'])]
                 )], true]
             ],
             'array<class-string[]|int>' => [
@@ -457,10 +457,10 @@ class ParserTest extends BaseTestCase
                 * @param array<class-string[]|int> $testArray
                 */
                 php,
-                [[new DocBlockArrayParameter(
+                [[new ArrayParameter(
                     'array',
                     'array-key',
-                    [new DocBlockArrayParameter('array', 'int', ['class-string']), 'int']
+                    [new ArrayParameter('array', 'int', ['class-string']), 'int']
                 )], true]
             ],
             'array<int, class-string>' => [
@@ -470,7 +470,7 @@ class ParserTest extends BaseTestCase
                 * @param array<int, class-string> $testArray
                 */
                 php,
-                [[new DocBlockArrayParameter('array', 'int', ['class-string'])], true]
+                [[new ArrayParameter('array', 'int', ['class-string'])], true]
             ],
             'array<class-string<stdClass>>' => [
                 <<<'php'
@@ -481,11 +481,11 @@ class ParserTest extends BaseTestCase
                 php,
                 [
                     [
-                        new DocBlockArrayParameter(
+                        new ArrayParameter(
                             'array',
                             'array-key',
                             [
-                                new DocBlockTypedClassStringParameter(
+                                new TypedClassStringParameter(
                                     'class-string',
                                     [stdClass::class]
                                 )
@@ -504,11 +504,11 @@ class ParserTest extends BaseTestCase
                 php,
                 [
                     [
-                        new DocBlockArrayParameter(
+                        new ArrayParameter(
                             'array',
                             'array-key',
                             [
-                                new DocBlockTypedClassStringParameter(
+                                new TypedClassStringParameter(
                                     'class-string',
                                     [stdClass::class, TestClass::class]
                                 )
@@ -527,15 +527,15 @@ class ParserTest extends BaseTestCase
                 php,
                 [
                     [
-                        new DocBlockArrayParameter(
+                        new ArrayParameter(
                             'array',
                             'array-key',
                             [
-                                new DocBlockTypedClassStringParameter(
+                                new TypedClassStringParameter(
                                     'class-string',
                                     [stdClass::class]
                                 ),
-                                new DocBlockTypedClassStringParameter(
+                                new TypedClassStringParameter(
                                     'class-string',
                                     [TestClass::class]
                                 ),

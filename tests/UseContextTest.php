@@ -25,7 +25,7 @@
 namespace Aesonus\Tests;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
-use Aesonus\Paladin\DocBlockParameter;
+use Aesonus\Paladin\DocBlock\UnionParameter;
 use Aesonus\Paladin\UseContext;
 use Aesonus\TestLib\BaseTestCase;
 use Aesonus\Tests\Fixtures\TestClass;
@@ -46,7 +46,7 @@ class UseContextTest extends BaseTestCase
      */
     public function getUsedClassReturnsFQCNOfAlias($expected, $alias)
     {
-        $testObj = new UseContext(DocBlockParameter::class);
+        $testObj = new UseContext(UnionParameter::class);
         $this->assertSame($expected, $testObj->getUsedClass($alias));
     }
 
@@ -67,8 +67,8 @@ class UseContextTest extends BaseTestCase
      */
     public function getUsedClassReturnsAliasIfFQCNNotFound()
     {
-        $reflection = new ReflectionClass(DocBlockParameter::class);
-        $testObj = new UseContext(DocBlockParameter::class);
+        $reflection = new ReflectionClass(UnionParameter::class);
+        $testObj = new UseContext(UnionParameter::class);
         $this->assertSame($reflection->getNamespaceName() . '\\DoesNotExist', $testObj->getUsedClass('DoesNotExist'));
     }
 }

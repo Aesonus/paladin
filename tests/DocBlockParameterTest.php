@@ -24,10 +24,10 @@
  */
 namespace Aesonus\Tests;
 
-use Aesonus\Paladin\DocBlockArrayParameter;
-use Aesonus\Paladin\DocBlockIntersectionParameter;
-use Aesonus\Paladin\DocBlockParameter;
-use Aesonus\Paladin\DocBlockTypedClassStringParameter;
+use Aesonus\Paladin\DocBlock\ArrayParameter;
+use Aesonus\Paladin\DocBlock\IntersectionParameter;
+use Aesonus\Paladin\DocBlock\UnionParameter;
+use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
 use Aesonus\TestLib\BaseTestCase;
 use Aesonus\Tests\Fixtures\TestClass;
 use Aesonus\Tests\Fixtures\TestIntersectionClass;
@@ -50,7 +50,7 @@ class DocBlockParameterTest extends BaseTestCase
      */
     public function validateParameterReturnsTrueIfParameterIsOfSimpleType($type, $givenValue)
     {
-        $docBlockParameter = new DocBlockParameter(
+        $docBlockParameter = new UnionParameter(
             '$test',
             [$type],
             true
@@ -101,7 +101,7 @@ class DocBlockParameterTest extends BaseTestCase
      */
     public function validateParameterReturnsFalseIfParameterIsNotOfSimpleType($type, $givenValue)
     {
-        $docBlockParameter = new DocBlockParameter(
+        $docBlockParameter = new UnionParameter(
             '$test',
             [$type],
             true
@@ -147,7 +147,7 @@ class DocBlockParameterTest extends BaseTestCase
      */
     public function validateParameterReturnsTrueIfParameterIsOfUnionType($types, $givenValue)
     {
-        $docBlockParameter = new DocBlockParameter(
+        $docBlockParameter = new UnionParameter(
             '$test',
             $types,
             true
@@ -172,7 +172,7 @@ class DocBlockParameterTest extends BaseTestCase
      */
     public function validateParameterReturnsFalseIfParameterIsNotOfUnionType($types, $givenValue)
     {
-        $docBlockParameter = new DocBlockParameter(
+        $docBlockParameter = new UnionParameter(
             '$test',
             $types,
             true
@@ -197,10 +197,10 @@ class DocBlockParameterTest extends BaseTestCase
      */
     public function validateParameterReturnsTrueIfParameterIsListOfType($type, $givenValue)
     {
-        $docBlockParameter = new DocBlockParameter(
+        $docBlockParameter = new UnionParameter(
             '$test',
             [
-                new DocBlockArrayParameter('$test', 'array-key', $type)
+                new ArrayParameter('$test', 'array-key', $type)
             ],
             true
         );
@@ -225,10 +225,10 @@ class DocBlockParameterTest extends BaseTestCase
      */
     public function validateParameterReturnsFalseIfParameterIsNotListOfType($type, $givenValue)
     {
-        $docBlockParameter = new DocBlockParameter(
+        $docBlockParameter = new UnionParameter(
             '$test',
             [
-                new DocBlockArrayParameter('$test', 'array-key', $type)
+                new ArrayParameter('$test', 'array-key', $type)
             ],
             true
         );
@@ -254,10 +254,10 @@ class DocBlockParameterTest extends BaseTestCase
      */
     public function validateParameterReturnsTrueIfArrayKeyPairIsOfType($keyType, $type, $givenValue)
     {
-        $docBlockParameter = new DocBlockParameter(
+        $docBlockParameter = new UnionParameter(
             '$test',
             [
-                new DocBlockArrayParameter('$test', $keyType, $type)
+                new ArrayParameter('$test', $keyType, $type)
             ],
             true
         );
@@ -282,10 +282,10 @@ class DocBlockParameterTest extends BaseTestCase
      */
     public function validateParameterReturnsFalseIfArrayKeyPairIsNotOfType($keyType, $type, $givenValue)
     {
-        $docBlockParameter = new DocBlockParameter(
+        $docBlockParameter = new UnionParameter(
             '$test',
             [
-                new DocBlockArrayParameter('$test', $keyType, $type)
+                new ArrayParameter('$test', $keyType, $type)
             ],
             true
         );
@@ -325,10 +325,10 @@ class DocBlockParameterTest extends BaseTestCase
      */
     public function validateParameterReturnsTrueIfParameterIsIntersectionType($types, $givenValue)
     {
-        $docBlockParameter = new DocBlockParameter(
+        $docBlockParameter = new UnionParameter(
             '$test',
             [
-                new DocBlockIntersectionParameter('$test', $types)
+                new IntersectionParameter('$test', $types)
             ],
             true
         );
@@ -341,11 +341,11 @@ class DocBlockParameterTest extends BaseTestCase
      */
     public function validateParameterReturnsTrueIfArrayParameterElementIsOfIntersectionType($types, $givenValue)
     {
-        $docBlockParameter = new DocBlockArrayParameter(
+        $docBlockParameter = new ArrayParameter(
             '$test',
             'int',
             [
-                new DocBlockIntersectionParameter('array', $types)
+                new IntersectionParameter('array', $types)
             ],
             true
         );
@@ -371,10 +371,10 @@ class DocBlockParameterTest extends BaseTestCase
      */
     public function validateParameterReturnsFalseIfParameterIsNotOfIntersectionType($types, $givenValue)
     {
-        $docBlockParameter = new DocBlockParameter(
+        $docBlockParameter = new UnionParameter(
             '$test',
             [
-                new DocBlockIntersectionParameter('$test', $types),
+                new IntersectionParameter('$test', $types),
             ],
             true
         );
@@ -387,11 +387,11 @@ class DocBlockParameterTest extends BaseTestCase
      */
     public function validateParameterReturnsFalseIfArrayParameterElementIsNotOfIntersectionType($types, $givenValue)
     {
-        $docBlockParameter = new DocBlockArrayParameter(
+        $docBlockParameter = new ArrayParameter(
             '$test',
             'int',
             [
-                new DocBlockIntersectionParameter('array', $types)
+                new IntersectionParameter('array', $types)
             ],
             true
         );
@@ -435,7 +435,7 @@ class DocBlockParameterTest extends BaseTestCase
      */
     public function validateParameterReturnsTrueIfParameterIsClassStringOfType($classTypes, $givenValue)
     {
-        $docblockParameter = new DocBlockTypedClassStringParameter(
+        $docblockParameter = new TypedClassStringParameter(
             '$test',
             $classTypes,
             true
@@ -460,7 +460,7 @@ class DocBlockParameterTest extends BaseTestCase
      */
     public function validateParameterReturnsFalseIfParameterIsNotClassStringOfType($classTypes, $givenValue)
     {
-        $docblockParameter = new DocBlockTypedClassStringParameter(
+        $docblockParameter = new TypedClassStringParameter(
             '$test',
             $classTypes,
             true
@@ -487,7 +487,7 @@ class DocBlockParameterTest extends BaseTestCase
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage($message);
-        $docblockParameter = new DocBlockParameter('$testParam', $types, true);
+        $docblockParameter = new UnionParameter('$testParam', $types, true);
         $docblockParameter->validate(null);
     }
 

@@ -22,44 +22,50 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Paladin;
+namespace Aesonus\Paladin\DocBlock;
+
+use Aesonus\Paladin\Contracts\ParameterInterface;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class DocBlockTypedClassStringParameter extends DocBlockParameter
+class ArrayParameter extends UnionParameter
 {
     /**
      *
-     * @var string[]
+     * @var string
      */
-    private $classTypes;
+    private $keyType;
 
     /**
      *
      * @param string $name
-     * @param string[] $classTypes
+     * @param string $keyType
+     * @param array<array-key, ParameterInterface|string> $valueType
      */
-    public function __construct(string $name, array $classTypes)
+    public function __construct(string $name, string $keyType, array $valueType)
     {
-        parent::__construct($name, ['class-string'], true);
-        $this->classTypes = $classTypes;
+        parent::__construct($name, $valueType, true);
+        $this->keyType = $keyType;
     }
 
+    /**
+     *
+     * @param mixed $givenValue
+     * @return bool
+     */
     public function validate($givenValue): bool
     {
-        if (!parent::validate($givenValue)) {
+        if (!is_array($givenValue)) {
             return false;
         }
         $valid = false;
-        foreach ($this->classTypes as $className) {
-            /**
-             * @psalm-suppress MixedArgument
-             */
-            $valid = is_a($givenValue, $className, true);
-            if ($valid) {
+        /** @var mixed $value */
+        foreach ($givenValue as $key => $value) {
+            $valid = parent::validate($value) && $this->validateUnionType([$this->keyType], $key);
+            if (!$valid) {
                 break;
             }
         }

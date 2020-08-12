@@ -47,10 +47,10 @@ class Validator
     /**
      *
      * @param mixed $givenValue
-     * @param DocBlockParameter $parameter
+     * @param DocBlock\UnionParameter $parameter
      * @return bool
      */
-    public static function validateParameter($givenValue, DocBlockParameter $parameter): bool
+    public static function validateParameter($givenValue, DocBlock\UnionParameter $parameter): bool
     {
         return $parameter->validate($givenValue);
     }

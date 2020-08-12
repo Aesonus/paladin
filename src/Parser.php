@@ -27,7 +27,11 @@ declare(strict_types=1);
 namespace Aesonus\Paladin;
 
 use Aesonus\Paladin\Contracts\UseContextInterface;
+use Aesonus\Paladin\DocBlock\ArrayParameter;
+use Aesonus\Paladin\DocBlock\UnionParameter;
+use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
 use Aesonus\Paladin\Exceptions\TypeLintException;
+use Aesonus\Paladin\Contracts\ParameterInterface;
 use function Aesonus\Paladin\Utilities\str_contains_chars;
 use function Aesonus\Paladin\Utilities\str_contains_str;
 use function Aesonus\Paladin\Utilities\strpos_default;
@@ -62,17 +66,18 @@ class Parser
     /**
      *
      * @param string $docblock
-     * @param int $numberOfRequiredParameters
-     * @return DocBlockParameter[]
+     * @param int $requiredParamCount
+     * @return array<array-key, ParameterInterface>
      * @throws TypeLintException
      */
-    public function getDocBlock(string $docblock, int $numberOfRequiredParameters): array
+    public function getDocBlock(string $docblock, int $requiredParamCount): array
     {
+        $matches = [];
         preg_match_all('/@param.+/', $docblock, $matches);
         /**
          * @psalm-suppress MixedArgument
          */
-        $params = $this->getParamsInParts($matches[0], $numberOfRequiredParameters);
+        $params = $this->getParamsInParts($matches[0], $requiredParamCount);
         try {
             return $this->constructDocBlockParameters($params);
         } catch (TypeLintException $exc) {
@@ -83,14 +88,14 @@ class Parser
     /**
      *
      * @param array<int, array{name: string, type: string, required: bool}> $paramParts
-     * @return DocBlockParameter[]
+     * @return array<array-key, ParameterInterface>
      */
     protected function constructDocBlockParameters(array $paramParts): array
     {
         $return = [];
         foreach ($paramParts as $param) {
             $this->typeLinter->lintCheck($param['name'], $param['type']);
-            $return[] = new DocBlockParameter(
+            $return[] = new UnionParameter(
                 $param['name'],
                 $this->parseTypes($param['type']),
                 $param['required']
@@ -102,7 +107,7 @@ class Parser
     /**
      *
      * @param string $typeString
-     * @return (DocBlockParameter|string)[]
+     * @return array<array-key, ParameterInterface|string>
      */
     protected function parseTypes(string $typeString): array
     {
@@ -151,9 +156,9 @@ class Parser
                 /** @psalm-suppress MixedOperand */
                 $carry[array_key_last($carry) ?? 0] .= "|$param";
             }
-            /** @var string $new_carry */
-            $new_carry = $carry[array_key_last($carry) ?? 0];
-            $concat = substr_count($new_carry, '<') !== substr_count($new_carry, '>');
+            /** @var string $newCarry */
+            $newCarry = $carry[array_key_last($carry) ?? 0];
+            $concat = substr_count($newCarry, '<') !== substr_count($newCarry, '>');
             return $carry;
         }, []);
         return $return;
@@ -163,7 +168,7 @@ class Parser
     /**
      *
      * @param string $typeString
-     * @return string|DocBlockArrayParameter|DocBlockTypedClassStringParameter
+     * @return ArrayParameter|TypedClassStringParameter|string
      */
     protected function parseParameterizedTypes(string $typeString)
     {
@@ -171,17 +176,16 @@ class Parser
         $openingArrow = strpos_default($typeString, '<', self::MAX_LENGTH);
         /** @var int $openingParenthises */
         $openingParenthises = strpos_default($typeString, '(', self::MAX_LENGTH);
-        if (
-            str_contains_chars('<>', $typeString)
+        if (str_contains_chars('<>', $typeString)
             && $openingArrow < $openingParenthises
         ) {
             if (str_contains_str($typeString, 'array')) {
                 $types = $this->parsePsalmArrayType($typeString);
-                return new DocBlockArrayParameter('array', $types[0], $types[1]);
+                return new ArrayParameter('array', $types[0], $types[1]);
             }
             if (str_contains_str($typeString, 'class-string')) {
                 //Parse class-string types
-                return new DocBlockTypedClassStringParameter(
+                return new TypedClassStringParameter(
                     'class-string',
                     $this->parsePsalmClassStringTypes($typeString)
                 );
@@ -189,7 +193,7 @@ class Parser
         }
         if (str_contains_str($typeString, '[]')) {
             $types = $this->parsePsrArrayType($typeString);
-            return new DocBlockArrayParameter('array', 'int', $types);
+            return new ArrayParameter('array', 'int', $types);
         }
         return $typeString;
     }
@@ -211,7 +215,7 @@ class Parser
     /**
      *
      * @param string $typeString
-     * @return (DocBlockParameter|string)[]
+     * @return array<array-key, ParameterInterface|string>
      */
     private function parsePsrArrayType(string $typeString): array
     {
@@ -232,7 +236,7 @@ class Parser
     /**
      *
      * @param string $typeString
-     * @return array{0: string, 1: (DocBlockParameter|string)[]}
+     * @return array{0: string, 1: array<array-key, ParameterInterface|string>}
      */
     private function parsePsalmArrayType(string $typeString): array
     {

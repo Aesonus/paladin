@@ -24,7 +24,7 @@
  */
 namespace Aesonus\Tests;
 
-use Aesonus\Paladin\DocBlockParameter;
+use Aesonus\Paladin\DocBlock\UnionParameter;
 use PHPUnit\Framework\Constraint\Constraint;
 
 /**
@@ -67,12 +67,12 @@ class ConstraintDocBlockParameter extends Constraint
 
     /**
      *
-     * @param DocBlockParameter $other
+     * @param UnionParameter $other
      * @return bool
      */
     protected function matches($other): bool
     {
-        if (!$other instanceof DocBlockParameter) {
+        if (!$other instanceof UnionParameter) {
             return false;
         }
         return $other->getName() === $this->name
@@ -82,7 +82,7 @@ class ConstraintDocBlockParameter extends Constraint
 
     public function toString(): string
     {
-        return 'is ' . DocBlockParameter::class . ' with properties ' . $this->exporter()->export(
+        return 'is ' . UnionParameter::class . ' with properties ' . $this->exporter()->export(
             [
                 'name' => $this->name,
                 'required' => $this->required,

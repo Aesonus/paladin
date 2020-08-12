@@ -25,18 +25,19 @@
 
 declare(strict_types=1);
 
-namespace Aesonus\Paladin;
+namespace Aesonus\Paladin\DocBlock;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
 use RuntimeException;
 use const Aesonus\Paladin\FUNCTION_NAMESPACE;
+use function Aesonus\Paladin\is_class_string;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class DocBlockParameter implements ParameterInterface
+class UnionParameter implements ParameterInterface
 {
     /**
      *
@@ -52,14 +53,14 @@ class DocBlockParameter implements ParameterInterface
 
     /**
      *
-     * @var (string|DocBlockParameter)[]
+     * @var array<array-key, ParameterInterface|string>
      */
     private $types;
 
     /**
      *
      * @param string $name
-     * @param (string|DocBlockParameter)[] $types
+     * @param array<array-key, ParameterInterface|string> $types
      * @param bool $required
      */
     public function __construct(string $name, array $types, bool $required)
@@ -103,14 +104,14 @@ class DocBlockParameter implements ParameterInterface
 
     /**
      *
-     * @param array $types
+     * @param array<array-key, mixed> $types
      * @param mixed $givenValue
      * @return bool
      */
     protected function validateUnionType(array $types, $givenValue): bool
     {
         $valid = false;
-        /** @var string|DocBlockParameter $unionTypes */
+        /** @var ParameterInterface|string $unionTypes */
         foreach ($types as $unionTypes) {
             /** @var bool $valid */
             $valid = call_user_func(
@@ -126,13 +127,13 @@ class DocBlockParameter implements ParameterInterface
 
     /**
      *
-     * @param DocBlockParameter|string $type
+     * @param ParameterInterface|string $type
      * @return callable
      * @throws RuntimeException
      */
     protected function getValidationCallable($type): callable
     {
-        if ($type instanceof DocBlockParameter) {
+        if ($type instanceof ParameterInterface) {
             return [$type, 'validate'];
         }
         if ('mixed' === $type) {
@@ -142,13 +143,13 @@ class DocBlockParameter implements ParameterInterface
         if (function_exists($builtInCallable)) {
             return $builtInCallable;
         }
-        $simplePsalmTypeCallable = sprintf(
+        $psalmTypeCallable = sprintf(
             '%sis_%s',
             FUNCTION_NAMESPACE,
             str_replace('-', '_', $type)
         );
-        if (function_exists($simplePsalmTypeCallable)) {
-            return $simplePsalmTypeCallable;
+        if (function_exists($psalmTypeCallable)) {
+            return $psalmTypeCallable;
         }
         if (is_class_string($type)) {
             /**
