@@ -28,10 +28,11 @@ namespace Aesonus\Paladin;
 
 use Aesonus\Paladin\Contracts\UseContextInterface;
 use Aesonus\Paladin\DocBlock\ArrayParameter;
-use Aesonus\Paladin\DocBlock\UnionParameter;
 use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
+use Aesonus\Paladin\DocBlock\UnionParameter;
 use Aesonus\Paladin\Exceptions\TypeLintException;
 use Aesonus\Paladin\Contracts\ParameterInterface;
+use function Aesonus\Paladin\Utilities\array_last;
 use function Aesonus\Paladin\Utilities\str_contains_chars;
 use function Aesonus\Paladin\Utilities\str_contains_str;
 use function Aesonus\Paladin\Utilities\strpos_default;
@@ -157,7 +158,7 @@ class Parser
                 $carry[array_key_last($carry) ?? 0] .= "|$param";
             }
             /** @var string $newCarry */
-            $newCarry = $carry[array_key_last($carry) ?? 0];
+            $newCarry = array_last($carry);
             $concat = substr_count($newCarry, '<') !== substr_count($newCarry, '>');
             return $carry;
         }, []);
@@ -193,7 +194,7 @@ class Parser
         }
         if (str_contains_str($typeString, '[]')) {
             $types = $this->parsePsrArrayType($typeString);
-            return new ArrayParameter('array', 'int', $types);
+            return new ArrayParameter('array', 'array-key', $types);
         }
         return $typeString;
     }
