@@ -71,4 +71,9 @@ class ArrayParameter extends UnionParameter
         }
         return $valid;
     }
+
+    public function getKeyType(): string
+    {
+        return $this->keyType;
+    }
 }

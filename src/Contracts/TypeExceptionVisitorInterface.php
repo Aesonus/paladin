@@ -22,37 +22,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Paladin;
+namespace Aesonus\Paladin\Contracts;
 
-use Aesonus\Paladin\Contracts\ParameterInterface;
+use Aesonus\Paladin\DocBlock\UnionParameter;
 use InvalidArgumentException;
 
 /**
  *
- *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class Validator
+interface TypeExceptionVisitorInterface
 {
     /**
      *
-     * @param callable-string $method
-     * @param mixed $arguments
+     * @param UnionParameter $docblock
      * @return void
      * @throws InvalidArgumentException
      */
-    public static function assert(string $method, ...$arguments): void
-    {
-    }
-
-    /**
-     *
-     * @param mixed $givenValue
-     * @param ParameterInterface $parameter
-     * @return bool
-     */
-    public static function validateParameter($givenValue, ParameterInterface $parameter): bool
-    {
-        return $parameter->validate($givenValue);
-    }
+    public function visitUnion(UnionParameter $docblock): void;
 }

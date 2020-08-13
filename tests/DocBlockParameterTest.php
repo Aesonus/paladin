@@ -26,13 +26,14 @@ namespace Aesonus\Tests;
 
 use Aesonus\Paladin\DocBlock\ArrayParameter;
 use Aesonus\Paladin\DocBlock\IntersectionParameter;
-use Aesonus\Paladin\DocBlock\UnionParameter;
 use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
+use Aesonus\Paladin\DocBlock\UnionParameter;
 use Aesonus\TestLib\BaseTestCase;
 use Aesonus\Tests\Fixtures\TestClass;
 use Aesonus\Tests\Fixtures\TestIntersectionClass;
 use Aesonus\Tests\Fixtures\TestTrait;
 use ArrayAccess;
+use InvalidArgumentException;
 use Iterator;
 use RuntimeException;
 use stdClass;
@@ -97,7 +98,7 @@ class DocBlockParameterTest extends BaseTestCase
 
     /**
      * @test
-     * @dataProvider validateParameterReturnsFalseIfParameterIsNotOfSimpleTypeDataProvider
+     * @dataProvider invalidParameterTypeValueDataProvider
      */
     public function validateParameterReturnsFalseIfParameterIsNotOfSimpleType($type, $givenValue)
     {
@@ -112,15 +113,17 @@ class DocBlockParameterTest extends BaseTestCase
     /**
      * Data Provider
      */
-    public function validateParameterReturnsFalseIfParameterIsNotOfSimpleTypeDataProvider()
+    public function invalidParameterTypeValueDataProvider()
     {
         return [
             'int for string' => ['string', 32],
             'float for int' => ['int', 3.141],
             '2 for bool' => ['bool', 2],
-            'string for bool' => ['bool', 'true'],
+            'string for bool' => ['bool', 'test'],
             '1 for true' => ['true', 1],
             '0 for false' => ['false', 0],
+            'false for true' => ['true', false],
+            'true for false' => ['false', true],
             'int for float' => ['float', 3],
             'object for array' => ['array', new stdClass],
             'classname for object' => ['object', stdClass::class],
@@ -137,7 +140,7 @@ class DocBlockParameterTest extends BaseTestCase
             'trait-string for class-string' => ['class-string', TestTrait::class],
             'interface for trait-string' => ['trait-string', ArrayAccess::class],
             'characters for numeric-string' => ['numeric-string', '3.14159sd'],
-            stdClass::class => [stdClass::class, new TestIntersectionClass]
+            stdClass::class => [stdClass::class, new TestIntersectionClass],
         ];
     }
 
@@ -168,7 +171,7 @@ class DocBlockParameterTest extends BaseTestCase
 
     /**
      * @test
-     * @dataProvider validateParameterReturnsFalseIfParameterIsNotOfUnionTypeDataProvider
+     * @dataProvider invalidUnionTypeParameterValueDataProvider
      */
     public function validateParameterReturnsFalseIfParameterIsNotOfUnionType($types, $givenValue)
     {
@@ -183,7 +186,7 @@ class DocBlockParameterTest extends BaseTestCase
     /**
      * Data Provider
      */
-    public function validateParameterReturnsFalseIfParameterIsNotOfUnionTypeDataProvider()
+    public function invalidUnionTypeParameterValueDataProvider()
     {
         return [
             'float for string|int' => [['string', 'int'], 3.14159],
