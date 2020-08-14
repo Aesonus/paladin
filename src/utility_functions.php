@@ -125,3 +125,19 @@ function array_last(array $array)
     }
     return null;
 }
+
+/**
+ *
+ * @param string $glue
+ * @param string $glueLast
+ * @param string[] $pieces
+ * @return string
+ */
+function implode_ext(string $glue, string $glueLast, array $pieces): string
+{
+    if (count($pieces) < 3) {
+        return implode($glueLast, $pieces);
+    }
+    $splitTypes = array_slice($pieces, 0, -1);
+    return implode($glue, $splitTypes) . $glueLast . array_last($pieces);
+}

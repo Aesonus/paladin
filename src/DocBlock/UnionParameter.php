@@ -29,8 +29,8 @@ namespace Aesonus\Paladin\DocBlock;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\TypeExceptionVisitorInterface;
+use Aesonus\Paladin\Exceptions\TypeException;
 use RuntimeException;
-use \InvalidArgumentException;
 use const Aesonus\Paladin\FUNCTION_NAMESPACE;
 use function Aesonus\Paladin\is_class_string;
 
@@ -84,7 +84,7 @@ class UnionParameter implements ParameterInterface
      *
      * @param TypeExceptionVisitorInterface $visitor
      * @return void
-     * @throws InvalidArgumentException
+     * @throws TypeException
      */
     public function acceptExceptionVisitor(TypeExceptionVisitorInterface $visitor): void
     {
@@ -172,5 +172,17 @@ class UnionParameter implements ParameterInterface
             return fn ($value) => is_a($value, $type);
         }
         throw new RuntimeException("Could not validate for type '$type'");
+    }
+
+    public function __toString()
+    {
+        $string = "";
+        foreach ($this->getTypes() as $index => $type) {
+            $string .= $type;
+            if (array_key_last($this->getTypes()) !== $index) {
+                $string .= '|';
+            }
+        }
+        return $string;
     }
 }

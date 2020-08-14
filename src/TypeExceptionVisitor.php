@@ -28,9 +28,11 @@ use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\TypeExceptionVisitorInterface;
 use Aesonus\Paladin\DocBlock\ArrayParameter;
 use Aesonus\Paladin\DocBlock\IntersectionParameter;
+use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
 use Aesonus\Paladin\DocBlock\UnionParameter;
-use InvalidArgumentException;
+use Aesonus\Paladin\Exceptions\TypeException;
 use function Aesonus\Paladin\Utilities\array_last;
+use function Aesonus\Paladin\Utilities\implode_ext;
 
 /**
  *
@@ -62,13 +64,12 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
         if ($docblock->validate($this->givenValue)) {
             return;
         }
-        throw new InvalidArgumentException($this->getExceptionMessage($docblock));
+        throw new TypeException($docblock->getName(), $this->getExceptionMessage($docblock));
     }
 
     protected function getExceptionMessage(ParameterInterface $docblock): string
     {
-        return $docblock->getName()
-            . ' must be '
+        return 'must be '
             . $this->getExceptedTypeMessage($docblock)
             . '; '
             . $this->getGivenTypeMessage($docblock)
@@ -82,30 +83,14 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
      */
     protected function getTypeClause($type): string
     {
-        if ($type instanceof ArrayParameter) {
-            return $this->getArrayType($type);
-        } elseif ($type instanceof IntersectionParameter) {
+        if ($type instanceof IntersectionParameter) {
             return $this->getIntersectionType($type);
         } elseif (is_string($type) && is_class_string($type)) {
             return 'instance of ' . $type;
         } elseif (is_string($type) && $type === 'object') {
             return 'an object';
-        } elseif (is_string($type)) {
-            return 'of type ' . $type;
         }
-        return '';
-    }
-
-    /**
-     *
-     * @param ArrayParameter $docblock
-     * @return string
-     */
-    protected function getArrayType(ArrayParameter $docblock): string
-    {
-        $keyType = $docblock->getKeyType();
-        $typeString = implode('|', $docblock->getTypes());
-        return sprintf('an array of type <%s, %s>', $keyType, $typeString);
+        return 'of type ' . $type;
     }
 
     /**
@@ -116,7 +101,7 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
     protected function getIntersectionType(IntersectionParameter $docblock): string
     {
         $message = 'an intersection of ';
-        $message .= $this->getTypeListString($docblock->getTypes(), ', ', ', and ');
+        $message .= implode_ext(', ', ' and ', explode('&', (string)$docblock));
         return $message;
     }
 
@@ -128,23 +113,7 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
     protected function getExceptedTypeMessage(ParameterInterface $docblock): string
     {
         $types = array_map([$this, 'getTypeClause'], $docblock->getTypes());
-        return $this->getTypeListString($types, ', ', ', or ');
-    }
-
-    /**
-     *
-     * @param string[] $types
-     * @param string $glue
-     * @param string $glueLast
-     * @return string
-     */
-    private function getTypeListString(array $types, string $glue, string $glueLast): string
-    {
-        if (count($types) < 3) {
-            return implode($glueLast, $types);
-        }
-        $splitTypes = array_slice($types, 0, -1);
-        return implode($glue, $splitTypes) . $glueLast . array_last($types);
+        return implode_ext(', ', ', or ', $types);
     }
 
     /**
@@ -182,7 +151,7 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
             }
             $foundKeyType = $this->getType($key);
         }
-        return sprintf('array of type <%s, %s>', $foundKeyType, implode('|', $foundTypes));
+        return sprintf('array<%s, %s>', $foundKeyType, implode('|', $foundTypes));
     }
 
     /**
@@ -192,6 +161,11 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
      */
     private function getType($value): string
     {
-        return is_int($value) ? 'int' : gettype($value);
+        if (is_int($value)) {
+            return 'int';
+        } elseif (is_array($value)) {
+            return $this->getGivenArrayType($value);
+        }
+        return gettype($value);
     }
 }

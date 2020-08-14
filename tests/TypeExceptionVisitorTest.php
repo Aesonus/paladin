@@ -26,6 +26,7 @@ namespace Aesonus\Tests;
 
 use Aesonus\Paladin\DocBlock\ArrayParameter;
 use Aesonus\Paladin\DocBlock\IntersectionParameter;
+use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
 use Aesonus\Paladin\DocBlock\UnionParameter;
 use Aesonus\Paladin\TypeExceptionVisitor;
 use Aesonus\TestLib\BaseTestCase;
@@ -142,7 +143,7 @@ class TypeExceptionVisitorTest extends BaseTestCase
         $testObj = new TypeExceptionVisitor(new TestClass());
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("\$param must be an intersection of ArrayAccess, and "
+        $this->expectExceptionMessage("\$param must be an intersection of ArrayAccess and "
             . TestIntersectionClass::class . '; instance of ' . TestClass::class . ' given');
         $parameter->acceptExceptionVisitor($testObj);
     }
@@ -163,7 +164,7 @@ class TypeExceptionVisitorTest extends BaseTestCase
         $testObj = new TypeExceptionVisitor(new TestClass());
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("\$param must be an intersection of ArrayAccess, and "
+        $this->expectExceptionMessage("\$param must be an intersection of ArrayAccess and "
             . TestIntersectionClass::class . ', or of type int; instance of ' . TestClass::class . ' given');
         $parameter->acceptExceptionVisitor($testObj);
     }
@@ -199,39 +200,103 @@ class TypeExceptionVisitorTest extends BaseTestCase
             'int[]' => [
                 [3.141, 2],
                 ['int'],
-                'be an array of type <array-key, int>',
-                'array of type <int, double|int>'
+                'be of type array<array-key, int>',
+                'array<int, double|int>'
             ],
             'int[] mixed keys' => [
                 [3.141, 'string' => 2, 23, 'also' => 'string'],
                 ['int'],
-                'be an array of type <array-key, int>',
-                'array of type <array-key, double|int>'
+                'be of type array<array-key, int>',
+                'array<array-key, double|int>'
             ],
             'int[] string keys' => [
                 ['pi' => 3.141, 'integer' => 2],
                 ['int'],
-                'be an array of type <array-key, int>',
-                'array of type <string, double|int>'
+                'be of type array<array-key, int>',
+                'array<string, double|int>'
             ],
             '(int|resource)[]' => [
                 [3.141, 2],
                 ['int', 'resource'],
-                'be an array of type <array-key, int|resource>',
-                'array of type <int, double|int>'
+                'be of type array<array-key, int|resource>',
+                'array<int, double|int>'
             ],
             '(int|resource)[] mixed keys' => [
                 [3.141, 'string' => 2, 23, 'also' => 'string'],
                 ['int', 'resource'],
-                'be an array of type <array-key, int|resource>',
-                'array of type <array-key, double|int>'
+                'be of type array<array-key, int|resource>',
+                'array<array-key, double|int>'
             ],
             '(int|resource)[] string keys' => [
                 ['pi' => 3.141, 'integer' => 2],
                 ['int', 'resource'],
-                'be an array of type <array-key, int|resource>',
-                'array of type <string, double|int>'
+                'be of type array<array-key, int|resource>',
+                'array<string, double|int>'
             ],
+            'array<array-key, ArrayAccess&' . TestIntersectionClass::class . '>' => [
+                ['pi' => 3.141, ['nested' => 23]],
+                [new IntersectionParameter('', [ArrayAccess::class, TestIntersectionClass::class])],
+                'be of type array<array-key, ArrayAccess&' . TestIntersectionClass::class . '>',
+                'array<array-key, double|array<string, int>>'
+            ]
         ];
+    }
+
+    /**
+     * @test
+     * @dataProvider acceptExceptionVisitorThrowsExceptionIfValidateFailsOnTypedClassStringTypeDataProvider
+     */
+    public function acceptExceptionVisitorThrowsExceptionIfValidateFailsOnTypedClassStringType(
+        $givenValue,
+        $types,
+        $exceptionPostfix
+    ) {
+        $parameter = new UnionParameter(
+            '$param',
+            [new TypedClassStringParameter('', $types)],
+            true
+        );
+        $testObj = new TypeExceptionVisitor($givenValue);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("\$param must be of type class-string<$exceptionPostfix>");
+        $parameter->acceptExceptionVisitor($testObj);
+    }
+
+    /**
+     * Data Provider
+     */
+    public function acceptExceptionVisitorThrowsExceptionIfValidateFailsOnTypedClassStringTypeDataProvider()
+    {
+        return [
+            [\stdClass::class, [\ArrayObject::class], \ArrayObject::class]
+        ];
+    }
+
+    /**
+     * @test
+     */
+    public function acceptExceptionVisitorThrowsExceptionIfValidateFailsOnNestedArrayType()
+    {
+        $parameter = new UnionParameter(
+            '$param',
+            [
+                new ArrayParameter(
+                    'array',
+                    'array-key',
+                    [
+                        new ArrayParameter('array', 'array-key', ['string']),
+                        'float'
+                    ]
+                ),
+
+            ],
+            true
+        );
+        $testObj = new TypeExceptionVisitor('bad');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('$param must be of type array<array-key, array<array-key, string>|float>; ');
+        $parameter->acceptExceptionVisitor($testObj);
     }
 }

@@ -22,34 +22,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Paladin\Contracts;
+namespace Aesonus\Paladin\Exceptions;
+
+use InvalidArgumentException;
 
 /**
  *
+ *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-interface ParameterInterface
+class TypeException extends InvalidArgumentException
 {
     /**
      *
-     * @param mixed $givenValue
-     * @return bool
+     * @var string
      */
-    public function validate($givenValue): bool;
+    private $paramName;
 
-    public function getName(): string;
-
-    /**
-     *
-     * @return (ParameterInterface|string)[]
-     */
-    public function getTypes(): array;
-
-    public function isRequired(): bool;
-
-    /**
-     *
-     * @return string
-     */
-    public function __toString();
+    public function __construct(string $paramName = "", string $message = "", \Throwable $previous = null)
+    {
+        $this->paramName = $paramName;
+        parent::__construct("$paramName $message", 0, $previous);
+    }
 }

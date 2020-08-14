@@ -24,6 +24,8 @@
  */
 namespace Aesonus\Paladin\DocBlock;
 
+use function Aesonus\Paladin\Utilities\implode_ext;
+
 /**
  *
  *
@@ -34,7 +36,7 @@ class IntersectionParameter extends UnionParameter
     /**
      *
      * @param string $name
-     * @param array<array-key, string> $types
+     * @param string[] $types
      */
     public function __construct(string $name, array $types)
     {
@@ -56,5 +58,10 @@ class IntersectionParameter extends UnionParameter
             }
         }
         return $valid;
+    }
+
+    public function __toString()
+    {
+        return str_replace('|', '&', parent::__toString());
     }
 }

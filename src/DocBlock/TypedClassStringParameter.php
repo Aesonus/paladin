@@ -65,4 +65,9 @@ class TypedClassStringParameter extends UnionParameter
         }
         return $valid;
     }
+
+    public function __toString()
+    {
+        return "class-string<" . implode('|', $this->classTypes) . ">";
+    }
 }
