@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Paladin;
+namespace Aesonus\Paladin\Parsing;
 
 use function Aesonus\Paladin\Utilities\array_last;
 
@@ -40,8 +40,8 @@ class UnionTypeSplitter
 
     /**
      *
-     * @param array $matches
-     * @return string[]
+     * @param array<array-key, mixed> $matches
+     * @return array<array-key, string>
      */
     private function processParamPatternMatches(array $matches): array
     {
@@ -49,7 +49,7 @@ class UnionTypeSplitter
         //We want to combine split parameter types back together if the are part of a
         //compound psalm array type (whew)
         $concat = false;
-        /**  @var string[] $return */
+        /**  @var array<array-key, string> $return */
         $return = array_reduce($matches, function (array $carry, string $param) use (&$concat): array {
             if (!$concat) {
                 $carry[] = $param;

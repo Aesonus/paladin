@@ -31,9 +31,10 @@ use Aesonus\Paladin\DocBlock\ArrayParameter;
 use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
 use Aesonus\Paladin\DocBlock\UnionParameter;
 use Aesonus\Paladin\Exceptions\TypeLintException;
-use Aesonus\Paladin\Contracts\ParameterInterface;
-use function Aesonus\Paladin\Utilities\array_last;
-use function Aesonus\Paladin\Utilities\str_contains_chars;
+use Aesonus\Paladin\Parsing\PsalmArrayParser;
+use Aesonus\Paladin\Parsing\PsalmClassStringParser;
+use Aesonus\Paladin\Parsing\PsrArrayParser;
+use Aesonus\Paladin\Parsing\UnionTypeSplitter;
 use function Aesonus\Paladin\Utilities\str_contains_str;
 use function Aesonus\Paladin\Utilities\strpos_default;
 
@@ -64,14 +65,38 @@ class Parser
      */
     private $typeSplitter;
 
+    /**
+     *
+     * @var PsalmArrayParser
+     */
+    private $psalmArrayParser;
+
+    /**
+     *
+     * @var PsalmClassStringParser
+     */
+    private $psalmClassStringParser;
+
+    /**
+     *
+     * @var PsrArrayParser
+     */
+    private $psrArrayParser;
+
     public function __construct(
         UseContextInterface $useContext,
         ?UnionTypeSplitter $typeSplitter = null,
+        ?PsalmArrayParser $psalmArrayParser = null,
+        ?PsrArrayParser $psrArrayParser = null,
+        ?PsalmClassStringParser $psalmClassStringParser = null,
         ?TypeLinter $typeLinter = null
     ) {
         $this->useContext = $useContext;
         $this->typeLinter = $typeLinter ?? new TypeLinter;
         $this->typeSplitter = $typeSplitter ?? new UnionTypeSplitter;
+        $this->psalmArrayParser = $psalmArrayParser ?? new PsalmArrayParser;
+        $this->psrArrayParser = $psrArrayParser ?? new PsrArrayParser;
+        $this->psalmClassStringParser = $psalmClassStringParser ?? new PsalmClassStringParser;
     }
 
     /**
@@ -96,6 +121,11 @@ class Parser
         }
     }
 
+    public function getUseContext(): UseContextInterface
+    {
+        return $this->useContext;
+    }
+
     /**
      *
      * @param array<int, array{name: string, type: string, required: bool}> $paramParts
@@ -116,25 +146,15 @@ class Parser
     }
 
     /**
-     *
+     * Parses a type string and returns all of its parts
      * @param string $typeString
      * @return array<array-key, ParameterInterface|string>
      */
-    protected function parseTypes(string $typeString): array
+    public function parseTypes(string $typeString): array
     {
-        $unionTypes = $this->parseUnionTypes($typeString);
+        $unionTypes = $this->typeSplitter->split($typeString);
 
         return array_map([$this, 'parseParameterizedTypes'], $unionTypes);
-    }
-
-    /**
-     *
-     * @param string $typeString
-     * @return string[]
-     */
-    protected function parseUnionTypes(string $typeString): array
-    {
-        return $this->typeSplitter->split($typeString);
     }
 
     /**
@@ -152,79 +172,16 @@ class Parser
             && $openingArrow < $openingParenthises
         ) {
             if (str_contains_str($typeString, 'array')) {
-                $types = $this->parsePsalmArrayType($typeString);
-                return new ArrayParameter('array', $types[0], $types[1]);
+                return $this->psalmArrayParser->parse($this, $typeString);
             }
             if (str_contains_str($typeString, 'class-string')) {
-                //Parse class-string types
-                return new TypedClassStringParameter(
-                    'class-string',
-                    $this->parsePsalmClassStringTypes($typeString)
-                );
+                return $this->psalmClassStringParser->parse($this, $typeString);
             }
         }
         if (str_contains_str($typeString, '[]')) {
-            $types = $this->parsePsrArrayType($typeString);
-            return new ArrayParameter('array', 'array-key', $types);
+            return $this->psrArrayParser->parse($this, $typeString);
         }
         return $typeString;
-    }
-
-    /**
-     *
-     * @param string $typeString
-     * @return string[]
-     */
-    private function parsePsalmClassStringTypes(string $typeString): array
-    {
-        $classTypes = explode('|', substr($typeString, (int)strpos($typeString, '<') + 1, -1));
-        return array_map(function ($type) {
-            $rawClass = (strpos($type, '\\') === 0) ? substr($type, 1): $type;
-            return $this->useContext->getUsedClass($rawClass);
-        }, $classTypes);
-    }
-
-    /**
-     *
-     * @param string $typeString
-     * @return array<array-key, ParameterInterface|string>
-     */
-    private function parsePsrArrayType(string $typeString): array
-    {
-        $openingParenth = strpos($typeString, '(');
-        $closingParenth = (int)strrpos($typeString, ')');
-        if ($openingParenth !== false) {
-            return $this->parseTypes(
-                substr(
-                    $typeString,
-                    $openingParenth + 1,
-                    $closingParenth - $openingParenth - 1
-                )
-            );
-        }
-        $newTypeString = substr($typeString, 0, -2);
-        if (str_contains_str($newTypeString, '[]')) {
-            return $this->parseTypes($newTypeString);
-        }
-        return [$newTypeString];
-    }
-
-    /**
-     *
-     * @param string $typeString
-     * @return array{0: string, 1: array<array-key, ParameterInterface|string>}
-     */
-    private function parsePsalmArrayType(string $typeString): array
-    {
-        $openingArrow = (int)strpos($typeString, '<');
-        $arrayTypeString = substr($typeString, $openingArrow + 1, -1);
-        $types = preg_split('`,(?![\w \[\]]+>)`', $arrayTypeString);
-        //echo "Split Psalm\n", var_dump($types);
-        if (count($types) === 1) {
-            return ['array-key', $this->parseTypes($types[0])];
-        }
-        $keyType = array_shift($types);
-        return [$keyType, $this->parseTypes($types[0])];
     }
 
     /**

@@ -37,7 +37,7 @@ class UnionTypeSplitterTest extends BaseTestCase
 
     protected function setUp(): void
     {
-        $this->testObj = new \Aesonus\Paladin\UnionTypeSplitter;
+        $this->testObj = new \Aesonus\Paladin\Parsing\UnionTypeSplitter;
     }
     /**
      * @test
