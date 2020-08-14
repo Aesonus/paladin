@@ -24,8 +24,6 @@
  */
 namespace Aesonus\Paladin\Contracts;
 
-use InvalidArgumentException;
-
 /**
  *
  * @author Aesonus <corylcomposinger at gmail.com>
@@ -38,8 +36,6 @@ interface ParameterInterface
      * @return bool
      */
     public function validate($givenValue): bool;
-
-    public function acceptExceptionVisitor(TypeExceptionVisitorInterface $visitor): void;
 
     public function getName(): string;
 

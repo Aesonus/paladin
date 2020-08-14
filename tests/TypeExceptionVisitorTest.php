@@ -43,31 +43,16 @@ use stdClass;
  */
 class TypeExceptionVisitorTest extends BaseTestCase
 {
-    // 'of the type', 'int'],
-    // 'of the type', 'float'],
-    // 'of the type', 'int'],
-    // 'true', 'of the type', 'string'],
-    // 'of the type', 'int'],
-    // 'of the type', 'int'],
-    // 'of the type', 'false'],
-    // 'of the type', 'true'],
-    // 'of the type', 'int'],
-    // 'an', 'object'],
-    // 'an', 'string'],
-    // 'of the type', 'array'],
-    // 'of the type', 'object'],
-    // 'of the type', 'string'],
-    // 'of the type', 'object'],
-    // 'of the type', 'array'],
-    // 'of the type', 'string'],
-    // 'of the type', 'array'],
-    // 'of the type', 'string'],
-    // 'of the type', 'float'],
-    // 'of the type', 'object'],
-    // 'a', 'string'],
-    // 'a', 'string'],
-    // 'a', 'string'],
-    // 'an instance of', 'instance of ' . TestIntersectionClass::class]
+    /**
+     * @test
+     * @doesNotPerformAssertions
+     */
+    public function acceptExceptionVisitorDoesNothingIfValidateSucceeds()
+    {
+        $parameter = new UnionParameter('$param', ['mixed'], true);
+        $testObj = new TypeExceptionVisitor(23);
+        $parameter->acceptExceptionVisitor($testObj);
+    }
 
     /**
      * @test
@@ -218,7 +203,7 @@ class TypeExceptionVisitorTest extends BaseTestCase
                 'array of type <int, double|int>'
             ],
             'int[] mixed keys' => [
-                [3.141, 'string' => 2],
+                [3.141, 'string' => 2, 23, 'also' => 'string'],
                 ['int'],
                 'be an array of type <array-key, int>',
                 'array of type <array-key, double|int>'
@@ -227,6 +212,24 @@ class TypeExceptionVisitorTest extends BaseTestCase
                 ['pi' => 3.141, 'integer' => 2],
                 ['int'],
                 'be an array of type <array-key, int>',
+                'array of type <string, double|int>'
+            ],
+            '(int|resource)[]' => [
+                [3.141, 2],
+                ['int', 'resource'],
+                'be an array of type <array-key, int|resource>',
+                'array of type <int, double|int>'
+            ],
+            '(int|resource)[] mixed keys' => [
+                [3.141, 'string' => 2, 23, 'also' => 'string'],
+                ['int', 'resource'],
+                'be an array of type <array-key, int|resource>',
+                'array of type <array-key, double|int>'
+            ],
+            '(int|resource)[] string keys' => [
+                ['pi' => 3.141, 'integer' => 2],
+                ['int', 'resource'],
+                'be an array of type <array-key, int|resource>',
                 'array of type <string, double|int>'
             ],
         ];

@@ -59,9 +59,10 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
      */
     public function visitUnion(UnionParameter $docblock): void
     {
-        if (!$docblock->validate($this->givenValue)) {
-            throw new InvalidArgumentException($this->getExceptionMessage($docblock));
+        if ($docblock->validate($this->givenValue)) {
+            return;
         }
+        throw new InvalidArgumentException($this->getExceptionMessage($docblock));
     }
 
     protected function getExceptionMessage(ParameterInterface $docblock): string
@@ -84,9 +85,8 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
             return 'instance of ' . $type;
         } elseif (is_string($type) && $type === 'object') {
             return 'an object';
-        } elseif (is_string($type)) {
-            return 'of type ' . $type;
         }
+        return 'of type ' . $type;
     }
 
     protected function getArrayType(ArrayParameter $docblock): string
@@ -133,16 +133,10 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
         $foundKeyType = '';
         $foundTypes = [];
         foreach ($value as $key => $arrayValue) {
-            if (is_object($arrayValue)) {
-                $foundTypes[] = get_class($arrayValue);
-            } else {
-                $foundTypes[] = $this->getType($arrayValue);
-            }
-            if ($foundKeyType === 'array-key') {
-                break;
-            } elseif ($foundKeyType === 'int'
-                && is_string($key)
-                || $foundKeyType === 'string' && is_int($key)) {
+            $foundTypes[] = is_object($arrayValue) ? get_class($arrayValue) : $this->getType($arrayValue);
+            if (($foundKeyType === 'int'
+                && is_string($key))
+                || ($foundKeyType === 'string' && is_int($key))) {
                 $foundKeyType = 'array-key';
                 break;
             }

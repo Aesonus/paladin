@@ -65,6 +65,7 @@ class DocBlockParameterTest extends BaseTestCase
     public function validateParameterReturnsTrueIfParameterIsOfSimpleTypeDataProvider()
     {
         return [
+            'mixed' => ['mixed', 32],
             'string' => ['string', 'test value'],
             'int' => ['int', 3],
             'true for bool' => ['bool', true],

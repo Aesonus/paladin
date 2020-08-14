@@ -196,6 +196,90 @@ class ParserTest extends BaseTestCase
                     true
                 ]
             ],
+            '(string[])[]' => [
+                <<<'php'
+                /**
+                *
+                * @param (string[])[] $testArray
+                */
+                php,
+                [
+                    [
+                        new ArrayParameter(
+                            'array',
+                            'array-key',
+                            [
+                                new ArrayParameter('array', 'array-key', ['string']),
+                            ]
+                        )
+                    ],
+                    true
+                ]
+            ],
+            'string[][]' => [
+                <<<'php'
+                /**
+                *
+                * @param string[][] $testArray
+                */
+                php,
+                [
+                    [
+                        new ArrayParameter(
+                            'array',
+                            'array-key',
+                            [
+                                new ArrayParameter('array', 'array-key', ['string']),
+                            ]
+                        )
+                    ],
+                    true
+                ]
+            ],
+            '((string[])[])[]' => [
+                <<<'php'
+                /**
+                *
+                * @param ((string[])[])[] $testArray
+                */
+                php,
+                [
+                    [
+                        new ArrayParameter(
+                            'array',
+                            'array-key',
+                            [
+                                new ArrayParameter(
+                                    'array',
+                                    'array-key',
+                                    [new ArrayParameter('array', 'array-key', ['string'])]
+                                ),
+                            ]
+                        )
+                    ],
+                    true
+                ]
+            ],
+            '(array<string>)[]' => [
+                <<<'php'
+                /**
+                * This notation only works when wrapped in parenthesis
+                * @param (array<string>)[] $testArray
+                */
+                php,
+                [
+                    [
+                        new ArrayParameter(
+                            'array',
+                            'array-key',
+                            [
+                                new ArrayParameter('array', 'array-key', ['string']),
+                            ]
+                        )
+                    ],
+                    true
+                ]
+            ],
             'array<string>' => [
                 <<<'php'
                 /**
@@ -232,11 +316,50 @@ class ParserTest extends BaseTestCase
                     true
                 ]
             ],
+            'array<string[]>' => [
+                <<<'php'
+                /**
+                *
+                * @param array<string[]> $testArray
+                */
+                php,
+                [
+                    [
+                        new ArrayParameter(
+                            'array',
+                            'array-key',
+                            [new ArrayParameter('array', 'array-key', ['string'])]
+                        )
+                    ],
+                    true
+                ]
+            ],
             'array<array<string>|array<float>>' => [
                 <<<'php'
                 /**
                 *
                 * @param array<array<string>|array<float>> $testArray
+                */
+                php,
+                [
+                    [
+                        new ArrayParameter(
+                            'array',
+                            'array-key',
+                            [
+                                new ArrayParameter('array', 'array-key', ['string']),
+                                new ArrayParameter('array', 'array-key', ['float']),
+                            ]
+                        )
+                    ],
+                    true
+                ]
+            ],
+            'array<string[]|float[]>' => [
+                <<<'php'
+                /**
+                *
+                * @param array<string[]|float[]> $testArray
                 */
                 php,
                 [
@@ -318,11 +441,11 @@ class ParserTest extends BaseTestCase
                     true
                 ]
             ],
-            '(array<string>|array<float>)[]' => [
+            '(array<int, string>|array<float>)[]' => [
                 <<<'php'
                 /**
                 *
-                * @param (array<string>|array<float>)[] $testArray
+                * @param (array<int, string>|array<float>)[] $testArray
                 */
                 php,
                 [
@@ -331,7 +454,7 @@ class ParserTest extends BaseTestCase
                             'array',
                             'array-key',
                             [
-                                new ArrayParameter('array', 'array-key', ['string']),
+                                new ArrayParameter('array', 'int', ['string']),
                                 new ArrayParameter('array', 'array-key', ['float']),
                             ]
                         )
@@ -339,11 +462,7 @@ class ParserTest extends BaseTestCase
                     true
                 ]
             ],
-            'array<'
-            . 'array<int>|array<'
-            . 'array<float>|string'
-            . '>'
-            . '>' => [
+            'array<array<int>|array<array<float>|string>>' => [
                 <<<'php'
                 /**
                 *

@@ -58,10 +58,20 @@ class Parser
      */
     private $typeLinter;
 
-    public function __construct(UseContextInterface $useContext, ?TypeLinter $typeLinter = null)
-    {
+    /**
+     *
+     * @var UnionTypeSplitter
+     */
+    private $typeSplitter;
+
+    public function __construct(
+        UseContextInterface $useContext,
+        ?UnionTypeSplitter $typeSplitter = null,
+        ?TypeLinter $typeLinter = null
+    ) {
         $this->useContext = $useContext;
         $this->typeLinter = $typeLinter ?? new TypeLinter;
+        $this->typeSplitter = $typeSplitter ?? new UnionTypeSplitter;
     }
 
     /**
@@ -124,46 +134,7 @@ class Parser
      */
     protected function parseUnionTypes(string $typeString): array
     {
-        $matches = [];
-        //simple, psalm-array or class-string, intersection
-        $pattern = '(\([a-z|\[\]<>\-&\\\]+\)\[\])|(array<[-\(\) a-z|,<\[\]]+>+)|([a-z-<\[\]&\\\]+>*)';
-        preg_match_all(
-            "/$pattern/i",
-            $typeString,
-            $matches
-        );
-        /**
-         * @psalm-suppress MixedArgument
-         */
-        return $this->processParamPatternMatches($matches[0]);
-    }
-
-    /**
-     *
-     * @param array $matches
-     * @return string[]
-     */
-    private function processParamPatternMatches(array $matches): array
-    {
-        //echo "Raw:\n", var_dump($matches[0]);
-        //We want to combine split parameter types back together if the are part of a
-        //compound psalm array type (whew)
-        $concat = false;
-        /**  @var string[] $return */
-        $return = array_reduce($matches, function (array $carry, string $param) use (&$concat): array {
-            if (!$concat) {
-                $carry[] = $param;
-            } else {
-                /** @psalm-suppress MixedOperand */
-                $carry[array_key_last($carry) ?? 0] .= "|$param";
-            }
-            /** @var string $newCarry */
-            $newCarry = array_last($carry);
-            $concat = substr_count($newCarry, '<') !== substr_count($newCarry, '>');
-            return $carry;
-        }, []);
-        return $return;
-        //echo "Reduced:\n", var_dump($return);
+        return $this->typeSplitter->split($typeString);
     }
 
     /**
@@ -177,7 +148,7 @@ class Parser
         $openingArrow = strpos_default($typeString, '<', self::MAX_LENGTH);
         /** @var int $openingParenthises */
         $openingParenthises = strpos_default($typeString, '(', self::MAX_LENGTH);
-        if (str_contains_chars('<>', $typeString)
+        if (strpbrk($typeString, '<>') !== false
             && $openingArrow < $openingParenthises
         ) {
             if (str_contains_str($typeString, 'array')) {
@@ -221,7 +192,7 @@ class Parser
     private function parsePsrArrayType(string $typeString): array
     {
         $openingParenth = strpos($typeString, '(');
-        $closingParenth = (int)strpos($typeString, ')');
+        $closingParenth = (int)strrpos($typeString, ')');
         if ($openingParenth !== false) {
             return $this->parseTypes(
                 substr(
@@ -231,7 +202,11 @@ class Parser
                 )
             );
         }
-        return [substr($typeString, 0, -2)];
+        $newTypeString = substr($typeString, 0, -2);
+        if (str_contains_str($newTypeString, '[]')) {
+            return $this->parseTypes($newTypeString);
+        }
+        return [$newTypeString];
     }
 
     /**
