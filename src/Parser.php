@@ -35,6 +35,7 @@ use Aesonus\Paladin\Parsing\PsalmArrayParser;
 use Aesonus\Paladin\Parsing\PsalmClassStringParser;
 use Aesonus\Paladin\Parsing\PsrArrayParser;
 use Aesonus\Paladin\Parsing\UnionTypeSplitter;
+use Aesonus\Paladin\Contracts\ParameterInterface;
 use function Aesonus\Paladin\Utilities\str_contains_str;
 use function Aesonus\Paladin\Utilities\strpos_default;
 
@@ -160,7 +161,7 @@ class Parser
     /**
      *
      * @param string $typeString
-     * @return ArrayParameter|TypedClassStringParameter|string
+     * @return ParameterInterface|string
      */
     protected function parseParameterizedTypes(string $typeString)
     {

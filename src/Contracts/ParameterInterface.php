@@ -39,6 +39,10 @@ interface ParameterInterface
 
     public function getName(): string;
 
+    /**
+     *
+     * @return (ParameterInterface|string)[]
+     */
     public function getTypes(): array;
 
     public function isRequired(): bool;

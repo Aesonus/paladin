@@ -33,6 +33,11 @@ use function Aesonus\Paladin\Utilities\array_last;
  */
 class UnionTypeSplitter
 {
+    /**
+     *
+     * @param string $typeString
+     * @return string[]
+     */
     public function split(string $typeString): array
     {
         return $this->processParamPatternMatches(explode('|', str_replace(' ', '', $typeString)));

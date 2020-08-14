@@ -75,20 +75,32 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
             .' given';
     }
 
+    /**
+     *
+     * @param ParameterInterface|class-string|string $type
+     * @return string
+     */
     protected function getTypeClause($type): string
     {
         if ($type instanceof ArrayParameter) {
             return $this->getArrayType($type);
         } elseif ($type instanceof IntersectionParameter) {
             return $this->getIntersectionType($type);
-        } elseif (is_class_string($type)) {
+        } elseif (is_string($type) && is_class_string($type)) {
             return 'instance of ' . $type;
         } elseif (is_string($type) && $type === 'object') {
             return 'an object';
+        } elseif (is_string($type)) {
+            return 'of type ' . $type;
         }
-        return 'of type ' . $type;
+        return '';
     }
 
+    /**
+     *
+     * @param ArrayParameter $docblock
+     * @return string
+     */
     protected function getArrayType(ArrayParameter $docblock): string
     {
         $keyType = $docblock->getKeyType();
@@ -96,6 +108,11 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
         return sprintf('an array of type <%s, %s>', $keyType, $typeString);
     }
 
+    /**
+     *
+     * @param IntersectionParameter $docblock
+     * @return string
+     */
     protected function getIntersectionType(IntersectionParameter $docblock): string
     {
         $message = 'an intersection of ';
@@ -103,12 +120,24 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
         return $message;
     }
 
+    /**
+     *
+     * @param ParameterInterface $docblock
+     * @return string
+     */
     protected function getExceptedTypeMessage(ParameterInterface $docblock): string
     {
         $types = array_map([$this, 'getTypeClause'], $docblock->getTypes());
         return $this->getTypeListString($types, ', ', ', or ');
     }
 
+    /**
+     *
+     * @param string[] $types
+     * @param string $glue
+     * @param string $glueLast
+     * @return string
+     */
     private function getTypeListString(array $types, string $glue, string $glueLast): string
     {
         if (count($types) < 3) {
@@ -118,6 +147,11 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
         return implode($glue, $splitTypes) . $glueLast . array_last($types);
     }
 
+    /**
+     *
+     * @param ParameterInterface $docblock
+     * @return string
+     */
     protected function getGivenTypeMessage(ParameterInterface $docblock): string
     {
         if (is_object($this->givenValue)) {
@@ -128,10 +162,16 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
         return $this->getType($this->givenValue);
     }
 
+    /**
+     *
+     * @param mixed[] $value
+     * @return string
+     */
     protected function getGivenArrayType(array $value): string
     {
         $foundKeyType = '';
         $foundTypes = [];
+        /** @var mixed $arrayValue */
         foreach ($value as $key => $arrayValue) {
             $foundTypes[] = is_object($arrayValue) ? get_class($arrayValue) : $this->getType($arrayValue);
             if (($foundKeyType === 'int'
@@ -145,6 +185,11 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
         return sprintf('array of type <%s, %s>', $foundKeyType, implode('|', $foundTypes));
     }
 
+    /**
+     *
+     * @param mixed $value
+     * @return string
+     */
     private function getType($value): string
     {
         return is_int($value) ? 'int' : gettype($value);
