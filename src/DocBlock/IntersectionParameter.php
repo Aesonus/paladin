@@ -40,7 +40,7 @@ class IntersectionParameter extends UnionParameter
      */
     public function __construct(string $name, array $types)
     {
-        parent::__construct($name, $types, true);
+        parent::__construct($name, $types);
     }
 
     public function validate($givenValue): bool

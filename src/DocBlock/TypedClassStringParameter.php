@@ -44,7 +44,7 @@ class TypedClassStringParameter extends UnionParameter
      */
     public function __construct(string $name, array $classTypes)
     {
-        parent::__construct($name, ['class-string'], true);
+        parent::__construct($name, ['class-string']);
         $this->classTypes = $classTypes;
     }
 

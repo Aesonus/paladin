@@ -24,19 +24,25 @@
  */
 namespace Aesonus\Tests\Fixtures;
 
+use Aesonus\Paladin\ValidatesParameters;
+use stdClass;
+
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class TestClass extends \stdClass
+class TestClass extends stdClass
 {
+    use ValidatesParameters;
+
     /**
      *
      * @param string $testString Is a string scalar type
      */
-    public function simpleType($testString)
+    public function noOptionalParameters($testString)
     {
+        $this->validate(__METHOD__, func_get_args());
     }
 
     /**

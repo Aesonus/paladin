@@ -22,37 +22,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Paladin;
-
-use Aesonus\Paladin\Contracts\ParameterInterface;
-use InvalidArgumentException;
+namespace Aesonus\Tests\Fixtures;
 
 /**
  *
- *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class Validator
+interface MethodDocCommentFixtureInterface
 {
     /**
      *
-     * @param callable-string $method
-     * @param mixed $arguments
-     * @return void
-     * @throws InvalidArgumentException
+     * @param string $param
      */
-    public static function assert(string $method, ...$arguments): void
-    {
-    }
-
-    /**
-     *
-     * @param mixed $givenValue
-     * @param ParameterInterface $parameter
-     * @return bool
-     */
-    public static function validateParameter($givenValue, ParameterInterface $parameter): bool
-    {
-        return $parameter->validate($givenValue);
-    }
+    public function testInterfaceMethod($param);
 }

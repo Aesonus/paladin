@@ -22,63 +22,61 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Paladin\DocBlock;
+namespace Aesonus\Paladin;
 
-use Aesonus\Paladin\Contracts\ParameterInterface;
+use ReflectionClass;
+use ReflectionMethod;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class ArrayParameter extends UnionParameter
+class MethodDocComment
 {
     /**
      *
-     * @var string
+     * @var ReflectionMethod
      */
-    private $keyType;
+    private $reflectionMethod;
 
     /**
      *
-     * @param string $name
-     * @param string $keyType
-     * @param array<array-key, ParameterInterface|string> $valueType
+     * @param callable-string $method
      */
-    public function __construct(string $name, string $keyType, array $valueType)
+    public function __construct(string $method)
     {
-        parent::__construct($name, $valueType);
-        $this->keyType = $keyType;
+        $this->reflectionMethod = new ReflectionMethod(...explode('::', $method));
     }
 
-    /**
-     *
-     * @param mixed $givenValue
-     * @return bool
-     */
-    public function validate($givenValue): bool
+    public function get(): string
     {
-        if (!is_array($givenValue)) {
-            return false;
-        }
-        $valid = false;
-        /** @var mixed $value */
-        foreach ($givenValue as $key => $value) {
-            $valid = parent::validate($value) && $this->validateUnionType([$this->keyType], $key);
-            if (!$valid) {
+        return $this->getParentClassMethod()->getDocComment();
+    }
+
+    protected function getParentClassMethod(): ReflectionMethod
+    {
+        $methodClass = $this->reflectionMethod->getDeclaringClass();
+        //First look at interfaces
+        $interfaces = $methodClass->getInterfaces();
+        /** @var ReflectionClass $interface */
+        foreach ($interfaces as $interface) {
+            if (!$interface->hasMethod($this->reflectionMethod->getName())) {
                 break;
             }
+            return $interface->getMethod($this->reflectionMethod->getName());
         }
-        return $valid;
-    }
-
-    public function getKeyType(): string
-    {
-        return $this->keyType;
-    }
-
-    public function __toString()
-    {
-        return sprintf('array<%s, %s>', $this->getKeyType(), parent::__toString());
+        //Then look at parents
+        $parents = [];
+        while ($methodClass = $methodClass->getParentClass()) {
+            if (!$methodClass->hasMethod($this->reflectionMethod->getName())) {
+                break;
+            }
+            $parents[] = $methodClass;
+        }
+        if (empty($parents)) {
+            return $this->reflectionMethod;
+        }
+        return array_pop($parents)->getMethod($this->reflectionMethod->getName());
     }
 }

@@ -85,7 +85,7 @@ class DocBlockParameterTest extends BaseTestCase
             'int for numeric' => ['numeric', 3],
             'float for numeric' => ['numeric', 3.45],
             'callable-string for callable' => ['callable', 'array_filter'],
-            'array for callable' => ['callable', [new TestClass, 'simpleType']],
+            'array for callable' => ['callable', [new TestClass, 'noOptionalParameters']],
             'callable-string' => ['callable-string', 'array_filter'],
             'string for array-key' => ['array-key', 'key'],
             'int for array-key' => ['array-key', 1],

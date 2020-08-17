@@ -22,32 +22,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Paladin\Contracts;
+namespace Aesonus\Tests;
+
+use Aesonus\TestLib\BaseTestCase;
+use Aesonus\Tests\Fixtures\TestClass;
 
 /**
  *
+ *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-interface ParameterInterface
+class ValidatesParametersTest extends BaseTestCase
 {
-    /**
-     *
-     * @param mixed $givenValue
-     * @return bool
-     */
-    public function validate($givenValue): bool;
+    public $testObj;
 
-    public function getName(): string;
+    protected function setUp(): void
+    {
+        $this->testObj = new TestClass();
+    }
 
     /**
-     *
-     * @return (ParameterInterface|string)[]
+     * @test
      */
-    public function getTypes(): array;
+    public function exceptionThrownIfInvalidParameterIsGiven()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(TestClass::class . '::noOptionalParameters: Parameter 0 ');
+        $this->testObj->noOptionalParameters(23);
+    }
 
     /**
-     *
-     * @return string
+     * @test
      */
-    public function __toString();
+    public function exceptionNotThrownIfValidParameterGiven()
+    {
+        $this->assertNull($this->testObj->noOptionalParameters('test'));
+    }
+
+    /**
+     * @test
+     */
+    public function exceptionNotThrownIfValidParameterGivenWithExtraParameters()
+    {
+        $this->assertNull($this->testObj->noOptionalParameters('test', 'not named'));
+    }
 }

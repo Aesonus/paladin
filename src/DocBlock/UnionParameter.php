@@ -49,12 +49,6 @@ class UnionParameter implements ParameterInterface
 
     /**
      *
-     * @var bool
-     */
-    private $required;
-
-    /**
-     *
      * @var array<array-key, ParameterInterface|string>
      */
     private $types;
@@ -63,13 +57,11 @@ class UnionParameter implements ParameterInterface
      *
      * @param string $name
      * @param array<array-key, ParameterInterface|string> $types
-     * @param bool $required
      */
-    public function __construct(string $name, array $types, bool $required)
+    public function __construct(string $name, array $types)
     {
         $this->name = $name;
         $this->types = $types;
-        $this->required = $required;
     }
 
     /**
@@ -97,14 +89,6 @@ class UnionParameter implements ParameterInterface
     public function getName(): string
     {
         return $this->name;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isRequired(): bool
-    {
-        return $this->required;
     }
 
     /**
@@ -176,13 +160,6 @@ class UnionParameter implements ParameterInterface
 
     public function __toString()
     {
-        $string = "";
-        foreach ($this->getTypes() as $index => $type) {
-            $string .= $type;
-            if (array_key_last($this->getTypes()) !== $index) {
-                $string .= '|';
-            }
-        }
-        return $string;
+        return implode('|', $this->getTypes());
     }
 }

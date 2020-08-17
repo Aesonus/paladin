@@ -27,8 +27,6 @@ declare(strict_types=1);
 namespace Aesonus\Paladin;
 
 use Aesonus\Paladin\Contracts\UseContextInterface;
-use Aesonus\Paladin\DocBlock\ArrayParameter;
-use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
 use Aesonus\Paladin\DocBlock\UnionParameter;
 use Aesonus\Paladin\Exceptions\TypeLintException;
 use Aesonus\Paladin\Parsing\PsalmArrayParser;
@@ -103,18 +101,17 @@ class Parser
     /**
      *
      * @param string $docblock
-     * @param int $requiredParamCount
-     * @return array<array-key, ParameterInterface>
+     * @return ParameterInterface[]
      * @throws TypeLintException
      */
-    public function getDocBlock(string $docblock, int $requiredParamCount): array
+    public function getDocBlock(string $docblock): array
     {
         $matches = [];
         preg_match_all('/@param.+/', $docblock, $matches);
         /**
          * @psalm-suppress MixedArgument
          */
-        $params = $this->getParamsInParts($matches[0], $requiredParamCount);
+        $params = $this->getParamsInParts($matches[0]);
         try {
             return $this->constructDocBlockParameters($params);
         } catch (TypeLintException $exc) {
@@ -129,8 +126,8 @@ class Parser
 
     /**
      *
-     * @param array<int, array{name: string, type: string, required: bool}> $paramParts
-     * @return array<array-key, ParameterInterface>
+     * @param array<int, array{name: string, type: string}> $paramParts
+     * @return ParameterInterface[]
      */
     protected function constructDocBlockParameters(array $paramParts): array
     {
@@ -139,8 +136,7 @@ class Parser
             $this->typeLinter->lintCheck($param['name'], $param['type']);
             $return[] = new UnionParameter(
                 $param['name'],
-                $this->parseTypes($param['type']),
-                $param['required']
+                $this->parseTypes($param['type'])
             );
         }
         return $return;
@@ -188,16 +184,15 @@ class Parser
     /**
      *
      * @param array<int, string> $params
-     * @return array<int, array{name: string, type: string, required: bool}>
+     * @return array<int, array{name: string, type: string}>
      */
-    protected function getParamsInParts(array $params, int $numberOfRequired): array
+    protected function getParamsInParts(array $params): array
     {
         $return = [];
         foreach ($params as $index => $param) {
             $raw = array_slice(array_filter(preg_split('/(?<!,) /', $param)), 1, 2);
-            $raw[] = $numberOfRequired > $index;
             /** @var array{name: string, type: string, required: bool} */
-            $return[] = array_combine(['type', 'name', 'required'], $raw);
+            $return[] = array_combine(['type', 'name'], $raw);
         }
         return $return;
     }

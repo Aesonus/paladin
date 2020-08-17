@@ -22,32 +22,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Paladin\Contracts;
+namespace Aesonus\Tests\Fixtures;
 
 /**
  *
+ *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-interface ParameterInterface
+class MethodDocCommentTestFixture implements MethodDocCommentFixtureInterface
 {
     /**
      *
-     * @param mixed $givenValue
-     * @return bool
+     * @param string $testString Is a string scalar type
      */
-    public function validate($givenValue): bool;
+    public function testMethod($testString)
+    {
+    }
 
-    public function getName(): string;
-
-    /**
-     *
-     * @return (ParameterInterface|string)[]
-     */
-    public function getTypes(): array;
-
-    /**
-     *
-     * @return string
-     */
-    public function __toString();
+    public function testInterfaceMethod($param)
+    {
+    }
 }

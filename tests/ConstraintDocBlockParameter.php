@@ -76,8 +76,7 @@ class ConstraintDocBlockParameter extends Constraint
             return false;
         }
         return $other->getName() === $this->name
-            && $other->getTypes() == $this->type
-            && $other->isRequired() === $this->required;
+            && $other->getTypes() == $this->type;
     }
 
     public function toString(): string
@@ -85,7 +84,6 @@ class ConstraintDocBlockParameter extends Constraint
         return 'is ' . UnionParameter::class . ' with properties ' . $this->exporter()->export(
             [
                 'name' => $this->name,
-                'required' => $this->required,
                 'types' => $this->type,
             ]
         );
