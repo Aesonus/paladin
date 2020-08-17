@@ -26,16 +26,17 @@ declare(strict_types=1);
 
 namespace Aesonus\Paladin;
 
+use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\UseContextInterface;
 use Aesonus\Paladin\DocBlock\UnionParameter;
 use Aesonus\Paladin\Exceptions\TypeLintException;
 use Aesonus\Paladin\Parsing\PsalmArrayParser;
 use Aesonus\Paladin\Parsing\PsalmClassStringParser;
+use Aesonus\Paladin\Parsing\PsalmListParser;
 use Aesonus\Paladin\Parsing\PsrArrayParser;
 use Aesonus\Paladin\Parsing\UnionTypeSplitter;
-use Aesonus\Paladin\Contracts\ParameterInterface;
+use function Aesonus\Paladin\Utilities\get_str_positions;
 use function Aesonus\Paladin\Utilities\str_contains_str;
-use function Aesonus\Paladin\Utilities\strpos_default;
 
 /**
  *
@@ -72,6 +73,12 @@ class Parser
 
     /**
      *
+     * @var PsalmListParser
+     */
+    private $psalmListParser;
+
+    /**
+     *
      * @var PsalmClassStringParser
      */
     private $psalmClassStringParser;
@@ -86,6 +93,7 @@ class Parser
         UseContextInterface $useContext,
         ?UnionTypeSplitter $typeSplitter = null,
         ?PsalmArrayParser $psalmArrayParser = null,
+        ?PsalmListParser $psalmListParser = null,
         ?PsrArrayParser $psrArrayParser = null,
         ?PsalmClassStringParser $psalmClassStringParser = null,
         ?TypeLinter $typeLinter = null
@@ -94,6 +102,7 @@ class Parser
         $this->typeLinter = $typeLinter ?? new TypeLinter;
         $this->typeSplitter = $typeSplitter ?? new UnionTypeSplitter;
         $this->psalmArrayParser = $psalmArrayParser ?? new PsalmArrayParser;
+        $this->psalmListParser = $psalmListParser ?? new PsalmListParser;
         $this->psrArrayParser = $psrArrayParser ?? new PsrArrayParser;
         $this->psalmClassStringParser = $psalmClassStringParser ?? new PsalmClassStringParser;
     }
@@ -106,17 +115,26 @@ class Parser
      */
     public function getDocBlock(string $docblock): array
     {
-        $matches = [];
-        preg_match_all('/@param.+/', $docblock, $matches);
-        /**
-         * @psalm-suppress MixedArgument
-         */
-        $params = $this->getParamsInParts($matches[0]);
+        $matches = $this->getParamMatches($docblock);
+        $params = $this->getParamsInParts($matches);
         try {
             return $this->constructDocBlockParameters($params);
         } catch (TypeLintException $exc) {
             throw $exc;
         }
+    }
+
+    /**
+     *
+     * @param string $docblock
+     * @return list<string>
+     */
+    private function getParamMatches(string $docblock): array
+    {
+        $matches = [];
+        preg_match_all('/@param.+/', $docblock, $matches);
+        /** @var list<list<string>> $matches */
+        return $matches[0];
     }
 
     public function getUseContext(): UseContextInterface
@@ -161,22 +179,27 @@ class Parser
      */
     protected function parseParameterizedTypes(string $typeString)
     {
-        /** @var int $openingArrow */
-        $openingArrow = strpos_default($typeString, '<', self::MAX_LENGTH);
-        /** @var int $openingParenthises */
-        $openingParenthises = strpos_default($typeString, '(', self::MAX_LENGTH);
-        if (strpbrk($typeString, '<>') !== false
-            && $openingArrow < $openingParenthises
-        ) {
-            if (str_contains_str($typeString, 'array')) {
-                return $this->psalmArrayParser->parse($this, $typeString);
-            }
-            if (str_contains_str($typeString, 'class-string')) {
-                return $this->psalmClassStringParser->parse($this, $typeString);
+        $parseables = get_str_positions($typeString, '(', 'array<', 'list<', 'class-string<');
+        foreach ($parseables as $parseableType) {
+            switch ($parseableType['str']) {
+                case '(':
+                    return $this->psrArrayParser->parse($this, $typeString);
+                case 'array<':
+                    return $this->psalmArrayParser->parse($this, $typeString);
+                case 'list<':
+                    if (str_contains_str($typeString, '[]')) {
+                        return $this->psrArrayParser->parse($this, $typeString);
+                    }
+                    return $this->psalmListParser->parse($this, $typeString);
+                case 'class-string<':
+                    return $this->psalmClassStringParser->parse($this, $typeString);
             }
         }
         if (str_contains_str($typeString, '[]')) {
             return $this->psrArrayParser->parse($this, $typeString);
+        }
+        if (str_contains_str($typeString, 'list')) {
+            return $this->psalmListParser->parse($this, $typeString);
         }
         return $typeString;
     }

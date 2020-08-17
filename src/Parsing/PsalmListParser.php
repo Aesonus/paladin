@@ -22,53 +22,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Paladin\DocBlock;
+namespace Aesonus\Paladin\Parsing;
+
+use Aesonus\Paladin\Contracts\ParameterInterface;
+use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
+use Aesonus\Paladin\DocBlock\ListParameter;
+use Aesonus\Paladin\Parser;
+use function Aesonus\Paladin\Utilities\str_contains_str;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class TypedClassStringParameter extends UnionParameter
+class PsalmListParser implements TypeStringParsingInterface
 {
-    /**
-     *
-     * @var array<array-key, string>
-     */
-    private $classTypes;
-
-    /**
-     *
-     * @param string $name
-     * @param string[] $classTypes
-     */
-    public function __construct(string $name, array $classTypes)
+    public function parse(Parser $parser, string $typeString): ParameterInterface
     {
-        parent::__construct($name, ['class-string']);
-        $this->classTypes = $classTypes;
-    }
-
-    public function validate($givenValue): bool
-    {
-        if (!parent::validate($givenValue)) {
-            return false;
+        if (!str_contains_str($typeString, '<')) {
+            return new ListParameter(['mixed']);
         }
-        $valid = false;
-        foreach ($this->classTypes as $className) {
-            /**
-             * @psalm-suppress MixedArgument This is suppressed because $givenValue
-             * is asserted to be a string by the parent validate function
-             */
-            $valid = is_a($givenValue, $className, true);
-            if ($valid) {
-                break;
-            }
-        }
-        return $valid;
-    }
-
-    public function __toString()
-    {
-        return "class-string<" . implode('|', $this->classTypes) . ">";
+        $openingArrow = (int)strpos($typeString, '<');
+        $closingArrow = (int)strrpos($typeString, '>');
+        $listTypeString = substr($typeString, $openingArrow + 1, $closingArrow - $openingArrow - 1);
+        return new ListParameter($parser->parseTypes($listTypeString));
     }
 }

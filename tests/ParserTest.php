@@ -25,6 +25,7 @@
 namespace Aesonus\Tests;
 
 use Aesonus\Paladin\DocBlock\ArrayParameter;
+use Aesonus\Paladin\DocBlock\ListParameter;
 use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
 use Aesonus\Paladin\Parser;
 use Aesonus\Paladin\UseContext;
@@ -532,6 +533,159 @@ class ParserTest extends BaseTestCase
                             'int',
                             [
                                 new ArrayParameter('array', 'array-key', ['string'])
+                            ]
+                        )
+                    ],
+                    true
+                ]
+            ],
+            'list' => [
+                <<<'php'
+                /**
+                *
+                * @param list $testArray
+                */
+                php,
+                [
+                    [
+                        new ListParameter(
+                            [
+                                'mixed'
+                            ]
+                        )
+                    ],
+                    true
+                ]
+            ],
+            'list<string>' => [
+                <<<'php'
+                /**
+                *
+                * @param list<string> $testArray
+                */
+                php,
+                [
+                    [
+                        new ListParameter(
+                            [
+                                'string'
+                            ]
+                        )
+                    ],
+                    true
+                ]
+            ],
+            'list<string|int>' => [
+                <<<'php'
+                /**
+                *
+                * @param list<string|int> $testArray
+                */
+                php,
+                [
+                    [
+                        new ListParameter(
+                            [
+                                'string',
+                                'int'
+                            ]
+                        )
+                    ],
+                    true
+                ]
+            ],
+            'list<array<string>>' => [
+                <<<'php'
+                /**
+                *
+                * @param list<array<string>> $testArray
+                */
+                php,
+                [
+                    [
+                        new ListParameter(
+                            [
+                                new ArrayParameter('array', 'array-key', ['string'])
+                            ]
+                        )
+                    ],
+                    true
+                ]
+            ],
+            'array<list<string>>' => [
+                <<<'php'
+                /**
+                *
+                * @param array<list<string>> $testArray
+                */
+                php,
+                [
+                    [
+                        new ArrayParameter(
+                            'array',
+                            'array-key',
+                            [
+                                new ListParameter(['string'])
+                            ]
+                        )
+                    ],
+                    true
+                ]
+            ],
+            'array<int, list<string>>' => [
+                <<<'php'
+                /**
+                *
+                * @param array<int, list<string>> $testArray
+                */
+                php,
+                [
+                    [
+                        new ArrayParameter(
+                            'array',
+                            'int',
+                            [
+                                new ListParameter(['string'])
+                            ]
+                        )
+                    ],
+                    true
+                ]
+            ],
+            'list[]' => [
+                <<<'php'
+                /**
+                *
+                * @param list[] $testArray
+                */
+                php,
+                [
+                    [
+                        new ArrayParameter(
+                            'array',
+                            'array-key',
+                            [
+                                new ListParameter(['mixed'])
+                            ]
+                        )
+                    ],
+                    true
+                ]
+            ],
+            'list<int>[]' => [
+                <<<'php'
+                /**
+                *
+                * @param list<int>[] $testArray
+                */
+                php,
+                [
+                    [
+                        new ArrayParameter(
+                            'array',
+                            'array-key',
+                            [
+                                new ListParameter(['int'])
                             ]
                         )
                     ],

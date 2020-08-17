@@ -141,3 +141,30 @@ function implode_ext(string $glue, string $glueLast, array $pieces): string
     $splitTypes = array_slice($pieces, 0, -1);
     return implode($glue, $splitTypes) . $glueLast . array_last($pieces);
 }
+
+/**
+ *
+ * @param string $haystack
+ * @param string $needles
+ * @return list<array{str: string, pos: int}>
+ */
+function get_str_positions(string $haystack, string ...$needles): array
+{
+    $return = [];
+    foreach ($needles as $needle) {
+        $positions = strpos_all($haystack, $needle);
+        foreach ($positions as $pos) {
+            $return[] = ['str' => $needle, 'pos' => $pos];
+        }
+    }
+
+    usort($return, function (array $a, array $b) {
+        /**
+         * @var array{str: string, pos: int} $a
+         * @var array{str: string, pos: int} $b
+         */
+        return sign($a['pos'] - $b['pos']);
+    });
+    /** @var list<array{str: string, pos: int}> $return */
+    return $return;
+}

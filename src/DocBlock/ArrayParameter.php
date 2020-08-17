@@ -53,6 +53,7 @@ class ArrayParameter extends UnionParameter
 
     /**
      *
+     * @psalm-assert array $givenValue
      * @param mixed $givenValue
      * @return bool
      */

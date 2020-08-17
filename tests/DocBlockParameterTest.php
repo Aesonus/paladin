@@ -26,6 +26,7 @@ namespace Aesonus\Tests;
 
 use Aesonus\Paladin\DocBlock\ArrayParameter;
 use Aesonus\Paladin\DocBlock\IntersectionParameter;
+use Aesonus\Paladin\DocBlock\ListParameter;
 use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
 use Aesonus\Paladin\DocBlock\UnionParameter;
 use Aesonus\TestLib\BaseTestCase;
@@ -33,7 +34,6 @@ use Aesonus\Tests\Fixtures\TestClass;
 use Aesonus\Tests\Fixtures\TestIntersectionClass;
 use Aesonus\Tests\Fixtures\TestTrait;
 use ArrayAccess;
-use InvalidArgumentException;
 use Iterator;
 use RuntimeException;
 use stdClass;
@@ -197,9 +197,9 @@ class DocBlockParameterTest extends BaseTestCase
 
     /**
      * @test
-     * @dataProvider validateParameterReturnsTrueIfParameterIsListOfTypeDataProvider
+     * @dataProvider validateParameterReturnsTrueIfParameterIsArrayOfTypeDataProvider
      */
-    public function validateParameterReturnsTrueIfParameterIsListOfType($type, $givenValue)
+    public function validateParameterReturnsTrueIfParameterIsArrayOfType($type, $givenValue)
     {
         $docBlockParameter = new UnionParameter(
             '$test',
@@ -214,7 +214,7 @@ class DocBlockParameterTest extends BaseTestCase
     /**
      * Data Provider
      */
-    public function validateParameterReturnsTrueIfParameterIsListOfTypeDataProvider()
+    public function validateParameterReturnsTrueIfParameterIsArrayOfTypeDataProvider()
     {
         return [
             'string[] or array<string>' => [['string'], ['test', 'strings']],
@@ -225,9 +225,9 @@ class DocBlockParameterTest extends BaseTestCase
 
     /**
      * @test
-     * @dataProvider validateParameterReturnsFalseIfParameterIsNotListOfTypeDataProvider
+     * @dataProvider validateParameterReturnsFalseIfParameterIsNotArrayOfTypeDataProvider
      */
-    public function validateParameterReturnsFalseIfParameterIsNotListOfType($type, $givenValue)
+    public function validateParameterReturnsFalseIfParameterIsNotArrayOfType($type, $givenValue)
     {
         $docBlockParameter = new UnionParameter(
             '$test',
@@ -242,13 +242,70 @@ class DocBlockParameterTest extends BaseTestCase
     /**
      * Data Provider
      */
-    public function validateParameterReturnsFalseIfParameterIsNotListOfTypeDataProvider()
+    public function validateParameterReturnsFalseIfParameterIsNotArrayOfTypeDataProvider()
     {
         return [
             'array<string> having 1 valid' => [['string'], [3.12, 23, 'string']],
             'array<string|int> having 1 valid' => [['string', 'int'], [32, 34.5, [], 34.2]],
             'array<string|int> having 0 valid' => [['string', 'int'], [34.5, [], 34.2]],
             'object for array<string|int>' => [['string', 'int'], new stdClass],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider validateParameterReturnsTrueIfParameterIsListOfTypeDataProvider
+     */
+    public function validateParameterReturnsTrueIfParameterIsListOfType($types, $givenValue)
+    {
+        $docBlockParameter = new UnionParameter(
+            '$test',
+            [
+                new ListParameter($types)
+            ]
+        );
+        $this->assertTrue($docBlockParameter->validate($givenValue));
+    }
+
+    /**
+     * Data Provider
+     */
+    public function validateParameterReturnsTrueIfParameterIsListOfTypeDataProvider()
+    {
+        return [
+            'list' => [['mixed'], ['test', 23, new \stdClass()]],
+            'list<int>' => [['int'], [23, 12, 55]],
+            'list<class-string<stdClass>>' => [
+                [new TypedClassStringParameter('class-string', [\stdClass::class])],
+                [\stdClass::class, TestClass::class]
+            ]
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider validateParameterReturnsFalseIfParameterIsNotListOfTypeDataProvider
+     */
+    public function validateParameterReturnsFalseIfParameterIsNotListOfType($types, $givenValue)
+    {
+        $docBlockParameter = new UnionParameter(
+            '$test',
+            [
+                new ListParameter($types)
+            ]
+        );
+        $this->assertFalse($docBlockParameter->validate($givenValue));
+    }
+
+    /**
+     * Data Provider
+     */
+    public function validateParameterReturnsFalseIfParameterIsNotListOfTypeDataProvider()
+    {
+        return [
+            'list with values not starting at index 0' => [['mixed'], [1 => 'test', 2 => 23, 3 => new \stdClass()]],
+            'list<int> a value that is not int' => [['int'], [23, new \stdClass()]],
+            'list<int> a value with string key' => [['int'], [23, 'test' => 32]],
         ];
     }
 

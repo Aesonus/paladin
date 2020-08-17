@@ -58,7 +58,7 @@ class PsrArrayParser implements TypeStringParsingInterface
         return new ArrayParameter(
             'array',
             'array-key',
-            str_contains_str($newTypeString, '[]') ? $parser->parseTypes($newTypeString): [$newTypeString]
+            $parser->parseTypes($newTypeString)
         );
     }
 }

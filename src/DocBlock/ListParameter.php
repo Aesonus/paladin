@@ -24,51 +24,26 @@
  */
 namespace Aesonus\Paladin\DocBlock;
 
+use Aesonus\Paladin\Contracts\ParameterInterface;
+
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class TypedClassStringParameter extends UnionParameter
+class ListParameter extends ArrayParameter
 {
     /**
      *
-     * @var array<array-key, string>
+     * @param (ParameterInterface|string)[] $valueTypes
      */
-    private $classTypes;
-
-    /**
-     *
-     * @param string $name
-     * @param string[] $classTypes
-     */
-    public function __construct(string $name, array $classTypes)
+    public function __construct($valueTypes)
     {
-        parent::__construct($name, ['class-string']);
-        $this->classTypes = $classTypes;
+        parent::__construct('list', 'int', $valueTypes);
     }
 
     public function validate($givenValue): bool
     {
-        if (!parent::validate($givenValue)) {
-            return false;
-        }
-        $valid = false;
-        foreach ($this->classTypes as $className) {
-            /**
-             * @psalm-suppress MixedArgument This is suppressed because $givenValue
-             * is asserted to be a string by the parent validate function
-             */
-            $valid = is_a($givenValue, $className, true);
-            if ($valid) {
-                break;
-            }
-        }
-        return $valid;
-    }
-
-    public function __toString()
-    {
-        return "class-string<" . implode('|', $this->classTypes) . ">";
+        return parent::validate($givenValue) && $givenValue === array_values($givenValue);
     }
 }
