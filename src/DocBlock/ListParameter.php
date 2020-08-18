@@ -39,7 +39,7 @@ class ListParameter extends ArrayParameter
      */
     public function __construct($valueTypes)
     {
-        parent::__construct('list', 'int', $valueTypes);
+        parent::__construct('int', $valueTypes);
     }
 
     public function validate($givenValue): bool

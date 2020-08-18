@@ -45,9 +45,9 @@ class ArrayParameter extends UnionParameter
      * @param string $keyType
      * @param array<array-key, ParameterInterface|string> $valueType
      */
-    public function __construct(string $name, string $keyType, array $valueType)
+    public function __construct(string $keyType, array $valueType)
     {
-        parent::__construct($name, $valueType);
+        parent::__construct('array', $valueType);
         $this->keyType = $keyType;
     }
 

@@ -81,7 +81,7 @@ class Parser
      *
      * @var PsalmClassStringParser
      */
-    private $psalmClassStringParser;
+    private $classStringParser;
 
     /**
      *
@@ -95,7 +95,7 @@ class Parser
         ?PsalmArrayParser $psalmArrayParser = null,
         ?PsalmListParser $psalmListParser = null,
         ?PsrArrayParser $psrArrayParser = null,
-        ?PsalmClassStringParser $psalmClassStringParser = null,
+        ?PsalmClassStringParser $classStringParser = null,
         ?TypeLinter $typeLinter = null
     ) {
         $this->useContext = $useContext;
@@ -104,7 +104,7 @@ class Parser
         $this->psalmArrayParser = $psalmArrayParser ?? new PsalmArrayParser;
         $this->psalmListParser = $psalmListParser ?? new PsalmListParser;
         $this->psrArrayParser = $psrArrayParser ?? new PsrArrayParser;
-        $this->psalmClassStringParser = $psalmClassStringParser ?? new PsalmClassStringParser;
+        $this->classStringParser = $classStringParser ?? new PsalmClassStringParser;
     }
 
     /**
@@ -180,22 +180,23 @@ class Parser
     protected function parseParameterizedTypes(string $typeString)
     {
         $parseables = get_str_positions($typeString, '(', 'array<', 'list<', 'class-string<');
+        $isPsrArray = (int)strrpos($typeString, '[]') + 2 === strlen($typeString);
         foreach ($parseables as $parseableType) {
             switch ($parseableType['str']) {
                 case '(':
                     return $this->psrArrayParser->parse($this, $typeString);
                 case 'array<':
-                    return $this->psalmArrayParser->parse($this, $typeString);
+                    return $isPsrArray ? $this->psrArrayParser->parse($this, $typeString)
+                        : $this->psalmArrayParser->parse($this, $typeString);
                 case 'list<':
-                    if (str_contains_str($typeString, '[]')) {
-                        return $this->psrArrayParser->parse($this, $typeString);
-                    }
-                    return $this->psalmListParser->parse($this, $typeString);
+                    return $isPsrArray ? $this->psrArrayParser->parse($this, $typeString)
+                        : $this->psalmListParser->parse($this, $typeString);
                 case 'class-string<':
-                    return $this->psalmClassStringParser->parse($this, $typeString);
+                    return $isPsrArray ? $this->psrArrayParser->parse($this, $typeString)
+                        : $this->classStringParser->parse($this, $typeString);
             }
         }
-        if (str_contains_str($typeString, '[]')) {
+        if ($isPsrArray) {
             return $this->psrArrayParser->parse($this, $typeString);
         }
         if (str_contains_str($typeString, 'list')) {
@@ -212,7 +213,7 @@ class Parser
     protected function getParamsInParts(array $params): array
     {
         $return = [];
-        foreach ($params as $index => $param) {
+        foreach ($params as $param) {
             $raw = array_slice(array_filter(preg_split('/(?<!,) /', $param)), 1, 2);
             /** @var array{name: string, type: string, required: bool} */
             $return[] = array_combine(['type', 'name'], $raw);

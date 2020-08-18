@@ -137,7 +137,7 @@ class TypeExceptionVisitorTest extends BaseTestCase
     {
         $parameter = new UnionParameter(
             '$param',
-            [new IntersectionParameter('', [ArrayAccess::class, TestIntersectionClass::class])],
+            [new IntersectionParameter([ArrayAccess::class, TestIntersectionClass::class])],
             true
         );
         $testObj = new TypeExceptionVisitor(new TestClass());
@@ -156,7 +156,7 @@ class TypeExceptionVisitorTest extends BaseTestCase
         $parameter = new UnionParameter(
             '$param',
             [
-                new IntersectionParameter('', [ArrayAccess::class, TestIntersectionClass::class]),
+                new IntersectionParameter([ArrayAccess::class, TestIntersectionClass::class]),
                 'int'
             ],
             true
@@ -181,7 +181,7 @@ class TypeExceptionVisitorTest extends BaseTestCase
     ) {
         $parameter = new UnionParameter(
             '$param',
-            [new ArrayParameter('array', 'array-key', $types)],
+            [new ArrayParameter('array-key', $types)],
             true
         );
         $testObj = new TypeExceptionVisitor($givenValue);
@@ -235,7 +235,7 @@ class TypeExceptionVisitorTest extends BaseTestCase
             ],
             'array<array-key, ArrayAccess&' . TestIntersectionClass::class . '>' => [
                 ['pi' => 3.141, ['nested' => 23]],
-                [new IntersectionParameter('', [ArrayAccess::class, TestIntersectionClass::class])],
+                [new IntersectionParameter([ArrayAccess::class, TestIntersectionClass::class])],
                 'be of type array<array-key, ArrayAccess&' . TestIntersectionClass::class . '>',
                 'array<array-key, double|array<string, int>>'
             ]
@@ -253,7 +253,7 @@ class TypeExceptionVisitorTest extends BaseTestCase
     ) {
         $parameter = new UnionParameter(
             '$param',
-            [new TypedClassStringParameter('', $types)],
+            [new TypedClassStringParameter($types)],
             true
         );
         $testObj = new TypeExceptionVisitor($givenValue);
@@ -282,10 +282,9 @@ class TypeExceptionVisitorTest extends BaseTestCase
             '$param',
             [
                 new ArrayParameter(
-                    'array',
                     'array-key',
                     [
-                        new ArrayParameter('array', 'array-key', ['string']),
+                        new ArrayParameter('array-key', ['string']),
                         'float'
                     ]
                 ),

@@ -54,7 +54,6 @@ class DocBlockParameterTest extends BaseTestCase
         $docBlockParameter = new UnionParameter(
             '$test',
             [$type],
-            true
         );
         $this->assertTrue($docBlockParameter->validate($givenValue));
     }
@@ -106,7 +105,6 @@ class DocBlockParameterTest extends BaseTestCase
         $docBlockParameter = new UnionParameter(
             '$test',
             [$type],
-            true
         );
         $this->assertFalse($docBlockParameter->validate($givenValue));
     }
@@ -154,7 +152,6 @@ class DocBlockParameterTest extends BaseTestCase
         $docBlockParameter = new UnionParameter(
             '$test',
             $types,
-            true
         );
         $this->assertTrue($docBlockParameter->validate($givenValue));
     }
@@ -179,7 +176,6 @@ class DocBlockParameterTest extends BaseTestCase
         $docBlockParameter = new UnionParameter(
             '$test',
             $types,
-            true
         );
         $this->assertFalse($docBlockParameter->validate($givenValue));
     }
@@ -204,9 +200,8 @@ class DocBlockParameterTest extends BaseTestCase
         $docBlockParameter = new UnionParameter(
             '$test',
             [
-                new ArrayParameter('$test', 'array-key', $type)
+                new ArrayParameter('array-key', $type)
             ],
-            true
         );
         $this->assertTrue($docBlockParameter->validate($givenValue));
     }
@@ -232,9 +227,8 @@ class DocBlockParameterTest extends BaseTestCase
         $docBlockParameter = new UnionParameter(
             '$test',
             [
-                new ArrayParameter('$test', 'array-key', $type)
+                new ArrayParameter('array-key', $type)
             ],
-            true
         );
         $this->assertFalse($docBlockParameter->validate($givenValue));
     }
@@ -276,7 +270,7 @@ class DocBlockParameterTest extends BaseTestCase
             'list' => [['mixed'], ['test', 23, new \stdClass()]],
             'list<int>' => [['int'], [23, 12, 55]],
             'list<class-string<stdClass>>' => [
-                [new TypedClassStringParameter('class-string', [\stdClass::class])],
+                [new TypedClassStringParameter([\stdClass::class])],
                 [\stdClass::class, TestClass::class]
             ]
         ];
@@ -318,9 +312,8 @@ class DocBlockParameterTest extends BaseTestCase
         $docBlockParameter = new UnionParameter(
             '$test',
             [
-                new ArrayParameter('$test', $keyType, $type)
+                new ArrayParameter($keyType, $type)
             ],
-            true
         );
         $this->assertTrue($docBlockParameter->validate($givenValue));
     }
@@ -346,9 +339,8 @@ class DocBlockParameterTest extends BaseTestCase
         $docBlockParameter = new UnionParameter(
             '$test',
             [
-                new ArrayParameter('$test', $keyType, $type)
+                new ArrayParameter($keyType, $type)
             ],
-            true
         );
         $this->assertFalse($docBlockParameter->validate($givenValue));
     }
@@ -389,9 +381,8 @@ class DocBlockParameterTest extends BaseTestCase
         $docBlockParameter = new UnionParameter(
             '$test',
             [
-                new IntersectionParameter('$test', $types)
+                new IntersectionParameter($types)
             ],
-            true
         );
         $this->assertTrue($docBlockParameter->validate($givenValue));
     }
@@ -403,12 +394,10 @@ class DocBlockParameterTest extends BaseTestCase
     public function validateParameterReturnsTrueIfArrayParameterElementIsOfIntersectionType($types, $givenValue)
     {
         $docBlockParameter = new ArrayParameter(
-            '$test',
             'int',
             [
-                new IntersectionParameter('array', $types)
+                new IntersectionParameter($types)
             ],
-            true
         );
         $this->assertTrue($docBlockParameter->validate([$givenValue, $givenValue]));
     }
@@ -435,9 +424,8 @@ class DocBlockParameterTest extends BaseTestCase
         $docBlockParameter = new UnionParameter(
             '$test',
             [
-                new IntersectionParameter('$test', $types),
+                new IntersectionParameter($types),
             ],
-            true
         );
         $this->assertFalse($docBlockParameter->validate($givenValue));
     }
@@ -449,12 +437,10 @@ class DocBlockParameterTest extends BaseTestCase
     public function validateParameterReturnsFalseIfArrayParameterElementIsNotOfIntersectionType($types, $givenValue)
     {
         $docBlockParameter = new ArrayParameter(
-            '$test',
-            'int',
+            'array-key',
             [
-                new IntersectionParameter('array', $types)
+                new IntersectionParameter($types)
             ],
-            true
         );
         //Make a valid given value to make sure this works
         $givenValidValue = new class() extends TestIntersectionClass implements Iterator {
@@ -497,9 +483,7 @@ class DocBlockParameterTest extends BaseTestCase
     public function validateParameterReturnsTrueIfParameterIsClassStringOfType($classTypes, $givenValue)
     {
         $docblockParameter = new TypedClassStringParameter(
-            '$test',
             $classTypes,
-            true
         );
         $this->assertTrue($docblockParameter->validate($givenValue));
     }
@@ -522,9 +506,7 @@ class DocBlockParameterTest extends BaseTestCase
     public function validateParameterReturnsFalseIfParameterIsNotClassStringOfType($classTypes, $givenValue)
     {
         $docblockParameter = new TypedClassStringParameter(
-            '$test',
             $classTypes,
-            true
         );
         $this->assertFalse($docblockParameter->validate($givenValue));
     }

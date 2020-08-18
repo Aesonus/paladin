@@ -24,8 +24,6 @@
  */
 namespace Aesonus\Paladin\DocBlock;
 
-use function Aesonus\Paladin\Utilities\implode_ext;
-
 /**
  *
  *
@@ -38,9 +36,9 @@ class IntersectionParameter extends UnionParameter
      * @param string $name
      * @param string[] $types
      */
-    public function __construct(string $name, array $types)
+    public function __construct(array $types)
     {
-        parent::__construct($name, $types);
+        parent::__construct('intersection', $types);
     }
 
     public function validate($givenValue): bool

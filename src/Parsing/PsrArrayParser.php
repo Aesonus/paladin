@@ -28,7 +28,6 @@ use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
 use Aesonus\Paladin\DocBlock\ArrayParameter;
 use Aesonus\Paladin\Parser;
-use function Aesonus\Paladin\Utilities\str_contains_str;
 
 /**
  *
@@ -43,7 +42,6 @@ class PsrArrayParser implements TypeStringParsingInterface
         $closingParenth = (int)strrpos($typeString, ')');
         if ($openingParenth !== false) {
             return new ArrayParameter(
-                'array',
                 'array-key',
                 $parser->parseTypes(
                     substr(
@@ -56,7 +54,6 @@ class PsrArrayParser implements TypeStringParsingInterface
         }
         $newTypeString = substr($typeString, 0, -2);
         return new ArrayParameter(
-            'array',
             'array-key',
             $parser->parseTypes($newTypeString)
         );

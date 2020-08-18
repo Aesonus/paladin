@@ -45,7 +45,7 @@ class PsalmClassStringParser implements TypeStringParsingInterface
     public function parse(Parser $parser, string $typeString): ParameterInterface
     {
         $classTypes = explode('|', substr($typeString, (int)strpos($typeString, '<') + 1, -1));
-        return new TypedClassStringParameter('class-string', array_map(function ($type) use ($parser) {
+        return new TypedClassStringParameter(array_map(function ($type) use ($parser) {
             $rawClass = (strpos($type, '\\') === 0) ? substr($type, 1): $type;
             return $parser->getUseContext()->getUsedClass($rawClass);
         }, $classTypes));
