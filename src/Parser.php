@@ -174,7 +174,7 @@ class Parser
     {
         $unionTypes = $this->typeSplitter->split($typeString);
 
-        return array_map([$this, 'parseParameterizedTypes'], $unionTypes);
+        return array_map([$this, 'parseUnionTypes'], $unionTypes);
     }
 
     /**
@@ -183,28 +183,24 @@ class Parser
      * @return ParameterInterface
      * @throws ParseException
      */
-    protected function parseParameterizedTypes(string $typeString): ParameterInterface
+    protected function parseUnionTypes(string $typeString): ParameterInterface
     {
-        $parseables = get_str_positions($typeString, '(', 'array<', 'list<', 'class-string<');
+        $parseables = get_str_positions($typeString, 'array<', 'list<', 'class-string<');
         $isPsrArray = (int)strrpos($typeString, '[]') + 2 === strlen($typeString);
-        foreach ($parseables as $parseableType) {
-            switch ($parseableType['str']) {
-                case '(':
-                    return $this->psrArrayParser->parse($this, $typeString);
-                case 'array<':
-                    return $isPsrArray ? $this->psrArrayParser->parse($this, $typeString)
-                        : $this->psalmArrayParser->parse($this, $typeString);
-                case 'list<':
-                    return $isPsrArray ? $this->psrArrayParser->parse($this, $typeString)
-                        : $this->psalmListParser->parse($this, $typeString);
-                case 'class-string<':
-                    return $isPsrArray ? $this->psrArrayParser->parse($this, $typeString)
-                        : $this->classStringParser->parse($this, $typeString);
-            }
-        }
         if ($isPsrArray) {
             return $this->psrArrayParser->parse($this, $typeString);
         }
+        foreach ($parseables as $parseableType) {
+            switch ($parseableType['str']) {
+                case 'array<':
+                    return $this->psalmArrayParser->parse($this, $typeString);
+                case 'list<':
+                    return $this->psalmListParser->parse($this, $typeString);
+                case 'class-string<':
+                    return $this->classStringParser->parse($this, $typeString);
+            }
+        }
+
         if (str_contains_str($typeString, 'list')) {
             return $this->psalmListParser->parse($this, $typeString);
         }
