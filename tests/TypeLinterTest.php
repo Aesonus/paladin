@@ -11,7 +11,7 @@
 
 namespace Aesonus\Tests;
 
-use Aesonus\Paladin\Exceptions\TypeLintException;
+use Aesonus\Paladin\Exceptions\TypeLintError;
 use Aesonus\Paladin\TypeLinter;
 use Aesonus\TestLib\BaseTestCase;
 
@@ -30,8 +30,8 @@ class TypeLinterTest extends BaseTestCase
      */
     public function malformedDocblockThrowsException($name, $type, $info)
     {
-        $this->expectException(TypeLintException::class);
-        $this->expectExceptionMessage("Declared type is not valid for @param $type $name: $info");
+        $this->expectError();
+        $this->expectErrorMessage("Declared type is not valid for @param $type $name: $info");
         $this->testObj->lintCheck($name, $type);
     }
 

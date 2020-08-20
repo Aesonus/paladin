@@ -22,7 +22,7 @@
     <condition property="phpmd" value="phpmd" else="phpmd.bat">
         <os family="unix" />
     </condition>
-    <condition property="psalm" value="psalm" else="psalm.phar.bat">
+    <condition property="psalm" value="psalm" else="psalm.bat">
         <os family="unix" />
     </condition>
     <condition property="phpunit" value="${basedir}/vendor/bin/phpunit" else="${basedir}/vendor/bin/phpunit.bat">

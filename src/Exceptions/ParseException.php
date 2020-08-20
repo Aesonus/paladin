@@ -22,23 +22,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Paladin\Contracts;
-
-use Aesonus\Paladin\Exceptions\ParseException;
-use Aesonus\Paladin\Parser;
+namespace Aesonus\Paladin\Exceptions;
 
 /**
  *
+ *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-interface TypeStringParsingInterface
+class ParseException extends \RuntimeException
 {
-    /**
-     *
-     * @param Parser $parser
-     * @param string $typeString
-     * @return ParameterInterface
-     * @throws ParseException
-     */
-    public function parse(Parser $parser, string $typeString): ParameterInterface;
+    public function __construct(string $typeString = "", \Throwable $previous = null)
+    {
+        parent::__construct("Unknown type: '$typeString'", 0, $previous);
+    }
 }

@@ -28,7 +28,6 @@ use Aesonus\Paladin\Contracts\TypeExceptionVisitorInterface;
 use Aesonus\Paladin\Contracts\UseContextInterface;
 use Aesonus\Paladin\Exceptions\TypeException;
 use InvalidArgumentException;
-use ReflectionMethod;
 
 /**
  *
@@ -59,6 +58,7 @@ trait ValidatesParameters
     {
         $docblock = (new MethodDocComment($method))->get();
         $validators = $this->getParser()->getDocBlock($docblock);
+        /** @var mixed $argValue */
         foreach ($args as $i => $argValue) {
             if (!array_key_exists($i, $validators)) {
                 break;
@@ -91,6 +91,11 @@ trait ValidatesParameters
         return $this->useContext;
     }
 
+    /**
+     *
+     * @param mixed $givenValue
+     * @return TypeExceptionVisitorInterface
+     */
     private function getTypeExceptionVisitor($givenValue): TypeExceptionVisitorInterface
     {
         return new TypeExceptionVisitor($givenValue);

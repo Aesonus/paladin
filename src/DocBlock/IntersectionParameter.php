@@ -34,7 +34,7 @@ class IntersectionParameter extends UnionParameter
     /**
      *
      * @param string $name
-     * @param string[] $types
+     * @param ObjectParameter[] $types
      */
     public function __construct(array $types)
     {
@@ -44,13 +44,9 @@ class IntersectionParameter extends UnionParameter
     public function validate($givenValue): bool
     {
         $valid = false;
-        /** @var string $intersectionTypes */
         foreach ($this->getTypes() as $intersectionTypes) {
             /** @var bool $valid */
-            $valid = call_user_func(
-                $this->getValidationCallable($intersectionTypes),
-                $givenValue
-            );
+            $valid = $intersectionTypes->validate($givenValue);
             if (!$valid) {
                 break;
             }

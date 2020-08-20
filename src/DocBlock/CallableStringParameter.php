@@ -22,23 +22,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Paladin\Contracts;
-
-use Aesonus\Paladin\Exceptions\ParseException;
-use Aesonus\Paladin\Parser;
+namespace Aesonus\Paladin\DocBlock;
 
 /**
  *
+ *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-interface TypeStringParsingInterface
+class CallableStringParameter extends AbstractAtomicParameter
 {
-    /**
-     *
-     * @param Parser $parser
-     * @param string $typeString
-     * @return ParameterInterface
-     * @throws ParseException
-     */
-    public function parse(Parser $parser, string $typeString): ParameterInterface;
+    //put your code here
 }

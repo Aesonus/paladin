@@ -22,68 +22,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-declare(strict_types=1);
-
 namespace Aesonus\Paladin\DocBlock;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
-use RuntimeException;
+use Aesonus\Paladin\Contracts\TypeExceptionVisitorInterface;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class UnionParameter extends AbstractParameter
+abstract class AbstractParameter implements ParameterInterface
 {
-
+    /**
+     *
+     * @var string
+     */
+    protected $name;
 
     /**
      *
-     * @param string $name
-     * @param ParameterInterface[] $types
+     * @var ParameterInterface[]
      */
-    public function __construct(string $name, array $types)
+    protected $types = [];
+
+    public function acceptExceptionVisitor(TypeExceptionVisitorInterface $visitor): void
     {
-        $this->name = $name;
-        $this->types = $types;
+        $visitor->visitParameter($this);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function validate($givenValue): bool
+    public function getName(): string
     {
-        return $this->validateUnionType($this->getTypes(), $givenValue);
+        return $this->name;
     }
 
     /**
-     *
-     * @param ParameterInterface[] $types
-     * @param mixed $givenValue
-     * @return bool
+     * {@inheritdoc}
      */
-    protected function validateUnionType(array $types, $givenValue): bool
+    public function getTypes(): array
     {
-        $valid = false;
-        foreach ($types as $type) {
-//            if (!($type instanceof ParameterInterface)) {
-//                throw new RuntimeException(
-//                    'All types must be instances of '
-//                    . ParameterInterface::class
-//                );
-//            }
-            $valid = $type->validate($givenValue);
-            if ($valid) {
-                break;
-            }
-        }
-        return $valid;
-    }
-
-    public function __toString()
-    {
-        return implode('|', $this->getTypes());
+        return $this->types;
     }
 }

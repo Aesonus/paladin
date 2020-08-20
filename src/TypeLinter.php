@@ -24,7 +24,6 @@
  */
 namespace Aesonus\Paladin;
 
-use Aesonus\Paladin\Exceptions\TypeLintException;
 use function Aesonus\Paladin\Utilities\array_last;
 use function Aesonus\Paladin\Utilities\sign;
 use function Aesonus\Paladin\Utilities\str_contains_str;
@@ -73,7 +72,6 @@ class TypeLinter
      * @param string $paramName
      * @param string $typeString
      * @return void
-     * @throws TypeLintException
      */
     public function lintCheck(string $paramName, string $typeString): void
     {
@@ -92,7 +90,6 @@ class TypeLinter
     /**
      *
      * @return void
-     * @throws TypeLintException
      */
     private function checkParenthesis(): void
     {
@@ -102,7 +99,7 @@ class TypeLinter
         ];
         $result = $this->checkForPairs('(', ')');
         if ($result !== 0) {
-            $this->throwExceptionWithMessage(
+            $this->triggerErrorWithMessage(
                 $message[$result]
             );
         }
@@ -111,7 +108,6 @@ class TypeLinter
     /**
      *
      * @return void
-     * @throws TypeLintException
      */
     private function checkArrows(): void
     {
@@ -121,7 +117,7 @@ class TypeLinter
         ];
         $result = $this->checkForPairs('<', '>');
         if ($result !== 0) {
-            $this->throwExceptionWithMessage(
+            $this->triggerErrorWithMessage(
                 $message[$result]
             );
         }
@@ -130,7 +126,6 @@ class TypeLinter
     /**
      *
      * @return void
-     * @throws TypeLintException
      */
     private function checkBrackets(): void
     {
@@ -140,7 +135,7 @@ class TypeLinter
         ];
         $result = $this->checkForPairs('[', ']');
         if ($result !== 0) {
-            $this->throwExceptionWithMessage(
+            $this->triggerErrorWithMessage(
                 $message[$result]
             );
         }
@@ -149,7 +144,6 @@ class TypeLinter
     /**
      *
      * @return void
-     * @throws TypeLintException
      */
     private function checkBars(): void
     {
@@ -157,35 +151,33 @@ class TypeLinter
             || str_contains_str($this->typeString, '|>')
             || strpos($this->typeString, '|') === strlen($this->typeString) - 1
         ) {
-            $this->throwExceptionWithMessage(self::TRAILING_BAR);
+            $this->triggerErrorWithMessage(self::TRAILING_BAR);
         }
         if (str_contains_str($this->typeString, '(|')
             || str_contains_str($this->typeString, '<|')
             || strpos($this->typeString, '|') === 0
         ) {
-            $this->throwExceptionWithMessage(self::LEADING_BAR);
+            $this->triggerErrorWithMessage(self::LEADING_BAR);
         }
     }
 
     /**
      *
      * @return void
-     * @throws TypeLintException
      */
     private function checkCommas(): void
     {
         if (str_contains_str($this->typeString, ',>')) {
-            $this->throwExceptionWithMessage(self::TRAILING_COMMA_IN_ARRAY_TYPE);
+            $this->triggerErrorWithMessage(self::TRAILING_COMMA_IN_ARRAY_TYPE);
         }
         if (str_contains_str($this->typeString, '<,')) {
-            $this->throwExceptionWithMessage(self::LEADING_COMMA_IN_ARRAY_TYPE);
+            $this->triggerErrorWithMessage(self::LEADING_COMMA_IN_ARRAY_TYPE);
         }
     }
 
     /**
      *
      * @return void
-     * @throws TypeLintException
      */
     private function checkPsalmArrayTypes(): void
     {
@@ -214,7 +206,7 @@ class TypeLinter
             );
             //echo $foundType . "\n";
             if (!in_array($foundType, ['array-key', 'int', 'string'])) {
-                $this->throwExceptionWithMessage(sprintf(self::INVALID_ARRAY_KEY_TYPE_TEMPLATE, $foundType));
+                $this->triggerErrorWithMessage(sprintf(self::INVALID_ARRAY_KEY_TYPE_TEMPLATE, $foundType));
             }
         }
     }
@@ -240,13 +232,10 @@ class TypeLinter
      *
      * @param string $info
      * @return void
-     * @throws TypeLintException
      */
-    private function throwExceptionWithMessage(string $info): void
+    private function triggerErrorWithMessage(string $info): void
     {
-        throw new TypeLintException(
-            "Declared type is not valid for @param "
-            . "{$this->originalTypeString} {$this->paramName}: $info"
-        );
+        trigger_error("Declared type is not valid for @param "
+            . "{$this->originalTypeString} {$this->paramName}: $info", E_USER_ERROR);
     }
 }

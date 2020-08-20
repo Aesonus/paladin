@@ -26,12 +26,8 @@ namespace Aesonus\Paladin;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\TypeExceptionVisitorInterface;
-use Aesonus\Paladin\DocBlock\ArrayParameter;
 use Aesonus\Paladin\DocBlock\IntersectionParameter;
-use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
-use Aesonus\Paladin\DocBlock\UnionParameter;
 use Aesonus\Paladin\Exceptions\TypeException;
-use function Aesonus\Paladin\Utilities\array_last;
 use function Aesonus\Paladin\Utilities\implode_ext;
 
 /**
@@ -59,7 +55,7 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
     /**
      * {@inheritdoc}
      */
-    public function visitUnion(UnionParameter $docblock): void
+    public function visitParameter(ParameterInterface $docblock): void
     {
         if ($docblock->validate($this->givenValue)) {
             return;
@@ -78,16 +74,16 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
 
     /**
      *
-     * @param ParameterInterface|class-string|string $type
+     * @param ParameterInterface $type
      * @return string
      */
-    protected function getTypeClause($type): string
+    protected function getTypeClause(ParameterInterface $type): string
     {
         if ($type instanceof IntersectionParameter) {
             return $this->getIntersectionType($type);
-        } elseif (is_string($type) && is_class_string($type)) {
+        } elseif (is_class_string((string)$type)) {
             return 'instance of ' . $type;
-        } elseif (is_string($type) && $type === 'object') {
+        } elseif ((string)$type === 'object') {
             return 'an object';
         }
         return 'of type ' . $type;

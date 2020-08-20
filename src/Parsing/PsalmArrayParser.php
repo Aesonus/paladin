@@ -26,6 +26,7 @@ namespace Aesonus\Paladin\Parsing;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
+use Aesonus\Paladin\DocBlock\ArrayKeyParameter;
 use Aesonus\Paladin\DocBlock\ArrayParameter;
 use Aesonus\Paladin\Parser;
 
@@ -49,9 +50,9 @@ class PsalmArrayParser implements TypeStringParsingInterface
         $types = preg_split('`,(?![\w \[\]]+>)`', $arrayTypeString);
         //echo "Split Psalm\n", var_dump($types);
         if (count($types) === 1) {
-            return new ArrayParameter('array-key', $parser->parseTypes($types[0]));
+            return new ArrayParameter(new ArrayKeyParameter, $parser->parseTypes($types[0]));
         }
         $keyType = array_shift($types);
-        return new ArrayParameter($keyType, $parser->parseTypes($types[0]));
+        return new ArrayParameter($parser->parseTypes($keyType)[0], $parser->parseTypes($types[0]));
     }
 }

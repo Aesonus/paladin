@@ -24,9 +24,25 @@
  */
 namespace Aesonus\Tests;
 
+use Aesonus\Paladin\DocBlock\ArrayKeyParameter;
 use Aesonus\Paladin\DocBlock\ArrayParameter;
+use Aesonus\Paladin\DocBlock\BoolParameter;
+use Aesonus\Paladin\DocBlock\CallableParameter;
+use Aesonus\Paladin\DocBlock\CallableStringParameter;
+use Aesonus\Paladin\DocBlock\ClassStringParameter;
+use Aesonus\Paladin\DocBlock\FalseParameter;
+use Aesonus\Paladin\DocBlock\FloatParameter;
 use Aesonus\Paladin\DocBlock\IntersectionParameter;
+use Aesonus\Paladin\DocBlock\IntParameter;
 use Aesonus\Paladin\DocBlock\ListParameter;
+use Aesonus\Paladin\DocBlock\MixedParameter;
+use Aesonus\Paladin\DocBlock\NumericParameter;
+use Aesonus\Paladin\DocBlock\NumericStringParameter;
+use Aesonus\Paladin\DocBlock\ObjectParameter;
+use Aesonus\Paladin\DocBlock\ScalarParameter;
+use Aesonus\Paladin\DocBlock\StringParameter;
+use Aesonus\Paladin\DocBlock\TraitStringParameter;
+use Aesonus\Paladin\DocBlock\TrueParameter;
 use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
 use Aesonus\Paladin\DocBlock\UnionParameter;
 use Aesonus\TestLib\BaseTestCase;
@@ -64,35 +80,35 @@ class DocBlockParameterTest extends BaseTestCase
     public function validateParameterReturnsTrueIfParameterIsOfSimpleTypeDataProvider()
     {
         return [
-            'mixed' => ['mixed', 32],
-            'string' => ['string', 'test value'],
-            'int' => ['int', 3],
-            'true for bool' => ['bool', true],
-            'false for bool' => ['bool', false],
-            'true' => ['true', true],
-            'false' => ['false', false],
-            'float' => ['float', 3.141],
-            'array' => ['array', []],
-            'stdClass for object' => ['object', new stdClass],
-            'int for scalar' => ['scalar', 34],
-            'float for scalar' => ['scalar', 34.4],
-            'string for scalar' => ['scalar', 'string'],
-            'int for mixed ' => ['mixed', 34],
-            'float for mixed' => ['mixed', 34.4],
-            'string for mixed' => ['mixed', 'string'],
-            'numeric-string for numeric' => ['numeric', '3.32'],
-            'int for numeric' => ['numeric', 3],
-            'float for numeric' => ['numeric', 3.45],
-            'callable-string for callable' => ['callable', 'array_filter'],
-            'array for callable' => ['callable', [new TestClass, 'noOptionalParameters']],
-            'callable-string' => ['callable-string', 'array_filter'],
-            'string for array-key' => ['array-key', 'key'],
-            'int for array-key' => ['array-key', 1],
-            'class-string' => ['class-string', stdClass::class],
-            'interface for class-string' => ['class-string', ArrayAccess::class],
-            'trait-string' => ['trait-string', TestTrait::class],
-            'numeric-string' => ['numeric-string', '3.14159'],
-            stdClass::class => [stdClass::class, new stdClass]
+            'mixed' => [new MixedParameter, 32],
+            'int for mixed ' => [new MixedParameter, 34],
+            'float for mixed' => [new MixedParameter, 34.4],
+            'string for mixed' => [new MixedParameter, 'string'],
+            'string' => [new StringParameter, 'test value'],
+            'int' => [new IntParameter, 3],
+            'true for bool' => [new BoolParameter, true],
+            'false for bool' => [new BoolParameter, false],
+            'true' => [new TrueParameter, true],
+            'false' => [new FalseParameter, false],
+            'float' => [new FloatParameter, 3.141],
+            'array' => [new ArrayParameter, []],
+            'stdClass for object' => [new ObjectParameter, new stdClass],
+            'stdClass for object of type' => [new ObjectParameter(\stdClass::class), new stdClass],
+            'int for scalar' => [new ScalarParameter, 34],
+            'float for scalar' => [new ScalarParameter, 34.4],
+            'string for scalar' => [new ScalarParameter, 'string'],
+            'numeric-string for numeric' => [new NumericParameter, '3.32'],
+            'int for numeric' => [new NumericParameter, 3],
+            'float for numeric' => [new NumericParameter, 3.45],
+            'callable-string for callable' => [new CallableParameter, 'array_filter'],
+            'array for callable' => [new CallableParameter, [new TestClass, 'noOptionalParameters']],
+            'callable-string' => [new CallableStringParameter, 'array_filter'],
+            'string for array-key' => [new ArrayKeyParameter, 'key'],
+            'int for array-key' => [new ArrayKeyParameter, 1],
+            'class-string' => [new ClassStringParameter, stdClass::class],
+            'interface for class-string' => [new ClassStringParameter, ArrayAccess::class],
+            'trait-string' => [new TraitStringParameter, TestTrait::class],
+            'numeric-string' => [new NumericStringParameter, '3.14159'],
         ];
     }
 
@@ -115,31 +131,31 @@ class DocBlockParameterTest extends BaseTestCase
     public function invalidParameterTypeValueDataProvider()
     {
         return [
-            'int for string' => ['string', 32],
-            'float for int' => ['int', 3.141],
-            '2 for bool' => ['bool', 2],
-            'string for bool' => ['bool', 'test'],
-            '1 for true' => ['true', 1],
-            '0 for false' => ['false', 0],
-            'false for true' => ['true', false],
-            'true for false' => ['false', true],
-            'int for float' => ['float', 3],
-            'object for array' => ['array', new stdClass],
-            'classname for object' => ['object', stdClass::class],
-            'array for scalar' => ['scalar', []],
-            'object for scalar' => ['scalar', new stdClass],
-            'characters for numeric' => ['numeric', 'abc'],
-            'object for numeric' => ['numeric', new stdClass],
-            'array for numeric' => ['numeric', []],
-            'non-callable for callable' => ['callable', 'array_filterrsf'],
-            'non-callable array callable' => ['callable', [new TestClass, 'methodNotFound']],
-            'non-callable string for callable-string' => ['callable-string', 'nopenoexists'],
-            'float for array-key' => ['array-key', 3.141],
-            'class for class-string' => ['class-string', new stdClass],
-            'trait-string for class-string' => ['class-string', TestTrait::class],
-            'interface for trait-string' => ['trait-string', ArrayAccess::class],
-            'characters for numeric-string' => ['numeric-string', '3.14159sd'],
-            stdClass::class => [stdClass::class, new TestIntersectionClass],
+            'int for string' => [new StringParameter, 32],
+            'float for int' => [new IntParameter, 3.141],
+            '2 for bool' => [new BoolParameter, 2],
+            'string for bool' => [new BoolParameter, 'test'],
+            '1 for true' => [new TrueParameter, 1],
+            '0 for false' => [new FalseParameter, 0],
+            'false for true' => [new TrueParameter, false],
+            'true for false' => [new FalseParameter, true],
+            'int for float' => [new FloatParameter, 3],
+            'object for array' => [new ArrayParameter, new stdClass],
+            'classname for object' => [new ObjectParameter, stdClass::class],
+            'array for scalar' => [new ScalarParameter, []],
+            'object for scalar' => [new ScalarParameter, new stdClass],
+            'characters for numeric' => [new NumericParameter, 'abc'],
+            'object for numeric' => [new NumericParameter, new stdClass],
+            'array for numeric' => [new NumericParameter, []],
+            'non-callable for callable' => [new CallableParameter, 'array_filterrsf'],
+            'non-callable array callable' => [new CallableParameter, [new TestClass, 'methodNotFound']],
+            'non-callable string for callable-string' => [new CallableStringParameter, 'nopenoexists'],
+            'float for array-key' => [new ArrayKeyParameter, 3.141],
+            'class for class-string' => [new ClassStringParameter, new stdClass],
+            'trait-string for class-string' => [new ClassStringParameter, TestTrait::class],
+            'interface for trait-string' => [new TraitStringParameter, ArrayAccess::class],
+            'characters for numeric-string' => [new NumericStringParameter, '3.14159sd'],
+            stdClass::class => [new ObjectParameter(stdClass::class), new TestIntersectionClass],
         ];
     }
 
@@ -162,8 +178,8 @@ class DocBlockParameterTest extends BaseTestCase
     public function validateParameterReturnsTrueIfParameterIsOfUnionTypeDataProvider()
     {
         return [
-            'string for string|int' => [['string', 'int'], 'test'],
-            'int for string|int' => [['string', 'int'], 23],
+            'string for string|int' => [[new StringParameter, new IntParameter], 'test'],
+            'int for string|int' => [[new StringParameter, new IntParameter], 23],
         ];
     }
 
@@ -186,8 +202,8 @@ class DocBlockParameterTest extends BaseTestCase
     public function invalidUnionTypeParameterValueDataProvider()
     {
         return [
-            'float for string|int' => [['string', 'int'], 3.14159],
-            'object for string|int' => [['string', 'int'], new stdClass],
+            'float for string|int' => [[new StringParameter, new IntParameter], 3.14159],
+            'object for string|int' => [[new StringParameter, new IntParameter], new stdClass],
         ];
     }
 
@@ -200,7 +216,7 @@ class DocBlockParameterTest extends BaseTestCase
         $docBlockParameter = new UnionParameter(
             '$test',
             [
-                new ArrayParameter('array-key', $type)
+                new ArrayParameter(new ArrayKeyParameter, $type)
             ],
         );
         $this->assertTrue($docBlockParameter->validate($givenValue));
@@ -212,9 +228,9 @@ class DocBlockParameterTest extends BaseTestCase
     public function validateParameterReturnsTrueIfParameterIsArrayOfTypeDataProvider()
     {
         return [
-            'string[] or array<string>' => [['string'], ['test', 'strings']],
-            'array<string|int>' => [['string', 'int'], [34, 'string', 34]],
-            'array<string|int|object>' => [['string', 'object', 'int'], [32, new stdClass, 'test']]
+            'string[] or array<string>' => [[new StringParameter], ['test', 'strings']],
+            'array<string|int>' => [[new StringParameter, new IntParameter], [34, 'string', 34]],
+            'array<string|int|object>' => [[new StringParameter, new ObjectParameter, new IntParameter], [32, new stdClass, 'test']]
         ];
     }
 
@@ -227,7 +243,7 @@ class DocBlockParameterTest extends BaseTestCase
         $docBlockParameter = new UnionParameter(
             '$test',
             [
-                new ArrayParameter('array-key', $type)
+                new ArrayParameter(new ArrayKeyParameter, $type)
             ],
         );
         $this->assertFalse($docBlockParameter->validate($givenValue));
@@ -239,10 +255,10 @@ class DocBlockParameterTest extends BaseTestCase
     public function validateParameterReturnsFalseIfParameterIsNotArrayOfTypeDataProvider()
     {
         return [
-            'array<string> having 1 valid' => [['string'], [3.12, 23, 'string']],
-            'array<string|int> having 1 valid' => [['string', 'int'], [32, 34.5, [], 34.2]],
-            'array<string|int> having 0 valid' => [['string', 'int'], [34.5, [], 34.2]],
-            'object for array<string|int>' => [['string', 'int'], new stdClass],
+            'array<string> having 1 valid' => [[new StringParameter], [3.12, 23, 'string']],
+            'array<string|int> having 1 valid' => [[new StringParameter, new IntParameter], [32, 34.5, [], 34.2]],
+            'array<string|int> having 0 valid' => [[new StringParameter, new IntParameter], [34.5, [], 34.2]],
+            'object for array<string|int>' => [[new StringParameter, new IntParameter], new stdClass],
         ];
     }
 
@@ -267,8 +283,8 @@ class DocBlockParameterTest extends BaseTestCase
     public function validateParameterReturnsTrueIfParameterIsListOfTypeDataProvider()
     {
         return [
-            'list' => [['mixed'], ['test', 23, new \stdClass()]],
-            'list<int>' => [['int'], [23, 12, 55]],
+            'list' => [[new MixedParameter], ['test', 23, new \stdClass()]],
+            'list<int>' => [[new IntParameter], [23, 12, 55]],
             'list<class-string<stdClass>>' => [
                 [new TypedClassStringParameter([\stdClass::class])],
                 [\stdClass::class, TestClass::class]
@@ -297,9 +313,9 @@ class DocBlockParameterTest extends BaseTestCase
     public function validateParameterReturnsFalseIfParameterIsNotListOfTypeDataProvider()
     {
         return [
-            'list with values not starting at index 0' => [['mixed'], [1 => 'test', 2 => 23, 3 => new \stdClass()]],
-            'list<int> a value that is not int' => [['int'], [23, new \stdClass()]],
-            'list<int> a value with string key' => [['int'], [23, 'test' => 32]],
+            'list with values not starting at index 0' => [[new MixedParameter], [1 => 'test', 2 => 23, 3 => new \stdClass()]],
+            'list<int> a value that is not int' => [[new IntParameter], [23, new \stdClass()]],
+            'list<int> a value with string key' => [[new IntParameter], [23, 'test' => 32]],
         ];
     }
 
@@ -324,9 +340,9 @@ class DocBlockParameterTest extends BaseTestCase
     public function validateParameterReturnsTrueIfArrayKeyPairIsOfTypeDataProvider()
     {
         return [
-            'array<int, string>' => ['int', ['string'], ['just', 'a', 'list']],
-            'array<string, string>' => ['string', ['string'], ['a' => 'just', 'b' => 'a', 'c' => 'list']],
-            'array<string, string|int>' => ['string', ['string', 'int'], ['a' => 'just', 'b' => 2, 'c' => 'list']],
+            'array<int, string>' => [new IntParameter, [new StringParameter], ['just', 'a', 'list']],
+            'array<string, string>' => [new StringParameter, [new StringParameter], ['a' => 'just', 'b' => 'a', 'c' => 'list']],
+            'array<string, string|int>' => [new StringParameter, [new StringParameter, new IntParameter], ['a' => 'just', 'b' => 2, 'c' => 'list']],
         ];
     }
 
@@ -352,21 +368,21 @@ class DocBlockParameterTest extends BaseTestCase
     {
         return [
             'invalid key in array<int, string>' => [
-                'int',
-                ['string'],
+                new IntParameter,
+                [new StringParameter],
                 ['a' => 'just', 2 => 'a', 'c' => 'list']
             ],
-            'invalid element in array<int, string>' => ['int', ['string'], ['just', 3.1441, 'list']],
-            'invalid key in array<string, string>' => ['string', ['string'], ['just', 'a', 'list']],
-            'invalid element in array<int, string>' => ['int', ['string'], ['just', 2, 'list']],
+            'invalid element in array<int, string>' => [new IntParameter, [new StringParameter], ['just', 3.1441, 'list']],
+            'invalid key in array<string, string>' => [new StringParameter, [new StringParameter], ['just', 'a', 'list']],
+            'invalid element in array<int, string>' => [new IntParameter, [new StringParameter], ['just', 2, 'list']],
             'invalid key in array<string, string|int>' => [
-                'string',
-                ['string', 'int'],
+                new StringParameter,
+                [new StringParameter, new IntParameter],
                 [0 => 'just', 'b' => 2, 'c' => 'list']
             ],
             'invalid value for array<int, string>' => [
-                'int',
-                ['string'],
+                new IntParameter,
+                [new StringParameter],
                 new stdClass()
             ],
         ];
@@ -394,7 +410,7 @@ class DocBlockParameterTest extends BaseTestCase
     public function validateParameterReturnsTrueIfArrayParameterElementIsOfIntersectionType($types, $givenValue)
     {
         $docBlockParameter = new ArrayParameter(
-            'int',
+            new IntParameter,
             [
                 new IntersectionParameter($types)
             ],
@@ -409,7 +425,7 @@ class DocBlockParameterTest extends BaseTestCase
     {
         return [
             'ArrayAccess&TestIntersectionClass' => [
-                [ArrayAccess::class, TestIntersectionClass::class],
+                [new ObjectParameter(ArrayAccess::class), new ObjectParameter(TestIntersectionClass::class)],
                 new TestIntersectionClass
             ],
         ];
@@ -437,7 +453,7 @@ class DocBlockParameterTest extends BaseTestCase
     public function validateParameterReturnsFalseIfArrayParameterElementIsNotOfIntersectionType($types, $givenValue)
     {
         $docBlockParameter = new ArrayParameter(
-            'array-key',
+            new ArrayKeyParameter,
             [
                 new IntersectionParameter($types)
             ],
@@ -470,7 +486,7 @@ class DocBlockParameterTest extends BaseTestCase
     {
         return [
             'TestIntersectionClass&Iterator (Iterator not implemented)' => [
-                [TestIntersectionClass::class, Iterator::class],
+                [new ObjectParameter(TestIntersectionClass::class), new ObjectParameter(Iterator::class)],
                 new TestIntersectionClass
             ]
         ];
@@ -519,31 +535,6 @@ class DocBlockParameterTest extends BaseTestCase
         return [
             'invalid class for class-string<\\stdClass>' => [[TestClass::class], stdClass::class],
             'object for class-string<\\stdClass>' => [[stdClass::class], new stdClass()],
-        ];
-    }
-
-    /**
-     * @test
-     * @dataProvider validateParameterThrowsExceptionIfParameterCannotBeValidatedDataProvider
-     */
-    public function validateParameterThrowsExceptionIfParameterCannotBeValidated($types, $message)
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage($message);
-        $docblockParameter = new UnionParameter('$testParam', $types, true);
-        $docblockParameter->validate(null);
-    }
-
-    /**
-     * Data Provider
-     */
-    public function validateParameterThrowsExceptionIfParameterCannotBeValidatedDataProvider()
-    {
-        return [
-            [
-                ['not_good'],
-                'Could not validate for type \'not_good\''
-            ]
         ];
     }
 }

@@ -22,68 +22,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-declare(strict_types=1);
-
 namespace Aesonus\Paladin\DocBlock;
-
-use Aesonus\Paladin\Contracts\ParameterInterface;
-use RuntimeException;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class UnionParameter extends AbstractParameter
+class ObjectParameter extends AbstractAtomicParameter
 {
-
-
     /**
      *
-     * @param string $name
-     * @param ParameterInterface[] $types
+     * @var null|string
      */
-    public function __construct(string $name, array $types)
+    private $ofClass = null;
+
+    public function __construct(?string $ofClass = null)
     {
-        $this->name = $name;
-        $this->types = $types;
+        $this->ofClass = $ofClass;
+        parent::__construct();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function validate($givenValue): bool
     {
-        return $this->validateUnionType($this->getTypes(), $givenValue);
+        return is_object($givenValue)
+            && (isset($this->ofClass) ? is_a($givenValue, $this->ofClass): true);
     }
 
-    /**
-     *
-     * @param ParameterInterface[] $types
-     * @param mixed $givenValue
-     * @return bool
-     */
-    protected function validateUnionType(array $types, $givenValue): bool
+    public function __toString(): string
     {
-        $valid = false;
-        foreach ($types as $type) {
-//            if (!($type instanceof ParameterInterface)) {
-//                throw new RuntimeException(
-//                    'All types must be instances of '
-//                    . ParameterInterface::class
-//                );
-//            }
-            $valid = $type->validate($givenValue);
-            if ($valid) {
-                break;
-            }
-        }
-        return $valid;
-    }
-
-    public function __toString()
-    {
-        return implode('|', $this->getTypes());
+        return isset($this->ofClass) ? $this->ofClass: parent::__toString();
     }
 }

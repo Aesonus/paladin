@@ -35,25 +35,24 @@ class ArrayParameter extends UnionParameter
 {
     /**
      *
-     * @var string
+     * @var ParameterInterface
      */
     private $keyType;
 
     /**
      *
-     * @param string $name
-     * @param string $keyType
-     * @param array<array-key, ParameterInterface|string> $valueType
+     * @param null|ParameterInterface $keyType
+     * @param null|ParameterInterface[] $valueType
      */
-    public function __construct(string $keyType, array $valueType)
+    public function __construct(?ParameterInterface $keyType = null, ?array $valueType = null)
     {
-        parent::__construct('array', $valueType);
-        $this->keyType = $keyType;
+        parent::__construct('array', $valueType ?? [new MixedParameter]);
+        $this->keyType = $keyType ?? new ArrayKeyParameter;
     }
 
     /**
      *
-     * @psalm-assert array $givenValue
+     * @psalm-assert-if-true array $givenValue
      * @param mixed $givenValue
      * @return bool
      */
@@ -62,7 +61,7 @@ class ArrayParameter extends UnionParameter
         if (!is_array($givenValue)) {
             return false;
         }
-        $valid = false;
+        $valid = true;
         /** @var mixed $value */
         foreach ($givenValue as $key => $value) {
             $valid = parent::validate($value) && $this->validateUnionType([$this->keyType], $key);

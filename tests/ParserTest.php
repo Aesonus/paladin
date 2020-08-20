@@ -24,10 +24,18 @@
  */
 namespace Aesonus\Tests;
 
+use Aesonus\Paladin\DocBlock\ArrayKeyParameter;
 use Aesonus\Paladin\DocBlock\ArrayParameter;
+use Aesonus\Paladin\DocBlock\ClassStringParameter;
+use Aesonus\Paladin\DocBlock\FloatParameter;
+use Aesonus\Paladin\DocBlock\IntParameter;
 use Aesonus\Paladin\DocBlock\ListParameter;
+use Aesonus\Paladin\DocBlock\MixedParameter;
+use Aesonus\Paladin\DocBlock\ObjectParameter;
+use Aesonus\Paladin\DocBlock\StringParameter;
 use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
 use Aesonus\Paladin\Parser;
+use Aesonus\Paladin\TypeLinter;
 use Aesonus\Paladin\UseContext;
 use Aesonus\TestLib\BaseTestCase;
 use Aesonus\Tests\Fixtures\ParserContextClass;
@@ -56,14 +64,14 @@ class ParserTest extends BaseTestCase
         $this->testObj = new Parser(new UseContext(ParserContextClass::class));
     }
 
-    public static function isDocBlockParameter($name, $types, $required)
+    public static function isDocBlockParameter($name, $types)
     {
-        return new ConstraintDocBlockParameter($name, $types, $required);
+        return new ConstraintDocBlockParameter($name, $types);
     }
 
-    public static function assertDocBlockParameter($actual, $name, $types, $required): void
+    public static function assertDocBlockParameter($actual, $name, $types): void
     {
-        static::assertThat($actual, static::isDocBlockParameter($name, $types, $required));
+        static::assertThat($actual, static::isDocBlockParameter($name, $types));
     }
 
     /**
@@ -74,11 +82,11 @@ class ParserTest extends BaseTestCase
         $docblock = <<<'php'
             /**
              *
-             * @param string $testString Is a string scalar type
+             * @param int $testString Is a string scalar type
             */
             php;
         $actual = $this->testObj->getDocBlock($docblock, 1)[0];
-        $this->assertDocBlockParameter($actual, '$testString', ['string'], true);
+        $this->assertDocBlockParameter($actual, '$testString', [new IntParameter]);
     }
 
     /**
@@ -93,7 +101,22 @@ class ParserTest extends BaseTestCase
             */
             php;
         $actual = $this->testObj->getDocBlock($docblock, 1)[0];
-        $this->assertDocBlockParameter($actual, '$testUnion', ['string', 'array'], true);
+        $this->assertDocBlockParameter($actual, '$testUnion', [new StringParameter, new ArrayParameter]);
+    }
+
+    /**
+     * @test
+     */
+    public function getParsedDocBlockReturnsAProperDocBlockObjectWithObjectOfType()
+    {
+        $docblock = <<<'php'
+            /**
+            *
+            * @param stdClass $testUnion
+            */
+            php;
+        $actual = $this->testObj->getDocBlock($docblock, 1)[0];
+        $this->assertDocBlockParameter($actual, '$testUnion', [new ObjectParameter(stdClass::class)]);
     }
 
     /**
@@ -103,10 +126,11 @@ class ParserTest extends BaseTestCase
     public function getParsedDocBlockReturnsDocBlockForClassStringWithTypes($docblock, $expected)
     {
         $actual = $this->testObj->getDocBlock($docblock, 1)[0];
-        $this->assertDocBlockParameter($actual, '$testClassString', ...$expected);
+        $this->assertDocBlockParameter($actual, '$testClassString', $expected);
     }
 
     /**
+     *
      * Data Provider
      */
     public function getParsedDocBlockReturnsDocBlockForClassStringWithTypesDataProvider()
@@ -119,7 +143,7 @@ class ParserTest extends BaseTestCase
                 * @param class-string<\stdClass> $testClassString
                 */
                 php,
-                [[new TypedClassStringParameter([stdClass::class])], true]
+                [new TypedClassStringParameter([stdClass::class])]
             ],
             'class-string<\stdClass|Aesonus\Tests\Fixtures\TestClass>' => [
                 <<<'php'
@@ -128,7 +152,7 @@ class ParserTest extends BaseTestCase
                 * @param class-string<\stdClass|Aesonus\Tests\Fixtures\TestClass> $testClassString
                 */
                 php,
-                [[new TypedClassStringParameter([stdClass::class, TestClass::class])], true]
+                [new TypedClassStringParameter([stdClass::class, TestClass::class])]
             ],
             'class-string<stdClass|TestClass>' => [
                 <<<'php'
@@ -137,7 +161,7 @@ class ParserTest extends BaseTestCase
                 * @param class-string<stdClass|TestClass> $testClassString
                 */
                 php,
-                [[new TypedClassStringParameter([stdClass::class, TestClass::class])], true]
+                [new TypedClassStringParameter([stdClass::class, TestClass::class])]
             ],
         ];
     }
@@ -165,7 +189,7 @@ class ParserTest extends BaseTestCase
                 * @param (string|int)[] $testArray
                 */
                 php,
-                [[new ArrayParameter('array-key', ['string', 'int'])], true]
+                [[new ArrayParameter(new ArrayKeyParameter, [new StringParameter, new IntParameter])], true]
             ],
             'string[]' => [
                 <<<'php'
@@ -174,7 +198,7 @@ class ParserTest extends BaseTestCase
                 * @param string[] $testArray
                 */
                 php,
-                [[new ArrayParameter('array-key', ['string'])], true]
+                [[new ArrayParameter(new ArrayKeyParameter, [new StringParameter])], true]
             ],
             '(string[]|int)[]' => [
                 <<<'php'
@@ -186,10 +210,10 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
-                                new ArrayParameter('array-key', ['string']),
-                                'int'
+                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
+                                new IntParameter
                             ]
                         )
                     ],
@@ -206,9 +230,9 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
-                                new ArrayParameter('array-key', ['string']),
+                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
                             ]
                         )
                     ],
@@ -225,9 +249,9 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
-                                new ArrayParameter('array-key', ['string']),
+                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
                             ]
                         )
                     ],
@@ -244,11 +268,11 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
                                 new ArrayParameter(
-                                    'array-key',
-                                    [new ArrayParameter('array-key', ['string'])]
+                                    new ArrayKeyParameter,
+                                    [new ArrayParameter(new ArrayKeyParameter, [new StringParameter])]
                                 ),
                             ]
                         )
@@ -266,11 +290,11 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
                                 new ArrayParameter(
-                                    'array-key',
-                                    [new ArrayParameter('array-key', ['string'])]
+                                    new ArrayKeyParameter,
+                                    [new ArrayParameter(new ArrayKeyParameter, [new StringParameter])]
                                 ),
                             ]
                         )
@@ -288,9 +312,9 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
-                                new ArrayParameter('array-key', ['string']),
+                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
                             ]
                         )
                     ],
@@ -304,7 +328,7 @@ class ParserTest extends BaseTestCase
                 * @param array<string> $testArray
                 */
                 php,
-                [[new ArrayParameter('array-key', ['string'])], true]
+                [[new ArrayParameter(new ArrayKeyParameter, [new StringParameter])], true]
             ],
             'array<string|float>' => [
                 <<<'php'
@@ -313,7 +337,7 @@ class ParserTest extends BaseTestCase
                 * @param array<string|float> $testArray
                 */
                 php,
-                [[new ArrayParameter('array-key', ['string', 'float'])], true]
+                [[new ArrayParameter(new ArrayKeyParameter, [new StringParameter, new FloatParameter])], true]
             ],
             'array<(string|int)[]>' => [
                 <<<'php'
@@ -325,8 +349,8 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
-                            [new ArrayParameter('array-key', ['string', 'int'])]
+                            new ArrayKeyParameter,
+                            [new ArrayParameter(new ArrayKeyParameter, [new StringParameter, new IntParameter])]
                         )
                     ],
                     true
@@ -342,8 +366,8 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
-                            [new ArrayParameter('array-key', ['string'])]
+                            new ArrayKeyParameter,
+                            [new ArrayParameter(new ArrayKeyParameter, [new StringParameter])]
                         )
                     ],
                     true
@@ -359,10 +383,10 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
-                                new ArrayParameter('array-key', ['string']),
-                                new ArrayParameter('array-key', ['float']),
+                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
+                                new ArrayParameter(new ArrayKeyParameter, [new FloatParameter]),
                             ]
                         )
                     ],
@@ -379,10 +403,10 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
-                                new ArrayParameter('array-key', ['string']),
-                                new ArrayParameter('array-key', ['float']),
+                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
+                                new ArrayParameter(new ArrayKeyParameter, [new FloatParameter]),
                             ]
                         )
                     ],
@@ -399,10 +423,10 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
-                                new ArrayParameter('array-key', ['string']),
-                                new ArrayParameter('array-key', ['float']),
+                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
+                                new ArrayParameter(new ArrayKeyParameter, [new FloatParameter]),
                             ]
                         )
                     ],
@@ -419,11 +443,11 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
-                                new ArrayParameter('array-key', ['string']),
-                                'float',
-                                new ArrayParameter('string', ['mixed']),
+                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
+                                new FloatParameter,
+                                new ArrayParameter(new StringParameter, [new MixedParameter]),
                             ]
                         )
                     ],
@@ -440,11 +464,11 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
-                                new ArrayParameter('array-key', ['string']),
-                                new ArrayParameter('array-key', ['float']),
-                                new ArrayParameter('string', ['mixed']),
+                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
+                                new ArrayParameter(new ArrayKeyParameter, [new FloatParameter]),
+                                new ArrayParameter(new StringParameter, [new MixedParameter]),
                             ]
                         )
                     ],
@@ -461,10 +485,10 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
-                                new ArrayParameter('int', ['string']),
-                                new ArrayParameter('array-key', ['float']),
+                                new ArrayParameter(new IntParameter, [new StringParameter]),
+                                new ArrayParameter(new ArrayKeyParameter, [new FloatParameter]),
                             ]
                         )
                     ],
@@ -481,14 +505,14 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
-                                new ArrayParameter('array-key', [
-                                    'int',
+                                new ArrayParameter(new ArrayKeyParameter, [
+                                    new IntParameter,
                                 ]),
-                                new ArrayParameter('array-key', [
-                                    new ArrayParameter('array-key', ['float']),
-                                    'string'
+                                new ArrayParameter(new ArrayKeyParameter, [
+                                    new ArrayParameter(new ArrayKeyParameter, [new FloatParameter]),
+                                    new StringParameter
                                 ]),
                             ]
                         )
@@ -506,10 +530,10 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
-                                new ArrayParameter('array-key', ['string']),
-                                new ArrayParameter('array-key', ['int']),
+                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
+                                new ArrayParameter(new ArrayKeyParameter, [new IntParameter]),
                             ]
                         )
                     ],
@@ -523,7 +547,7 @@ class ParserTest extends BaseTestCase
                 * @param array<int, string> $testArray
                 */
                 php,
-                [[new ArrayParameter('int', ['string'])], true]
+                [[new ArrayParameter(new IntParameter, [new StringParameter])], true]
             ],
             'array<int, string[]>' => [
                 <<<'php'
@@ -535,9 +559,9 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'int',
+                            new IntParameter,
                             [
-                                new ArrayParameter('array-key', ['string'])
+                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter])
                             ]
                         )
                     ],
@@ -555,7 +579,7 @@ class ParserTest extends BaseTestCase
                     [
                         new ListParameter(
                             [
-                                'mixed'
+                                new MixedParameter
                             ]
                         )
                     ],
@@ -573,7 +597,7 @@ class ParserTest extends BaseTestCase
                     [
                         new ListParameter(
                             [
-                                'string'
+                                new StringParameter
                             ]
                         )
                     ],
@@ -591,8 +615,8 @@ class ParserTest extends BaseTestCase
                     [
                         new ListParameter(
                             [
-                                'string',
-                                'int'
+                                new StringParameter,
+                                new IntParameter
                             ]
                         )
                     ],
@@ -610,7 +634,7 @@ class ParserTest extends BaseTestCase
                     [
                         new ListParameter(
                             [
-                                new ArrayParameter('array-key', ['string'])
+                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter])
                             ]
                         )
                     ],
@@ -627,9 +651,9 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
-                                new ListParameter(['string'])
+                                new ListParameter([new StringParameter])
                             ]
                         )
                     ],
@@ -646,9 +670,9 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'int',
+                            new IntParameter,
                             [
-                                new ListParameter(['string'])
+                                new ListParameter([new StringParameter])
                             ]
                         )
                     ],
@@ -665,9 +689,9 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
-                                new ListParameter(['mixed'])
+                                new ListParameter([new MixedParameter])
                             ]
                         )
                     ],
@@ -684,9 +708,9 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
-                                new ListParameter(['int'])
+                                new ListParameter([new IntParameter])
                             ]
                         )
                     ],
@@ -700,7 +724,7 @@ class ParserTest extends BaseTestCase
                 * @param array<string, string|float> $testArray
                 */
                 php,
-                [[new ArrayParameter('string', ['string', 'float'])], true]
+                [[new ArrayParameter(new StringParameter, [new StringParameter, new FloatParameter])], true]
             ],
             'array<class-string>' => [
                 <<<'php'
@@ -709,7 +733,7 @@ class ParserTest extends BaseTestCase
                 * @param array<class-string> $testArray
                 */
                 php,
-                [[new ArrayParameter('array-key', ['class-string'])], true]
+                [[new ArrayParameter(new ArrayKeyParameter, [new ClassStringParameter])], true]
             ],
             'array<class-string[]>' => [
                 <<<'php'
@@ -719,8 +743,8 @@ class ParserTest extends BaseTestCase
                 */
                 php,
                 [[new ArrayParameter(
-                    'array-key',
-                    [new ArrayParameter('array-key', ['class-string'])]
+                    new ArrayKeyParameter,
+                    [new ArrayParameter(new ArrayKeyParameter, [new ClassStringParameter])]
                 )], true]
             ],
             'array<class-string[]|int>' => [
@@ -731,8 +755,8 @@ class ParserTest extends BaseTestCase
                 */
                 php,
                 [[new ArrayParameter(
-                    'array-key',
-                    [new ArrayParameter('array-key', ['class-string']), 'int']
+                    new ArrayKeyParameter,
+                    [new ArrayParameter(new ArrayKeyParameter, [new ClassStringParameter]), new IntParameter]
                 )], true]
             ],
             'array<int, class-string>' => [
@@ -742,7 +766,7 @@ class ParserTest extends BaseTestCase
                 * @param array<int, class-string> $testArray
                 */
                 php,
-                [[new ArrayParameter('int', ['class-string'])], true]
+                [[new ArrayParameter(new IntParameter, [new ClassStringParameter])], true]
             ],
             'array<class-string<stdClass>>' => [
                 <<<'php'
@@ -754,7 +778,7 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
                                 new TypedClassStringParameter(
                                     [stdClass::class]
@@ -775,7 +799,7 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
                                 new TypedClassStringParameter(
                                     [stdClass::class]
@@ -796,7 +820,7 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
                                 new TypedClassStringParameter(
                                     [stdClass::class, TestClass::class]
@@ -817,7 +841,7 @@ class ParserTest extends BaseTestCase
                 [
                     [
                         new ArrayParameter(
-                            'array-key',
+                            new ArrayKeyParameter,
                             [
                                 new TypedClassStringParameter(
                                     [stdClass::class]
@@ -836,19 +860,27 @@ class ParserTest extends BaseTestCase
 
     /**
      * @test
-     * @dataProvider malformedDocblockThrowsExceptionDataProvider
+     * @dataProvider getDocblockCallsLintCheckOnTypeLinterDataProvider
      */
-    public function malformedDocblockThrowsException($docblock)
+    public function getDocblockCallsLintCheckOnTypeLinter($docblock)
     {
-        $this->expectException(RuntimeException::class);
-        $actual = $this->testObj->getDocBlock($docblock, 1);
-        var_dump($actual[0]);
+        $mockTypeLinter = $this->getMockBuilder(TypeLinter::class)
+            ->setMethodsExcept()
+            ->getMock();
+        $mockTypeLinter->expects($this->atLeastOnce())->method('lintCheck')
+            ->with($this->equalTo('$param'), $this->isType('string'))
+            ->willThrowException(new RuntimeException);
+        $this->testObj = new Parser(new UseContext(TestClass::class), $mockTypeLinter);
+        try {
+            $this->testObj->getDocBlock($docblock, 1);
+        } catch (RuntimeException $ex) {
+        }
     }
 
     /**
      * Data Provider
      */
-    public function malformedDocblockThrowsExceptionDataProvider()
+    public function getDocblockCallsLintCheckOnTypeLinterDataProvider()
     {
         return [
             'missing closing parenthesis' => [

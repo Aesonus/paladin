@@ -24,6 +24,8 @@
  */
 namespace Aesonus\Paladin\Contracts;
 
+use Aesonus\Paladin\Exceptions\TypeException;
+
 /**
  *
  * @author Aesonus <corylcomposinger at gmail.com>
@@ -41,9 +43,17 @@ interface ParameterInterface
 
     /**
      *
-     * @return (ParameterInterface|string)[]
+     * @return ParameterInterface[]
      */
     public function getTypes(): array;
+
+    /**
+     *
+     * @param TypeExceptionVisitorInterface $visitor
+     * @return void
+     * @throws TypeException
+     */
+    public function acceptExceptionVisitor(TypeExceptionVisitorInterface $visitor): void;
 
     /**
      *

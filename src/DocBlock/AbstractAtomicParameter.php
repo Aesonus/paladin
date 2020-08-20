@@ -22,68 +22,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-declare(strict_types=1);
-
 namespace Aesonus\Paladin\DocBlock;
 
-use Aesonus\Paladin\Contracts\ParameterInterface;
-use RuntimeException;
+use const Aesonus\Paladin\FUNCTION_NAMESPACE;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class UnionParameter extends AbstractParameter
+abstract class AbstractAtomicParameter extends AbstractParameter
 {
-
-
-    /**
-     *
-     * @param string $name
-     * @param ParameterInterface[] $types
-     */
-    public function __construct(string $name, array $types)
+    public function __construct()
     {
-        $this->name = $name;
-        $this->types = $types;
+        $matches = [];
+        preg_match_all('/[A-Z][a-z]+(?=\w*Parameter)/', static::class, $matches);
+        /** @var array<int, array<int, string>> $matches */
+        $this->name = implode('-', array_map('strtolower', $matches[0]));
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    public function __toString(): string
+    {
+        return $this->getName();
+    }
+
     public function validate($givenValue): bool
     {
-        return $this->validateUnionType($this->getTypes(), $givenValue);
-    }
-
-    /**
-     *
-     * @param ParameterInterface[] $types
-     * @param mixed $givenValue
-     * @return bool
-     */
-    protected function validateUnionType(array $types, $givenValue): bool
-    {
-        $valid = false;
-        foreach ($types as $type) {
-//            if (!($type instanceof ParameterInterface)) {
-//                throw new RuntimeException(
-//                    'All types must be instances of '
-//                    . ParameterInterface::class
-//                );
-//            }
-            $valid = $type->validate($givenValue);
-            if ($valid) {
-                break;
-            }
+        $type = $this->getName();
+        if ('mixed' === $type) {
+            return true;
         }
-        return $valid;
-    }
+        $builtInCallable = 'is_' . $type;
+        if (function_exists($builtInCallable)) {
+            /** @var callable(mixed):bool $builtInCallable */
+            return $builtInCallable($givenValue);
+        }
 
-    public function __toString()
-    {
-        return implode('|', $this->getTypes());
+        $psalmTypeCallable = sprintf(
+            '%sis_%s',
+            FUNCTION_NAMESPACE,
+            str_replace('-', '_', $type)
+        );
+        if (function_exists($psalmTypeCallable)) {
+            /** @var callable(mixed):bool $psalmTypeCallable */
+            return $psalmTypeCallable($givenValue);
+        }
+        return false;
     }
 }

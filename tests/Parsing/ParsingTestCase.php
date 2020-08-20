@@ -22,23 +22,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Paladin\Contracts;
+namespace Aesonus\Tests\Parsing;
 
-use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parser;
+use Aesonus\TestLib\BaseTestCase;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  *
+ *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-interface TypeStringParsingInterface
+class ParsingTestCase extends BaseTestCase
 {
     /**
      *
-     * @param Parser $parser
-     * @param string $typeString
-     * @return ParameterInterface
-     * @throws ParseException
+     * @var MockObject|Parser
      */
-    public function parse(Parser $parser, string $typeString): ParameterInterface;
+    public $mockParser;
+
+    protected function setUp(): void
+    {
+        $this->mockParser = $this->getMockBuilder(Parser::class)
+            ->setMethodsExcept()
+            ->disableOriginalConstructor()
+            ->getMock();
+    }
 }

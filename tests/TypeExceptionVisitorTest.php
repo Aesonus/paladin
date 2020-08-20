@@ -24,8 +24,16 @@
  */
 namespace Aesonus\Tests;
 
+use Aesonus\Paladin\DocBlock\ArrayKeyParameter;
 use Aesonus\Paladin\DocBlock\ArrayParameter;
+use Aesonus\Paladin\DocBlock\ClassStringParameter;
+use Aesonus\Paladin\DocBlock\FloatParameter;
 use Aesonus\Paladin\DocBlock\IntersectionParameter;
+use Aesonus\Paladin\DocBlock\IntParameter;
+use Aesonus\Paladin\DocBlock\MixedParameter;
+use Aesonus\Paladin\DocBlock\ObjectParameter;
+use Aesonus\Paladin\DocBlock\ResourceParameter;
+use Aesonus\Paladin\DocBlock\StringParameter;
 use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
 use Aesonus\Paladin\DocBlock\UnionParameter;
 use Aesonus\Paladin\TypeExceptionVisitor;
@@ -50,7 +58,7 @@ class TypeExceptionVisitorTest extends BaseTestCase
      */
     public function acceptExceptionVisitorDoesNothingIfValidateSucceeds()
     {
-        $parameter = new UnionParameter('$param', ['mixed'], true);
+        $parameter = new UnionParameter('$param', [new MixedParameter], true);
         $testObj = new TypeExceptionVisitor(23);
         $parameter->acceptExceptionVisitor($testObj);
     }
@@ -81,49 +89,49 @@ class TypeExceptionVisitorTest extends BaseTestCase
         return [
             'int type' => [
                 'given',
-                ['int'],
+                [new IntParameter],
                 'be of type int',
                 'string'
             ],
             'int or string type' => [
                 3.141,
-                ['int', 'string'],
+                [new IntParameter, new StringParameter],
                 'be of type int, or of type string',
                 'double'
             ],
             'int, string, or array type' => [
                 3.141,
-                ['int', 'string', 'array'],
-                'be of type int, of type string, or of type array',
+                [new IntParameter, new StringParameter, new ArrayParameter],
+                'be of type int, of type string, or of type array<array-key, mixed>',
                 'double'
             ],
             'stdClass' => [
                 3.141,
-                [stdClass::class],
+                [new ObjectParameter(stdClass::class)],
                 'be instance of stdClass',
                 'double'
             ],
             'other class given for stdClass' => [
                 new ArrayObject,
-                [stdClass::class],
+                [new ObjectParameter(stdClass::class)],
                 'be instance of stdClass',
                 'instance of ArrayObject'
             ],
             'stdClass or string' => [
                 3.141,
-                [stdClass::class, 'string'],
+                [new ObjectParameter(stdClass::class), new StringParameter],
                 'be instance of stdClass, or of type string',
                 'double'
             ],
             'class-string' => [
                 3.141,
-                ['class-string'],
+                [new ClassStringParameter],
                 'be of type class-string',
                 'double'
             ],
             'object' => [
                 3.141,
-                ['object'],
+                [new ObjectParameter],
                 'be an object',
                 'double'
             ],
@@ -137,7 +145,10 @@ class TypeExceptionVisitorTest extends BaseTestCase
     {
         $parameter = new UnionParameter(
             '$param',
-            [new IntersectionParameter([ArrayAccess::class, TestIntersectionClass::class])],
+            [new IntersectionParameter([
+                new ObjectParameter(ArrayAccess::class),
+                new ObjectParameter(TestIntersectionClass::class)
+                ])],
             true
         );
         $testObj = new TypeExceptionVisitor(new TestClass());
@@ -156,8 +167,9 @@ class TypeExceptionVisitorTest extends BaseTestCase
         $parameter = new UnionParameter(
             '$param',
             [
-                new IntersectionParameter([ArrayAccess::class, TestIntersectionClass::class]),
-                'int'
+                new IntersectionParameter([new ObjectParameter(ArrayAccess::class),
+                new ObjectParameter(TestIntersectionClass::class)]),
+                new IntParameter
             ],
             true
         );
@@ -181,7 +193,7 @@ class TypeExceptionVisitorTest extends BaseTestCase
     ) {
         $parameter = new UnionParameter(
             '$param',
-            [new ArrayParameter('array-key', $types)],
+            [new ArrayParameter(new ArrayKeyParameter, $types)],
             true
         );
         $testObj = new TypeExceptionVisitor($givenValue);
@@ -199,43 +211,44 @@ class TypeExceptionVisitorTest extends BaseTestCase
         return [
             'int[]' => [
                 [3.141, 2],
-                ['int'],
+                [new IntParameter],
                 'be of type array<array-key, int>',
                 'array<int, double|int>'
             ],
             'int[] mixed keys' => [
                 [3.141, 'string' => 2, 23, 'also' => 'string'],
-                ['int'],
+                [new IntParameter],
                 'be of type array<array-key, int>',
                 'array<array-key, double|int>'
             ],
             'int[] string keys' => [
                 ['pi' => 3.141, 'integer' => 2],
-                ['int'],
+                [new IntParameter],
                 'be of type array<array-key, int>',
                 'array<string, double|int>'
             ],
             '(int|resource)[]' => [
                 [3.141, 2],
-                ['int', 'resource'],
+                [new IntParameter, new ResourceParameter],
                 'be of type array<array-key, int|resource>',
                 'array<int, double|int>'
             ],
             '(int|resource)[] mixed keys' => [
                 [3.141, 'string' => 2, 23, 'also' => 'string'],
-                ['int', 'resource'],
+                [new IntParameter, new ResourceParameter],
                 'be of type array<array-key, int|resource>',
                 'array<array-key, double|int>'
             ],
             '(int|resource)[] string keys' => [
                 ['pi' => 3.141, 'integer' => 2],
-                ['int', 'resource'],
+                [new IntParameter, new ResourceParameter],
                 'be of type array<array-key, int|resource>',
                 'array<string, double|int>'
             ],
             'array<array-key, ArrayAccess&' . TestIntersectionClass::class . '>' => [
                 ['pi' => 3.141, ['nested' => 23]],
-                [new IntersectionParameter([ArrayAccess::class, TestIntersectionClass::class])],
+                [new IntersectionParameter([new ObjectParameter(ArrayAccess::class),
+                new ObjectParameter(TestIntersectionClass::class)])],
                 'be of type array<array-key, ArrayAccess&' . TestIntersectionClass::class . '>',
                 'array<array-key, double|array<string, int>>'
             ]
@@ -282,10 +295,10 @@ class TypeExceptionVisitorTest extends BaseTestCase
             '$param',
             [
                 new ArrayParameter(
-                    'array-key',
+                    new ArrayKeyParameter,
                     [
-                        new ArrayParameter('array-key', ['string']),
-                        'float'
+                        new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
+                        new FloatParameter
                     ]
                 ),
 

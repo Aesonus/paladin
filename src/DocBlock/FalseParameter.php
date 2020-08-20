@@ -22,68 +22,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-declare(strict_types=1);
-
 namespace Aesonus\Paladin\DocBlock;
-
-use Aesonus\Paladin\Contracts\ParameterInterface;
-use RuntimeException;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class UnionParameter extends AbstractParameter
+class FalseParameter extends BoolParameter
 {
-
-
-    /**
-     *
-     * @param string $name
-     * @param ParameterInterface[] $types
-     */
-    public function __construct(string $name, array $types)
-    {
-        $this->name = $name;
-        $this->types = $types;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function validate($givenValue): bool
     {
-        return $this->validateUnionType($this->getTypes(), $givenValue);
-    }
-
-    /**
-     *
-     * @param ParameterInterface[] $types
-     * @param mixed $givenValue
-     * @return bool
-     */
-    protected function validateUnionType(array $types, $givenValue): bool
-    {
-        $valid = false;
-        foreach ($types as $type) {
-//            if (!($type instanceof ParameterInterface)) {
-//                throw new RuntimeException(
-//                    'All types must be instances of '
-//                    . ParameterInterface::class
-//                );
-//            }
-            $valid = $type->validate($givenValue);
-            if ($valid) {
-                break;
-            }
-        }
-        return $valid;
-    }
-
-    public function __toString()
-    {
-        return implode('|', $this->getTypes());
+        return parent::validate($givenValue) && $givenValue === false;
     }
 }

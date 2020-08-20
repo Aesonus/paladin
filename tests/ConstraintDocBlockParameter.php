@@ -22,8 +22,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+declare(strict_types=1);
+
 namespace Aesonus\Tests;
 
+use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\DocBlock\UnionParameter;
 use PHPUnit\Framework\Constraint\Constraint;
 
@@ -56,27 +59,41 @@ class ConstraintDocBlockParameter extends Constraint
      *
      * @param string $name
      * @param array $type
-     * @param bool $required
      */
-    public function __construct($name, $type, $required)
+    public function __construct($name, $type)
     {
         $this->name = $name;
         $this->type = $type;
-        $this->required = $required;
     }
 
     /**
      *
-     * @param UnionParameter $other
+     * @param ParameterInterface $other
      * @return bool
      */
     protected function matches($other): bool
     {
-        if (!$other instanceof UnionParameter) {
+        if (!$other instanceof ParameterInterface) {
             return false;
         }
+        $valid = true;
+        foreach ($this->type as $index => $expectedType) {
+            $otherType = $other->getTypes()[$index] ?? null;
+
+            if ($expectedType instanceof ParameterInterface) {
+                $constrait = new self($expectedType->getName(), $expectedType->getTypes());
+                $valid = $constrait->matches($otherType);
+            }
+            if (is_string($expectedType) && $otherType !== $expectedType) {
+                $valid = false;
+                break;
+            }
+            if (!$valid) {
+                break;
+            }
+        }
         return $other->getName() === $this->name
-            && $other->getTypes() == $this->type;
+            && $valid;
     }
 
     public function toString(): string

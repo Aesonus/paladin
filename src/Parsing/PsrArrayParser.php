@@ -26,6 +26,7 @@ namespace Aesonus\Paladin\Parsing;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
+use Aesonus\Paladin\DocBlock\ArrayKeyParameter;
 use Aesonus\Paladin\DocBlock\ArrayParameter;
 use Aesonus\Paladin\Parser;
 
@@ -38,23 +39,24 @@ class PsrArrayParser implements TypeStringParsingInterface
 {
     public function parse(Parser $parser, string $typeString): ParameterInterface
     {
-        $openingParenth = strpos($typeString, '(');
-        $closingParenth = (int)strrpos($typeString, ')');
-        if ($openingParenth !== false) {
+        $newTypeString = substr($typeString, 0, -2);
+        $openingParenth = strpos($newTypeString, '(');
+        $closingParenth = strrpos($newTypeString, ')');
+        if ($openingParenth !== false && $closingParenth !== false && $closingParenth === (strlen($newTypeString) - 1)) {
             return new ArrayParameter(
-                'array-key',
+                new ArrayKeyParameter,
                 $parser->parseTypes(
                     substr(
-                        $typeString,
+                        $newTypeString,
                         $openingParenth + 1,
                         $closingParenth - $openingParenth - 1
                     )
                 )
             );
         }
-        $newTypeString = substr($typeString, 0, -2);
+
         return new ArrayParameter(
-            'array-key',
+            new ArrayKeyParameter,
             $parser->parseTypes($newTypeString)
         );
     }

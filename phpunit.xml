@@ -4,8 +4,11 @@
          verbose="true"
          stopOnFailure="false">
     <testsuites>
-        <testsuite name="Test suite">
+        <testsuite name="Main Test suite">
             <directory>tests</directory>
+        </testsuite>
+        <testsuite name="Parsing Test suite">
+            <directory>tests/Parsing</directory>
         </testsuite>
     </testsuites>
     <coverage processUncoveredFiles="true">

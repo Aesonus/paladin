@@ -29,7 +29,8 @@ namespace Aesonus\Paladin;
 use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\UseContextInterface;
 use Aesonus\Paladin\DocBlock\UnionParameter;
-use Aesonus\Paladin\Exceptions\TypeLintException;
+use Aesonus\Paladin\Exceptions\ParseException;
+use Aesonus\Paladin\Parsing\AtomicParser;
 use Aesonus\Paladin\Parsing\PsalmArrayParser;
 use Aesonus\Paladin\Parsing\PsalmClassStringParser;
 use Aesonus\Paladin\Parsing\PsalmListParser;
@@ -67,6 +68,12 @@ class Parser
 
     /**
      *
+     * @var AtomicParser
+     */
+    private $atomicTypeParser;
+
+    /**
+     *
      * @var PsalmArrayParser
      */
     private $psalmArrayParser;
@@ -91,12 +98,13 @@ class Parser
 
     public function __construct(
         UseContextInterface $useContext,
+        ?TypeLinter $typeLinter = null,
         ?UnionTypeSplitter $typeSplitter = null,
+        ?AtomicParser $atomicTypeParser = null,
         ?PsalmArrayParser $psalmArrayParser = null,
         ?PsalmListParser $psalmListParser = null,
         ?PsrArrayParser $psrArrayParser = null,
-        ?PsalmClassStringParser $classStringParser = null,
-        ?TypeLinter $typeLinter = null
+        ?PsalmClassStringParser $classStringParser = null
     ) {
         $this->useContext = $useContext;
         $this->typeLinter = $typeLinter ?? new TypeLinter;
@@ -105,23 +113,19 @@ class Parser
         $this->psalmListParser = $psalmListParser ?? new PsalmListParser;
         $this->psrArrayParser = $psrArrayParser ?? new PsrArrayParser;
         $this->classStringParser = $classStringParser ?? new PsalmClassStringParser;
+        $this->atomicTypeParser = $atomicTypeParser ?? new AtomicParser;
     }
 
     /**
      *
      * @param string $docblock
      * @return ParameterInterface[]
-     * @throws TypeLintException
      */
     public function getDocBlock(string $docblock): array
     {
         $matches = $this->getParamMatches($docblock);
         $params = $this->getParamsInParts($matches);
-        try {
-            return $this->constructDocBlockParameters($params);
-        } catch (TypeLintException $exc) {
-            throw $exc;
-        }
+        return $this->constructDocBlockParameters($params);
     }
 
     /**
@@ -163,7 +167,8 @@ class Parser
     /**
      * Parses a type string and returns all of its parts
      * @param string $typeString
-     * @return array<array-key, ParameterInterface|string>
+     * @return ParameterInterface[]
+     * @throws ParseException
      */
     public function parseTypes(string $typeString): array
     {
@@ -175,9 +180,10 @@ class Parser
     /**
      *
      * @param string $typeString
-     * @return ParameterInterface|string
+     * @return ParameterInterface
+     * @throws ParseException
      */
-    protected function parseParameterizedTypes(string $typeString)
+    protected function parseParameterizedTypes(string $typeString): ParameterInterface
     {
         $parseables = get_str_positions($typeString, '(', 'array<', 'list<', 'class-string<');
         $isPsrArray = (int)strrpos($typeString, '[]') + 2 === strlen($typeString);
@@ -202,7 +208,7 @@ class Parser
         if (str_contains_str($typeString, 'list')) {
             return $this->psalmListParser->parse($this, $typeString);
         }
-        return $typeString;
+        return $this->atomicTypeParser->parse($this, $typeString);
     }
 
     /**
