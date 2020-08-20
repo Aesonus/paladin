@@ -174,7 +174,10 @@ class Parser
     {
         $unionTypes = $this->typeSplitter->split($typeString);
 
-        return array_map([$this, 'parseUnionTypes'], $unionTypes);
+        return array_map(
+            fn (string $typeString): ParameterInterface => $this->parseUnionTypes($typeString),
+            $unionTypes
+        );
     }
 
     /**
