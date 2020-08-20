@@ -78,23 +78,3 @@ function is_numeric_string($value): bool
 {
     return is_string($value) && is_numeric($value);
 }
-
-/**
- *
- * @param mixed $value
- * @return bool
- */
-function is_true($value): bool
-{
-    return true === $value;
-}
-
-/**
- *
- * @param mixed $value
- * @return bool
- */
-function is_false($value): bool
-{
-    return false === $value;
-}
