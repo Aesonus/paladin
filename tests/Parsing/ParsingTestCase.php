@@ -24,9 +24,11 @@
  */
 namespace Aesonus\Tests\Parsing;
 
+use Aesonus\Paladin\Contracts\UseContextInterface;
 use Aesonus\Paladin\Parser;
 use Aesonus\TestLib\BaseTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Rule\InvocationOrder;
 
 /**
  *
@@ -41,11 +43,26 @@ class ParsingTestCase extends BaseTestCase
      */
     public $mockParser;
 
+    /**
+     *
+     * @var MockObject|UseContextInterface
+     */
+    public $mockUseContext;
+
     protected function setUp(): void
     {
         $this->mockParser = $this->getMockBuilder(Parser::class)
             ->setMethodsExcept()
             ->disableOriginalConstructor()
             ->getMock();
+
+        $this->mockUseContext = $this->getMockBuilder(UseContextInterface::class)
+            ->getMockForAbstractClass();
+    }
+
+    protected function expectGetUseContextMethod(InvocationOrder $rule)
+    {
+        $this->mockParser->expects($rule)->method('getUseContext')
+            ->willReturn($this->mockUseContext);
     }
 }

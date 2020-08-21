@@ -119,6 +119,8 @@ class AtomicParserTest extends ParsingTestCase
      */
     public function parseReturnsGenericObjectParameterForObjectTypestring()
     {
+        $this->expectGetUseContextMethod($this->never());
+
         $actual = $this->testObj->parse($this->mockParser, 'object');
         $this->assertEquals(new ObjectParameter(), $actual);
     }
@@ -128,6 +130,10 @@ class AtomicParserTest extends ParsingTestCase
      */
     public function parseReturnsObjectParameterOfClassStringForTypestringThatIsAClass()
     {
+        $this->expectGetUseContextMethod($this->once());
+        $this->mockUseContext->expects($this->once())->method('getUsedClass')
+            ->with(stdClass::class)
+            ->willReturnArgument(0);
         $actual = $this->testObj->parse($this->mockParser, stdClass::class);
         $this->assertEquals(new ObjectParameter(stdClass::class), $actual);
     }

@@ -80,11 +80,11 @@ class AtomicParser implements TypeStringParsingInterface
         'false' => FalseParameter::class,
         'mixed' => MixedParameter::class,
     ];
-    
+
     public function parse(Parser $parser, string $typeString): ParameterInterface
     {
         if (is_class_string($typeString)) {
-            return new ObjectParameter($typeString);
+            return new ObjectParameter($parser->getUseContext()->getUsedClass($typeString));
         }
         if (array_key_exists($typeString, self::PARAMETER_TYPES)) {
             $parameter = self::PARAMETER_TYPES[$typeString];
