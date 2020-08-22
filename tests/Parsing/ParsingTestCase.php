@@ -60,7 +60,7 @@ class ParsingTestCase extends BaseTestCase
             ->getMockForAbstractClass();
     }
 
-    protected function expectGetUseContextMethod(InvocationOrder $rule)
+    protected function expectGetUseContextMethod(InvocationOrder $rule): void
     {
         $this->mockParser->expects($rule)->method('getUseContext')
             ->willReturn($this->mockUseContext);

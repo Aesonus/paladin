@@ -33,6 +33,7 @@ use Aesonus\Paladin\DocBlock\ClassStringParameter;
 use Aesonus\Paladin\DocBlock\FalseParameter;
 use Aesonus\Paladin\DocBlock\FloatParameter;
 use Aesonus\Paladin\DocBlock\IntParameter;
+use Aesonus\Paladin\DocBlock\IterableParameter;
 use Aesonus\Paladin\DocBlock\MixedParameter;
 use Aesonus\Paladin\DocBlock\NullParameter;
 use Aesonus\Paladin\DocBlock\NumericParameter;
@@ -102,6 +103,7 @@ class AtomicParserTest extends ParsingTestCase
             'true' => ['true', TrueParameter::class],
             'false' => ['false', FalseParameter::class],
             'mixed' => ['mixed', MixedParameter::class],
+            'iterable' => ['iterable', IterableParameter::class],
         ];
     }
 

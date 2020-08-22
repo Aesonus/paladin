@@ -29,7 +29,7 @@ namespace Aesonus\Paladin\DocBlock;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class IterableParameter
+class IterableParameter extends AbstractAtomicParameter
 {
     //put your code here
 }
