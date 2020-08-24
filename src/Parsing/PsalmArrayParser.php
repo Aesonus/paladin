@@ -50,9 +50,9 @@ class PsalmArrayParser implements TypeStringParsingInterface
         $types = preg_split('`,(?![\w \[\]]+>)`', $arrayTypeString);
         //echo "Split Psalm\n", var_dump($types);
         if (count($types) === 1) {
-            return new ArrayParameter(new ArrayKeyParameter, $parser->parseTypes($types[0]));
+            return new ArrayParameter(new ArrayKeyParameter, $parser->parseTypeString($types[0]));
         }
         $keyType = array_shift($types);
-        return new ArrayParameter($parser->parseTypes($keyType)[0], $parser->parseTypes($types[0]));
+        return new ArrayParameter($parser->parseTypeString($keyType)[0], $parser->parseTypeString($types[0]));
     }
 }

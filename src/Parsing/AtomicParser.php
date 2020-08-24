@@ -36,6 +36,7 @@ use Aesonus\Paladin\DocBlock\FalseParameter;
 use Aesonus\Paladin\DocBlock\FloatParameter;
 use Aesonus\Paladin\DocBlock\IntParameter;
 use Aesonus\Paladin\DocBlock\IterableParameter;
+use Aesonus\Paladin\DocBlock\ListParameter;
 use Aesonus\Paladin\DocBlock\MixedParameter;
 use Aesonus\Paladin\DocBlock\NullParameter;
 use Aesonus\Paladin\DocBlock\NumericParameter;
@@ -81,6 +82,7 @@ class AtomicParser implements TypeStringParsingInterface
         'false' => FalseParameter::class,
         'mixed' => MixedParameter::class,
         'iterable' => IterableParameter::class,
+        'list' => ListParameter::class,
     ];
 
     public function parse(Parser $parser, string $typeString): ParameterInterface

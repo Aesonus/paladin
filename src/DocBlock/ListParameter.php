@@ -35,11 +35,11 @@ class ListParameter extends ArrayParameter
 {
     /**
      *
-     * @param ParameterInterface[] $valueTypes
+     * @param null|ParameterInterface[] $valueTypes
      */
-    public function __construct($valueTypes)
+    public function __construct($valueTypes = null)
     {
-        parent::__construct(new IntParameter, $valueTypes);
+        parent::__construct(new IntParameter, $valueTypes ?? [new MixedParameter]);
     }
 
     public function validate($givenValue): bool

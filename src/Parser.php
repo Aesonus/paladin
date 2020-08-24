@@ -158,7 +158,7 @@ class Parser
             $this->typeLinter->lintCheck($param['name'], $param['type']);
             $return[] = new UnionParameter(
                 $param['name'],
-                $this->parseTypes($param['type'])
+                $this->parseTypeString($param['type'])
             );
         }
         return $return;
@@ -170,7 +170,7 @@ class Parser
      * @return ParameterInterface[]
      * @throws ParseException
      */
-    public function parseTypes(string $typeString): array
+    public function parseTypeString(string $typeString): array
     {
         $unionTypes = $this->typeSplitter->split($typeString);
 
@@ -189,8 +189,7 @@ class Parser
     protected function parseUnionTypes(string $typeString): ParameterInterface
     {
         $parseables = get_str_positions($typeString, 'array<', 'list<', 'class-string<');
-        $isPsrArray = (int)strrpos($typeString, '[]') + 2 === strlen($typeString);
-        if ($isPsrArray) {
+        if ((int)strrpos($typeString, '[]') + 2 === strlen($typeString)) {
             return $this->psrArrayParser->parse($this, $typeString);
         }
         foreach ($parseables as $parseableType) {
@@ -202,10 +201,6 @@ class Parser
                 case 'class-string<':
                     return $this->classStringParser->parse($this, $typeString);
             }
-        }
-
-        if (str_contains_str($typeString, 'list')) {
-            return $this->psalmListParser->parse($this, $typeString);
         }
         return $this->atomicTypeParser->parse($this, $typeString);
     }

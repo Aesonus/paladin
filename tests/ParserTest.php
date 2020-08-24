@@ -24,24 +24,25 @@
  */
 namespace Aesonus\Tests;
 
-use Aesonus\Paladin\DocBlock\ArrayKeyParameter;
-use Aesonus\Paladin\DocBlock\ArrayParameter;
-use Aesonus\Paladin\DocBlock\ClassStringParameter;
-use Aesonus\Paladin\DocBlock\FloatParameter;
-use Aesonus\Paladin\DocBlock\IntParameter;
-use Aesonus\Paladin\DocBlock\ListParameter;
-use Aesonus\Paladin\DocBlock\MixedParameter;
-use Aesonus\Paladin\DocBlock\ObjectParameter;
-use Aesonus\Paladin\DocBlock\StringParameter;
-use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
+use Aesonus\Paladin\Contracts\ParameterInterface;
+use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
+use Aesonus\Paladin\DocBlock\UnionParameter;
 use Aesonus\Paladin\Parser;
+use Aesonus\Paladin\Parsing\AtomicParser;
+use Aesonus\Paladin\Parsing\PsalmArrayParser;
+use Aesonus\Paladin\Parsing\PsalmClassStringParser;
+use Aesonus\Paladin\Parsing\PsalmListParser;
+use Aesonus\Paladin\Parsing\PsrArrayParser;
+use Aesonus\Paladin\Parsing\UnionTypeSplitter;
 use Aesonus\Paladin\TypeLinter;
 use Aesonus\Paladin\UseContext;
 use Aesonus\TestLib\BaseTestCase;
 use Aesonus\Tests\Fixtures\ParserContextClass;
 use Aesonus\Tests\Fixtures\TestClass;
+use PHPUnit\Framework\MockObject\Builder\InvocationMocker;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Rule\InvocationOrder;
 use RuntimeException;
-use stdClass;
 
 /**
  *
@@ -56,12 +57,95 @@ class ParserTest extends BaseTestCase
      */
     public $testObj;
 
-    public $testClass;
+    public $useContext;
+
+    /**
+     *
+     * @var MockObject|TypeLinter
+     */
+    protected $mockTypeLinter;
+
+    /**
+     *
+     * @var MockObject|UnionTypeSplitter
+     */
+    protected $mockUnionTypeSplitter;
+
+    /**
+     *
+     * @var MockObject|AtomicParser
+     */
+    protected $mockAtomicParser;
+
+    /**
+     *
+     * @var MockObject|PsalmArrayParser
+     */
+    protected $mockPsalmArrayParser;
+
+    /**
+     *
+     * @var MockObject|PsalmListParser
+     */
+    protected $mockPsalmListParser;
+
+    /**
+     *
+     * @var MockObject|PsrArrayParser
+     */
+    protected $mockPsrArrayParser;
+
+    /**
+     *
+     * @var MockObject|PsalmClassStringParser
+     */
+    protected $mockPsalmClassStringParser;
+
+    /**
+     *
+     * @var TypeStringParsingInterface[]
+     */
+    protected $mockParsers;
 
     protected function setUp(): void
     {
-        $this->testClass = new TestClass;
-        $this->testObj = new Parser(new UseContext(ParserContextClass::class));
+        $this->useContext = new UseContext(ParserContextClass::class);
+        $this->setUpMocks();
+        $this->testObj = new Parser(
+            $this->useContext,
+            $this->mockTypeLinter,
+            $this->mockUnionTypeSplitter,
+            $this->mockAtomicParser,
+            $this->mockPsalmArrayParser,
+            $this->mockPsalmListParser,
+            $this->mockPsrArrayParser,
+            $this->mockPsalmClassStringParser,
+        );
+    }
+
+    private function setUpMocks(): void
+    {
+        $this->mockTypeLinter = $this->getMockBuilder(TypeLinter::class)
+            ->getMock();
+        $this->mockUnionTypeSplitter = $this->getMockBuilder(UnionTypeSplitter::class)
+            ->getMock();
+        $this->mockAtomicParser = $this->getMockBuilder(AtomicParser::class)
+            ->getMock();
+        $this->mockPsalmArrayParser = $this->getMockBuilder(PsalmArrayParser::class)
+            ->getMock();
+        $this->mockPsalmListParser = $this->getMockBuilder(PsalmListParser::class)
+            ->getMock();
+        $this->mockPsrArrayParser = $this->getMockBuilder(PsrArrayParser::class)
+            ->getMock();
+        $this->mockPsalmClassStringParser = $this->getMockBuilder(PsalmClassStringParser::class)
+            ->getMock();
+        $this->mockParsers = [
+            $this->mockAtomicParser,
+            $this->mockPsalmArrayParser,
+            $this->mockPsalmListParser,
+            $this->mockPsrArrayParser,
+            $this->mockPsalmClassStringParser
+        ];
     }
 
     public static function isDocBlockParameter($name, $types)
@@ -74,786 +158,381 @@ class ParserTest extends BaseTestCase
         static::assertThat($actual, static::isDocBlockParameter($name, $types));
     }
 
+    private function expectNoMockParserCallsExcept(MockObject ...$except)
+    {
+        $neverExpected = array_filter($this->mockParsers, fn ($mock) => !in_array($mock, $except));
+        foreach ($neverExpected as $mock) {
+            $mock->expects($this->never())->method('parse');
+        }
+    }
+
+    private function expectTypeSplitterCalls(array ...$args): InvocationMocker
+    {
+        $consecutiveArgs = [];
+        $consecutiveReturns = [];
+
+        foreach ($args as $argSet) {
+            list($expectedArg, $willReturn) = $argSet;
+            $consecutiveArgs[] = [$expectedArg];
+            $consecutiveReturns[] = $willReturn;
+        }
+        return $this->mockUnionTypeSplitter->expects($this->exactly(count($args)))->method('split')
+            ->withConsecutive(...$consecutiveArgs)
+            ->willReturnOnConsecutiveCalls(...$consecutiveReturns);
+    }
+
+    private function newMockParserReturnValue(): ParameterInterface
+    {
+        return new UnionParameter('test', []);
+    }
+
     /**
      * @test
      */
-    public function getParsedDocBlockReturnsAProperDocBlockObjectWithSimpleType()
+    public function getUseContextGetsTheUseContext()
+    {
+        $this->assertSame($this->useContext, $this->testObj->getUseContext());
+    }
+
+    /**
+     * @test
+     */
+    public function getDocBlockValidatorsCallsMethodsToParseSimpleTypeDocBlockAndReturnsValidators()
     {
         $docblock = <<<'php'
-            /**
-             *
-             * @param int $testString Is a string scalar type
-            */
-            php;
-        $actual = $this->testObj->getDocBlock($docblock, 1)[0];
-        $this->assertDocBlockParameter($actual, '$testString', [new IntParameter]);
+                /**
+                 *
+                 * @param list $testList
+                 * @param class-string $testClassString
+                 * @param array $testArray
+                */
+                php;
+
+        $expectedParserReturn = $this->newMockParserReturnValue();
+        $this->expectTypeSplitterCalls(
+            ['list', ['list']],
+            ['class-string', ['class-string']],
+            ['array', ['array']]
+        );
+        $this->mockAtomicParser->expects($this->exactly(3))->method('parse')
+            ->withConsecutive([$this->testObj, 'list'], [$this->testObj, 'class-string'], [$this->testObj, 'array'])
+            ->willReturn($expectedParserReturn);
+        $this->expectNoMockParserCallsExcept($this->mockAtomicParser);
+
+        $actual = $this->testObj->getDocBlock($docblock, 1);
+        $expected = [
+            new UnionParameter('$testList', [$expectedParserReturn]),
+            new UnionParameter('$testClassString', [$expectedParserReturn]),
+            new UnionParameter('$testArray', [$expectedParserReturn])
+        ];
+
+        $this->assertEquals($expected, $actual);
     }
 
     /**
      * @test
      */
-    public function getParsedDocBlockReturnsAProperDocBlockObjectWithSimpleUnionTypes()
+    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingUnionType()
     {
         $docblock = <<<'php'
-            /**
-            *
-            * @param string|array $testUnion
-            */
-            php;
+                /**
+                 *
+                 * @param int|string $testIntString Is a string scalar type
+                */
+                php;
+
+        $expectedParserReturn = $this->newMockParserReturnValue();
+        $this->expectTypeSplitterCalls(['int|string', ['int', 'string']]);
+
+        $this->mockAtomicParser->expects($this->exactly(2))->method('parse')
+            ->withConsecutive([$this->testObj, 'int'], [$this->testObj, 'string'])
+            ->willReturn($expectedParserReturn);
+
+        $this->expectNoMockParserCallsExcept($this->mockAtomicParser);
+
         $actual = $this->testObj->getDocBlock($docblock, 1)[0];
-        $this->assertDocBlockParameter($actual, '$testUnion', [new StringParameter, new ArrayParameter]);
+        $this->assertEquals(new UnionParameter('$testIntString', [$expectedParserReturn, $expectedParserReturn]), $actual);
     }
 
     /**
      * @test
+     * @dataProvider getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsrArrayParserDataProvider
      */
-    public function getParsedDocBlockReturnsAProperDocBlockObjectWithObjectOfType()
+    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsrArrayParser($docblock, $splitterCallArg)
     {
-        $docblock = <<<'php'
-            /**
-            *
-            * @param stdClass $testUnion
-            */
-            php;
+        $expectedParserReturn = $this->newMockParserReturnValue();
+        $this->expectTypeSplitterCalls([$splitterCallArg, [$splitterCallArg]]);
+
+        $this->mockPsrArrayParser->expects($this->once())->method('parse')
+            ->with($this->testObj, $splitterCallArg)
+            ->willReturn($expectedParserReturn);
+
+        $this->expectNoMockParserCallsExcept($this->mockPsrArrayParser);
+
         $actual = $this->testObj->getDocBlock($docblock, 1)[0];
-        $this->assertDocBlockParameter($actual, '$testUnion', [new ObjectParameter(stdClass::class)]);
+        $this->assertEquals(new UnionParameter('$testParam', [$expectedParserReturn]), $actual);
     }
 
     /**
-     * @test
-     * @dataProvider getParsedDocBlockReturnsDocBlockForClassStringWithTypesDataProvider
-     */
-    public function getParsedDocBlockReturnsDocBlockForClassStringWithTypes($docblock, $expected)
-    {
-        $actual = $this->testObj->getDocBlock($docblock, 1)[0];
-        $this->assertDocBlockParameter($actual, '$testClassString', $expected);
-    }
-
-    /**
-     *
      * Data Provider
      */
-    public function getParsedDocBlockReturnsDocBlockForClassStringWithTypesDataProvider()
+    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsrArrayParserDataProvider()
     {
         return [
-            'class-string<\stdClass>' => [
+            'array with union types' => [
                 <<<'php'
                 /**
-                *
-                * @param class-string<\stdClass> $testClassString
+                 *
+                 * @param (int|string)[] $testParam Is a string scalar type
                 */
                 php,
-                [new TypedClassStringParameter([stdClass::class])]
+                '(int|string)[]'
             ],
-            'class-string<\stdClass|Aesonus\Tests\Fixtures\TestClass>' => [
+            'array with psr array type' => [
                 <<<'php'
                 /**
-                *
-                * @param class-string<\stdClass|Aesonus\Tests\Fixtures\TestClass> $testClassString
+                 *
+                 * @param int[][] $testParam Is a string scalar type
                 */
                 php,
-                [new TypedClassStringParameter([stdClass::class, TestClass::class])]
+                'int[][]'
             ],
-            'class-string<stdClass|TestClass>' => [
+            'array with psalm array type' => [
                 <<<'php'
                 /**
-                *
-                * @param class-string<stdClass|TestClass> $testClassString
+                 *
+                 * @param array<int>[] $testParam Is a string scalar type
                 */
                 php,
-                [new TypedClassStringParameter([stdClass::class, TestClass::class])]
+                'array<int>[]'
+            ],
+            'array with psalm list type' => [
+                <<<'php'
+                /**
+                 *
+                 * @param list<string>[] $testParam Is a string scalar type
+                */
+                php,
+                'list<string>[]'
+            ],
+            'array with psalm class-string type' => [
+                <<<'php'
+                /**
+                 *
+                 * @param class-string<stdClass>[] $testParam Is a string scalar type
+                */
+                php,
+                'class-string<stdClass>[]'
             ],
         ];
     }
 
     /**
      * @test
-     * @dataProvider getParsedDocBlockReturnsADocBlockObjectWithArrayTypeDataProvider
+     * @dataProvider getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsalmArrayParserDataProvider
      */
-    public function getParsedDocBlockReturnsADocBlockObjectWithArrayType($docblock, $expected)
+    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsalmArrayParser($docblock, $splitterCallArg)
     {
+        $expectedParserReturn = $this->newMockParserReturnValue();
+        $this->expectTypeSplitterCalls([$splitterCallArg, [$splitterCallArg]]);
+
+        $this->mockPsalmArrayParser->expects($this->once())->method('parse')
+            ->with($this->testObj, $splitterCallArg)
+            ->willReturn($expectedParserReturn);
+
+        $this->expectNoMockParserCallsExcept($this->mockPsalmArrayParser);
+
         $actual = $this->testObj->getDocBlock($docblock, 1)[0];
-        $this->assertDocBlockParameter($actual, '$testArray', ...$expected);
+        $this->assertEquals(new UnionParameter('$testParam', [$expectedParserReturn]), $actual);
     }
 
     /**
      * Data Provider
      */
-    public function getParsedDocBlockReturnsADocBlockObjectWithArrayTypeDataProvider()
+    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsalmArrayParserDataProvider()
     {
         return [
-            '(string|int)[]' => [
+            'array with union types' => [
                 <<<'php'
                 /**
-                *
-                * @param (string|int)[] $testArray
+                 *
+                 * @param array<int|string> $testParam Is a string scalar type
                 */
                 php,
-                [[new ArrayParameter(new ArrayKeyParameter, [new StringParameter, new IntParameter])], true]
+                'array<int|string>'
             ],
-            'string[]' => [
+            'array with psr array type' => [
                 <<<'php'
                 /**
-                *
-                * @param string[] $testArray
+                 *
+                 * @param array<int[]> $testParam Is a string scalar type
                 */
                 php,
-                [[new ArrayParameter(new ArrayKeyParameter, [new StringParameter])], true]
+                'array<int[]>'
             ],
-            '(string[]|int)[]' => [
+            'array with psr union typed array type' => [
                 <<<'php'
                 /**
-                *
-                * @param (string[]|int)[] $testArray
+                 *
+                 * @param array<(class-string|string)[]> $testParam Is a string scalar type
                 */
                 php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
-                                new IntParameter
-                            ]
-                        )
-                    ],
-                    true
-                ]
+                'array<(class-string|string)[]>'
             ],
-            '(string[])[]' => [
+            'array with psalm array type' => [
                 <<<'php'
                 /**
-                *
-                * @param (string[])[] $testArray
+                 *
+                 * @param array<int, array<object>> $testParam Is a string scalar type
                 */
                 php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
-                            ]
-                        )
-                    ],
-                    true
-                ]
+                'array<int, array<object>>'
             ],
-            'string[][]' => [
+            'array with psalm list type' => [
                 <<<'php'
                 /**
-                *
-                * @param string[][] $testArray
+                 *
+                 * @param array<string, list<object>> $testParam Is a string scalar type
                 */
                 php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
-                            ]
-                        )
-                    ],
-                    true
-                ]
+                'array<string, list<object>>'
             ],
-            '((string[])[])[]' => [
+            'array with psalm class-string type' => [
                 <<<'php'
                 /**
-                *
-                * @param ((string[])[])[] $testArray
+                 *
+                 * @param array<int, class-string<stdClass>> $testParam Is a string scalar type
                 */
                 php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new ArrayParameter(
-                                    new ArrayKeyParameter,
-                                    [new ArrayParameter(new ArrayKeyParameter, [new StringParameter])]
-                                ),
-                            ]
-                        )
-                    ],
-                    true
-                ]
+                'array<int, class-string<stdClass>>'
             ],
-            'string[][][]' => [
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsalmListParserDataProvider
+     */
+    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsalmListParser($docblock, $splitterCallArg)
+    {
+        $expectedParserReturn = $this->newMockParserReturnValue();
+        $this->expectTypeSplitterCalls([$splitterCallArg, [$splitterCallArg]]);
+
+        $this->mockPsalmListParser->expects($this->once())->method('parse')
+            ->with($this->testObj, $splitterCallArg)
+            ->willReturn($expectedParserReturn);
+
+        $this->expectNoMockParserCallsExcept($this->mockPsalmListParser);
+
+        $actual = $this->testObj->getDocBlock($docblock, 1)[0];
+        $this->assertEquals(new UnionParameter('$testParam', [$expectedParserReturn]), $actual);
+    }
+
+    /**
+     * Data Provider
+     */
+    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsalmListParserDataProvider()
+    {
+        return [
+            'list with union types' => [
                 <<<'php'
                 /**
-                *
-                * @param string[][][] $testArray
+                 *
+                 * @param list<int|string> $testParam Is a string scalar type
                 */
                 php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new ArrayParameter(
-                                    new ArrayKeyParameter,
-                                    [new ArrayParameter(new ArrayKeyParameter, [new StringParameter])]
-                                ),
-                            ]
-                        )
-                    ],
-                    true
-                ]
+                'list<int|string>'
             ],
-            'array<string>[]' => [
+            'list with psr array type' => [
                 <<<'php'
                 /**
-                *
-                * @param array<string>[] $testArray
+                 *
+                 * @param list<int[]> $testParam Is a string scalar type
                 */
                 php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
-                            ]
-                        )
-                    ],
-                    true
-                ]
+                'list<int[]>'
             ],
-            'array<string>' => [
+            'list with psr union typed array type' => [
                 <<<'php'
                 /**
-                *
-                * @param array<string> $testArray
+                 *
+                 * @param list<(class-string|string)[]> $testParam Is a string scalar type
                 */
                 php,
-                [[new ArrayParameter(new ArrayKeyParameter, [new StringParameter])], true]
+                'list<(class-string|string)[]>'
             ],
-            'array<string|float>' => [
+            'list with psalm array type' => [
                 <<<'php'
                 /**
-                *
-                * @param array<string|float> $testArray
+                 *
+                 * @param list<array<object>> $testParam Is a string scalar type
                 */
                 php,
-                [[new ArrayParameter(new ArrayKeyParameter, [new StringParameter, new FloatParameter])], true]
+                'list<array<object>>'
             ],
-            'array<(string|int)[]>' => [
+            'list with psalm list type' => [
                 <<<'php'
                 /**
-                *
-                * @param array<(string|int)[]> $testArray
+                 *
+                 * @param list<list<object>> $testParam Is a string scalar type
                 */
                 php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [new ArrayParameter(new ArrayKeyParameter, [new StringParameter, new IntParameter])]
-                        )
-                    ],
-                    true
-                ]
+                'list<list<object>>'
             ],
-            'array<string[]>' => [
+            'list with psalm class-string type' => [
                 <<<'php'
                 /**
-                *
-                * @param array<string[]> $testArray
+                 *
+                 * @param list<class-string<stdClass>> $testParam Is a string scalar type
                 */
                 php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [new ArrayParameter(new ArrayKeyParameter, [new StringParameter])]
-                        )
-                    ],
-                    true
-                ]
+                'list<class-string<stdClass>>'
             ],
-            'array<array<string>|array<float>>' => [
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingClassStringParserDataProvider
+     */
+    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingClassStringParser($docblock, $splitterCallArg)
+    {
+        $expectedParserReturn = $this->newMockParserReturnValue();
+        $this->expectTypeSplitterCalls([$splitterCallArg, [$splitterCallArg]]);
+
+        $this->mockPsalmClassStringParser->expects($this->once())->method('parse')
+            ->with($this->testObj, $splitterCallArg)
+            ->willReturn($expectedParserReturn);
+
+        $this->expectNoMockParserCallsExcept($this->mockPsalmClassStringParser);
+
+        $actual = $this->testObj->getDocBlock($docblock, 1)[0];
+        $this->assertEquals(new UnionParameter('$testParam', [$expectedParserReturn]), $actual);
+    }
+
+    /**
+     * Data Provider
+     */
+    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingClassStringParserDataProvider()
+    {
+        return [
+            'class-string with simple type' => [
                 <<<'php'
                 /**
-                *
-                * @param array<array<string>|array<float>> $testArray
+                 *
+                 * @param class-string<stdClass> $testParam Is a string scalar type
                 */
                 php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
-                                new ArrayParameter(new ArrayKeyParameter, [new FloatParameter]),
-                            ]
-                        )
-                    ],
-                    true
-                ]
+                'class-string<stdClass>'
             ],
-            'array<string[]|float[]>' => [
+            'class-string with union types' => [
                 <<<'php'
                 /**
-                *
-                * @param array<string[]|float[]> $testArray
+                 *
+                 * @param class-string<stdClass|ArrayObject> $testParam Is a string scalar type
                 */
                 php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
-                                new ArrayParameter(new ArrayKeyParameter, [new FloatParameter]),
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'array<array<string>|float[]>' => [
-                <<<'php'
-                /**
-                *
-                * @param array<array<string>|float[]> $testArray
-                */
-                php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
-                                new ArrayParameter(new ArrayKeyParameter, [new FloatParameter]),
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'array<array<string>|float|array<string, mixed>>' => [
-                <<<'php'
-                /**
-                *
-                * @param array<array<string>|float|array<string, mixed>> $testArray
-                */
-                php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
-                                new FloatParameter,
-                                new ArrayParameter(new StringParameter, [new MixedParameter]),
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'array<array<string>|float[]|array<string, mixed>>' => [
-                <<<'php'
-                /**
-                *
-                * @param array<array<string>|float[]|array<string, mixed>> $testArray
-                */
-                php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
-                                new ArrayParameter(new ArrayKeyParameter, [new FloatParameter]),
-                                new ArrayParameter(new StringParameter, [new MixedParameter]),
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            '(array<int, string>|array<float>)[]' => [
-                <<<'php'
-                /**
-                *
-                * @param (array<int, string>|array<float>)[] $testArray
-                */
-                php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new ArrayParameter(new IntParameter, [new StringParameter]),
-                                new ArrayParameter(new ArrayKeyParameter, [new FloatParameter]),
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'array<array<int>|array<array<float>|string>>' => [
-                <<<'php'
-                /**
-                *
-                * @param array<array<int>|array<array<float>|string>> $testArray
-                */
-                php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new ArrayParameter(new ArrayKeyParameter, [
-                                    new IntParameter,
-                                ]),
-                                new ArrayParameter(new ArrayKeyParameter, [
-                                    new ArrayParameter(new ArrayKeyParameter, [new FloatParameter]),
-                                    new StringParameter
-                                ]),
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'array<string[]|int[]>' => [
-                <<<'php'
-                /**
-                *
-                * @param array<string[]|int[]> $testArray
-                */
-                php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter]),
-                                new ArrayParameter(new ArrayKeyParameter, [new IntParameter]),
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'array<int, string>' => [
-                <<<'php'
-                /**
-                *
-                * @param array<int, string> $testArray
-                */
-                php,
-                [[new ArrayParameter(new IntParameter, [new StringParameter])], true]
-            ],
-            'array<int, string[]>' => [
-                <<<'php'
-                /**
-                *
-                * @param array<int, string[]> $testArray
-                */
-                php,
-                [
-                    [
-                        new ArrayParameter(
-                            new IntParameter,
-                            [
-                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter])
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'list' => [
-                <<<'php'
-                /**
-                *
-                * @param list $testArray
-                */
-                php,
-                [
-                    [
-                        new ListParameter(
-                            [
-                                new MixedParameter
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'list<string>' => [
-                <<<'php'
-                /**
-                *
-                * @param list<string> $testArray
-                */
-                php,
-                [
-                    [
-                        new ListParameter(
-                            [
-                                new StringParameter
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'list<string|int>' => [
-                <<<'php'
-                /**
-                *
-                * @param list<string|int> $testArray
-                */
-                php,
-                [
-                    [
-                        new ListParameter(
-                            [
-                                new StringParameter,
-                                new IntParameter
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'list<array<string>>' => [
-                <<<'php'
-                /**
-                *
-                * @param list<array<string>> $testArray
-                */
-                php,
-                [
-                    [
-                        new ListParameter(
-                            [
-                                new ArrayParameter(new ArrayKeyParameter, [new StringParameter])
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'array<list<string>>' => [
-                <<<'php'
-                /**
-                *
-                * @param array<list<string>> $testArray
-                */
-                php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new ListParameter([new StringParameter])
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'array<int, list<string>>' => [
-                <<<'php'
-                /**
-                *
-                * @param array<int, list<string>> $testArray
-                */
-                php,
-                [
-                    [
-                        new ArrayParameter(
-                            new IntParameter,
-                            [
-                                new ListParameter([new StringParameter])
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'list[]' => [
-                <<<'php'
-                /**
-                *
-                * @param list[] $testArray
-                */
-                php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new ListParameter([new MixedParameter])
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'list<int>[]' => [
-                <<<'php'
-                /**
-                *
-                * @param list<int>[] $testArray
-                */
-                php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new ListParameter([new IntParameter])
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'array<string, string|float>' => [
-                <<<'php'
-                /**
-                *
-                * @param array<string, string|float> $testArray
-                */
-                php,
-                [[new ArrayParameter(new StringParameter, [new StringParameter, new FloatParameter])], true]
-            ],
-            'array<class-string>' => [
-                <<<'php'
-                /**
-                *
-                * @param array<class-string> $testArray
-                */
-                php,
-                [[new ArrayParameter(new ArrayKeyParameter, [new ClassStringParameter])], true]
-            ],
-            'array<class-string[]>' => [
-                <<<'php'
-                /**
-                *
-                * @param array<class-string[]> $testArray
-                */
-                php,
-                [[new ArrayParameter(
-                    new ArrayKeyParameter,
-                    [new ArrayParameter(new ArrayKeyParameter, [new ClassStringParameter])]
-                )], true]
-            ],
-            'array<class-string[]|int>' => [
-                <<<'php'
-                /**
-                *
-                * @param array<class-string[]|int> $testArray
-                */
-                php,
-                [[new ArrayParameter(
-                    new ArrayKeyParameter,
-                    [new ArrayParameter(new ArrayKeyParameter, [new ClassStringParameter]), new IntParameter]
-                )], true]
-            ],
-            'array<int, class-string>' => [
-                <<<'php'
-                /**
-                *
-                * @param array<int, class-string> $testArray
-                */
-                php,
-                [[new ArrayParameter(new IntParameter, [new ClassStringParameter])], true]
-            ],
-            'array<class-string<stdClass>>' => [
-                <<<'php'
-                /**
-                *
-                * @param array<class-string<stdClass>> $testArray
-                */
-                php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new TypedClassStringParameter(
-                                    [stdClass::class]
-                                )
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'class-string<stdClass>[]' => [
-                <<<'php'
-                /**
-                *
-                * @param class-string<stdClass>[] $testArray
-                */
-                php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new TypedClassStringParameter(
-                                    [stdClass::class]
-                                )
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'array<class-string<stdClass|TestClass>>' => [
-                <<<'php'
-                /**
-                *
-                * @param array<class-string<stdClass|TestClass>> $testArray
-                */
-                php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new TypedClassStringParameter(
-                                    [stdClass::class, TestClass::class]
-                                )
-                            ]
-                        )
-                    ],
-                    true
-                ]
-            ],
-            'array<class-string<stdClass>|class-string<TestClass>>' => [
-                <<<'php'
-                /**
-                *
-                * @param array<class-string<stdClass>|class-string<TestClass>> $testArray
-                */
-                php,
-                [
-                    [
-                        new ArrayParameter(
-                            new ArrayKeyParameter,
-                            [
-                                new TypedClassStringParameter(
-                                    [stdClass::class]
-                                ),
-                                new TypedClassStringParameter(
-                                    [TestClass::class]
-                                ),
-                            ]
-                        )
-                    ],
-                    true
-                ]
+                'class-string<stdClass|ArrayObject>'
             ],
         ];
     }
@@ -864,13 +543,9 @@ class ParserTest extends BaseTestCase
      */
     public function getDocblockCallsLintCheckOnTypeLinter($docblock)
     {
-        $mockTypeLinter = $this->getMockBuilder(TypeLinter::class)
-            ->setMethodsExcept()
-            ->getMock();
-        $mockTypeLinter->expects($this->atLeastOnce())->method('lintCheck')
+        $this->mockTypeLinter->expects($this->once())->method('lintCheck')
             ->with($this->equalTo('$param'), $this->isType('string'))
             ->willThrowException(new RuntimeException);
-        $this->testObj = new Parser(new UseContext(TestClass::class), $mockTypeLinter);
         try {
             $this->testObj->getDocBlock($docblock, 1);
         } catch (RuntimeException $ex) {

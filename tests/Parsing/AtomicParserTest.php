@@ -34,6 +34,7 @@ use Aesonus\Paladin\DocBlock\FalseParameter;
 use Aesonus\Paladin\DocBlock\FloatParameter;
 use Aesonus\Paladin\DocBlock\IntParameter;
 use Aesonus\Paladin\DocBlock\IterableParameter;
+use Aesonus\Paladin\DocBlock\ListParameter;
 use Aesonus\Paladin\DocBlock\MixedParameter;
 use Aesonus\Paladin\DocBlock\NullParameter;
 use Aesonus\Paladin\DocBlock\NumericParameter;
@@ -114,6 +115,15 @@ class AtomicParserTest extends ParsingTestCase
     {
         $actual = $this->testObj->parse($this->mockParser, 'array');
         $this->assertEquals(new ArrayParameter(), $actual);
+    }
+
+    /**
+     * @test
+     */
+    public function parseReturnsGenericListParameterForArrayTypestring()
+    {
+        $actual = $this->testObj->parse($this->mockParser, 'list');
+        $this->assertEquals(new ListParameter(), $actual);
     }
 
     /**

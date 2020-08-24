@@ -56,7 +56,7 @@ class PsrArrayParserTest extends ParsingTestCase
     {
         $expectedArrayTypes = [new IntParameter()];
         $expected = new ArrayParameter(new ArrayKeyParameter(), $expectedArrayTypes);
-        $this->mockParser->expects($this->once())->method('parseTypes')->with('int')
+        $this->mockParser->expects($this->once())->method('parseTypeString')->with('int')
             ->willReturn($expectedArrayTypes);
         $actual = $this->testObj->parse($this->mockParser, 'int[]');
         $this->assertEquals($expected, $actual);
@@ -69,7 +69,7 @@ class PsrArrayParserTest extends ParsingTestCase
     {
         $expectedArrayTypes = [new IntParameter(), new FloatParameter()];
         $expected = new ArrayParameter(new ArrayKeyParameter(), $expectedArrayTypes);
-        $this->mockParser->expects($this->once())->method('parseTypes')->with('int|float')
+        $this->mockParser->expects($this->once())->method('parseTypeString')->with('int|float')
             ->willReturn($expectedArrayTypes);
         $actual = $this->testObj->parse($this->mockParser, '(int|float)[]');
         $this->assertEquals($expected, $actual);
@@ -84,7 +84,7 @@ class PsrArrayParserTest extends ParsingTestCase
         $expectedArrayTypes = [new ArrayParameter()];
         $expected = new ArrayParameter(new ArrayKeyParameter(), $expectedArrayTypes);
 
-        $this->mockParser->expects($this->once())->method('parseTypes')->with($subTypeString)
+        $this->mockParser->expects($this->once())->method('parseTypeString')->with($subTypeString)
             ->willReturn($expectedArrayTypes);
 
         $actual = $this->testObj->parse($this->mockParser, $typeString);

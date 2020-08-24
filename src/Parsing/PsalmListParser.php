@@ -27,9 +27,7 @@ namespace Aesonus\Paladin\Parsing;
 use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
 use Aesonus\Paladin\DocBlock\ListParameter;
-use Aesonus\Paladin\DocBlock\MixedParameter;
 use Aesonus\Paladin\Parser;
-use function Aesonus\Paladin\Utilities\str_contains_str;
 
 /**
  *
@@ -40,12 +38,9 @@ class PsalmListParser implements TypeStringParsingInterface
 {
     public function parse(Parser $parser, string $typeString): ParameterInterface
     {
-        if (!str_contains_str($typeString, '<')) {
-            return new ListParameter([new MixedParameter]);
-        }
         $openingArrow = (int)strpos($typeString, '<');
         $closingArrow = (int)strrpos($typeString, '>');
         $listTypeString = substr($typeString, $openingArrow + 1, $closingArrow - $openingArrow - 1);
-        return new ListParameter($parser->parseTypes($listTypeString));
+        return new ListParameter($parser->parseTypeString($listTypeString));
     }
 }

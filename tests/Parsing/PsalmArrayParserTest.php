@@ -24,9 +24,9 @@
  */
 namespace Aesonus\Tests\Parsing;
 
-use Aesonus\Paladin\DocBlock\ListParameter;
-use Aesonus\Paladin\DocBlock\MixedParameter;
-use Aesonus\Paladin\Parsing\PsalmListParser;
+use Aesonus\Paladin\DocBlock\ArrayParameter;
+use Aesonus\Paladin\DocBlock\IntParameter;
+use Aesonus\Paladin\Parsing\PsalmArrayParser;
 
 /**
  *
@@ -37,52 +37,78 @@ class PsalmArrayParserTest extends ParsingTestCase
 {
     /**
      *
-     * @var PsalmListParser
+     * @var PsalmArrayParser
      */
     public $testObj;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->testObj = new PsalmListParser;
+        $this->testObj = new PsalmArrayParser;
     }
 
     /**
      * @test
+     * @dataProvider parseReturnsArrayParameterWithDefaultKeyTypeDataProvider
      */
-    public function parseReturnsListParameterForSimpleList()
+    public function parseReturnsArrayParameterWithDefaultKeyType($typeString, $expectedParseTypesArg)
     {
-        $expected = new ListParameter([new MixedParameter]);
-        $this->mockParser->expects($this->never())->method('parseTypes');
-        $actual = $this->testObj->parse($this->mockParser, 'list');
-        $this->assertEquals($expected, $actual);
-    }
-
-    /**
-     * @test
-     * @dataProvider parseReturnsListParameterForParameterizedListDataProvider
-     */
-    public function parseReturnsListParameterForParameterizedList($typeString, $expectedParseTypesArg)
-    {
-        $expectedReturn = [new MixedParameter];
-        $expected = new ListParameter($expectedReturn);
-        $this->mockParser->expects($this->once())->method('parseTypes')
+        $expectedArrayType = [new IntParameter()];
+        $this->mockParser->expects($this->once())->method('parseTypeString')
             ->with($expectedParseTypesArg)
-            ->willReturn($expectedReturn);
+            ->willReturn($expectedArrayType);
         $actual = $this->testObj->parse($this->mockParser, $typeString);
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals(new ArrayParameter(null, $expectedArrayType), $actual);
     }
 
     /**
      * Data Provider
      */
-    public function parseReturnsListParameterForParameterizedListDataProvider()
+    public function parseReturnsArrayParameterWithDefaultKeyTypeDataProvider()
     {
         return [
-            'simple type' => ['list<stdClass>', 'stdClass'],
-            'union type' => ['list<stdClass|string>', 'stdClass|string'],
-            'class-string type' => ['list<class-string<stdClass>>', 'class-string<stdClass>'],
-            'psalm array type' => ['list<array<int, int|string[]>>', 'array<int, int|string[]>'],
+            'array<int>' => ['array<int>', 'int'],
+            'array<int[]>' => ['array<int[]>', 'int[]'],
+            'array<int[]|array<string, string>>' =>
+                ['array<int[]|array<string, string>>', 'int[]|array<string, string>'],
+            'array<list<int>>' => ['array<list<int>>', 'list<int>'],
+            'array<class-string<stdClass>>' => ['array<class-string<stdClass>>', 'class-string<stdClass>'],
+            'array<array<int, string>>' => ['array<array<int, string>>', 'array<int, string>'],
+            'array<int|float>' => ['array<int|float>', 'int|float'],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider parseReturnsArrayParameterWithKeyTypeDataProvider
+     */
+    public function parseReturnsArrayParameterWithKeyType($typeString, $expectedParseTypesKeyArg, $expectedParseTypesArg)
+    {
+        $expectedKeyType = new IntParameter();
+        $expectedArrayType = [new IntParameter()];
+        $this->mockParser->expects($this->exactly(2))->method('parseTypeString')
+            ->withConsecutive([$expectedParseTypesKeyArg], [$expectedParseTypesArg])
+            ->willReturnOnConsecutiveCalls([$expectedKeyType], $expectedArrayType);
+        $actual = $this->testObj->parse($this->mockParser, $typeString);
+        $this->assertEquals(new ArrayParameter($expectedKeyType, $expectedArrayType), $actual);
+    }
+
+    /**
+     * Data Provider
+     */
+    public function parseReturnsArrayParameterWithKeyTypeDataProvider()
+    {
+        return [
+            'array<string, int>' => ['array<string, int>', 'string' ,' int'],
+            'array<int, int[]>' => ['array<int, int[]>', 'int', ' int[]'],
+            'array<string, int[]|array<string, string>>' =>
+                ['array<string, int[]|array<string, string>>', 'string', ' int[]|array<string, string>'],
+            'array<string, list<int>>' => ['array<string, list<int>>', 'string', ' list<int>'],
+            'array<string, class-string<stdClass>>' =>
+                ['array<string, class-string<stdClass>>', 'string', ' class-string<stdClass>'],
+            'array<int, array<int, string>>' =>
+                ['array<int, array<int, string>>', 'int' ,' array<int, string>'],
+            'array<int, int|float>' => ['array<int, int|float>', 'int',' int|float'],
         ];
     }
 }
