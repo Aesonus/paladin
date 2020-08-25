@@ -26,6 +26,7 @@ namespace Aesonus\Tests\Parsing;
 
 use Aesonus\Paladin\DocBlock\ListParameter;
 use Aesonus\Paladin\DocBlock\MixedParameter;
+use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parsing\PsalmListParser;
 
 /**
@@ -72,6 +73,31 @@ class PsalmListParserTest extends ParsingTestCase
             'union type' => ['list<stdClass|string>', 'stdClass|string'],
             'class-string type' => ['list<class-string<stdClass>>', 'class-string<stdClass>'],
             'psalm array type' => ['list<array<int, int|string[]>>', 'array<int, int|string[]>'],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider parseThrowsParseExceptionIfTypestringIsNotKnownDataProvider
+     */
+    public function parseThrowsParseExceptionIfTypestringIsNotKnown($typeString)
+    {
+        $this->expectException(ParseException::class);
+        $this->expectExceptionMessage("Unknown type: '$typeString'");
+        $this->testObj->parse($this->mockParser, $typeString);
+    }
+
+    /**
+     * Data Provider
+     */
+    public function parseThrowsParseExceptionIfTypestringIsNotKnownDataProvider()
+    {
+        return [
+            'invalid simple type' => ['list'],
+            'psalm array type' => ['array<int>'],
+            'list inside psalm array type' => ['array<list<int>>'],
+            'psr array type' => ['array[]'],
+            'class-string type' => ['class-string<stdClass>'],
         ];
     }
 }

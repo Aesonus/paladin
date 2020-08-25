@@ -27,6 +27,7 @@ namespace Aesonus\Tests;
 use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
 use Aesonus\Paladin\DocBlock\UnionParameter;
+use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parser;
 use Aesonus\Paladin\Parsing\AtomicParser;
 use Aesonus\Paladin\Parsing\PsalmArrayParser;
@@ -114,11 +115,13 @@ class ParserTest extends BaseTestCase
             $this->useContext,
             $this->mockTypeLinter,
             $this->mockUnionTypeSplitter,
-            $this->mockAtomicParser,
-            $this->mockPsalmArrayParser,
-            $this->mockPsalmListParser,
-            $this->mockPsrArrayParser,
-            $this->mockPsalmClassStringParser,
+            [
+                $this->mockAtomicParser,
+                $this->mockPsalmArrayParser,
+                $this->mockPsalmListParser,
+                $this->mockPsrArrayParser,
+                $this->mockPsalmClassStringParser,
+            ]
         );
     }
 
@@ -157,11 +160,11 @@ class ParserTest extends BaseTestCase
         static::assertThat($actual, static::isDocBlockParameter($name, $types));
     }
 
-    private function expectNoMockParserCallsExcept(MockObject ...$except)
+    private function expectMockParsersToThrowExceptionExcept(MockObject ...$except)
     {
-        $neverExpected = array_filter($this->mockParsers, fn ($mock) => !in_array($mock, $except));
-        foreach ($neverExpected as $mock) {
-            $mock->expects($this->never())->method('parse');
+        $throwsExceptions = array_filter($this->mockParsers, fn ($mock) => !in_array($mock, $except));
+        foreach ($throwsExceptions as $mock) {
+            $mock->expects($this->any())->method('parse')->willThrowException(new ParseException());
         }
     }
 
@@ -225,7 +228,7 @@ class ParserTest extends BaseTestCase
         $this->expectMockParserCallFor($this->mockAtomicParser, $this->exactly(3), 'list', 'class-string', 'array')
             ->willReturn($expectedParserReturn);
 
-        $this->expectNoMockParserCallsExcept($this->mockAtomicParser);
+        $this->expectMockParsersToThrowExceptionExcept($this->mockAtomicParser);
 
         $actual = $this->testObj->getDocBlockValidators($docblock, 1);
         $expected = [
@@ -255,7 +258,7 @@ class ParserTest extends BaseTestCase
         $this->expectMockParserCallFor($this->mockAtomicParser, $this->exactly(2), 'int', 'string')
             ->willReturn($expectedParserReturn);
 
-        $this->expectNoMockParserCallsExcept($this->mockAtomicParser);
+        $this->expectMockParsersToThrowExceptionExcept($this->mockAtomicParser);
 
         $actual = $this->testObj->getDocBlockValidators($docblock, 1)[0];
         $this->assertEquals(new UnionParameter('$testIntString', [$expectedParserReturn, $expectedParserReturn]), $actual);
@@ -273,7 +276,7 @@ class ParserTest extends BaseTestCase
         $this->expectMockParserCallFor($this->mockPsrArrayParser, $this->once(), $splitterCallArg)
             ->willReturn($expectedParserReturn);
 
-        $this->expectNoMockParserCallsExcept($this->mockPsrArrayParser);
+        $this->expectMockParsersToThrowExceptionExcept($this->mockPsrArrayParser);
 
         $actual = $this->testObj->getDocBlockValidators($docblock, 1)[0];
         $this->assertEquals(new UnionParameter('$testParam', [$expectedParserReturn]), $actual);
@@ -343,7 +346,7 @@ class ParserTest extends BaseTestCase
         $this->expectTypeSplitterCalls([$splitterCallArg, [$splitterCallArg]]);
         $this->expectMockParserCallFor($this->mockPsalmArrayParser, $this->once(), $splitterCallArg)
             ->willReturn($expectedParserReturn);
-        $this->expectNoMockParserCallsExcept($this->mockPsalmArrayParser);
+        $this->expectMockParsersToThrowExceptionExcept($this->mockPsalmArrayParser);
 
         $actual = $this->testObj->getDocBlockValidators($docblock, 1)[0];
         $this->assertEquals(new UnionParameter('$testParam', [$expectedParserReturn]), $actual);
@@ -424,7 +427,7 @@ class ParserTest extends BaseTestCase
         $this->expectMockParserCallFor($this->mockPsalmListParser, $this->once(), $splitterCallArg)
             ->willReturn($expectedParserReturn);
 
-        $this->expectNoMockParserCallsExcept($this->mockPsalmListParser);
+        $this->expectMockParsersToThrowExceptionExcept($this->mockPsalmListParser);
 
         $actual = $this->testObj->getDocBlockValidators($docblock, 1)[0];
         $this->assertEquals(new UnionParameter('$testParam', [$expectedParserReturn]), $actual);
@@ -505,7 +508,7 @@ class ParserTest extends BaseTestCase
         $this->expectMockParserCallFor($this->mockPsalmClassStringParser, $this->once(), $splitterCallArg)
             ->willReturn($expectedParserReturn);
 
-        $this->expectNoMockParserCallsExcept($this->mockPsalmClassStringParser);
+        $this->expectMockParsersToThrowExceptionExcept($this->mockPsalmClassStringParser);
 
         $actual = $this->testObj->getDocBlockValidators($docblock, 1)[0];
         $this->assertEquals(new UnionParameter('$testParam', [$expectedParserReturn]), $actual);

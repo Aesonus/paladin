@@ -27,6 +27,7 @@ namespace Aesonus\Paladin\Parsing;
 use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
 use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
+use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parser;
 
 /**
@@ -36,18 +37,20 @@ use Aesonus\Paladin\Parser;
  */
 class PsalmClassStringParser implements TypeStringParsingInterface
 {
-    /**
-     *
-     * @param Parser $parser
-     * @param string $typeString
-     * @return ParameterInterface
-     */
     public function parse(Parser $parser, string $typeString): ParameterInterface
     {
+        $this->assertThatStringCanBeParsed($typeString);
         $classTypes = explode('|', substr($typeString, (int)strpos($typeString, '<') + 1, -1));
         return new TypedClassStringParameter(array_map(function ($type) use ($parser) {
             $rawClass = (strpos($type, '\\') === 0) ? substr($type, 1): $type;
             return $parser->getUseContext()->getUsedClass($rawClass);
         }, $classTypes));
+    }
+
+    public function assertThatStringCanBeParsed(string $typeString): void
+    {
+        if (strpos($typeString, 'class-string<') !== 0) {
+            throw new ParseException($typeString);
+        }
     }
 }

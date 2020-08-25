@@ -152,11 +152,26 @@ class AtomicParserTest extends ParsingTestCase
 
     /**
      * @test
+     * @dataProvider parseThrowsParseExceptionIfTypestringIsNotKnownDataProvider
      */
-    public function parseThrowsRuntimeExceptionIfTypestringIsNotKnown()
+    public function parseThrowsParseExceptionIfTypestringIsNotKnown($typeString)
     {
         $this->expectException(ParseException::class);
-        $this->expectExceptionMessage('Unknown type: \'no-good\'');
-        $this->testObj->parse($this->mockParser, 'no-good');
+        $this->expectExceptionMessage("Unknown type: '$typeString'");
+        $this->testObj->parse($this->mockParser, $typeString);
+    }
+
+    /**
+     * Data Provider
+     */
+    public function parseThrowsParseExceptionIfTypestringIsNotKnownDataProvider()
+    {
+        return [
+            'invalid simple type' => ['no-good'],
+            'psalm array type' => ['array<int>'],
+            'psr array type' => ['array[]'],
+            'list type' => ['list<int>'],
+            'class-string type' => ['class-string<stdClass>'],
+        ];
     }
 }

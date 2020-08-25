@@ -28,6 +28,7 @@ use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
 use Aesonus\Paladin\DocBlock\ArrayKeyParameter;
 use Aesonus\Paladin\DocBlock\ArrayParameter;
+use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parser;
 
 /**
@@ -37,14 +38,9 @@ use Aesonus\Paladin\Parser;
  */
 class PsalmArrayParser implements TypeStringParsingInterface
 {
-    /**
-     *
-     * @param Parser $parser
-     * @param string $typeString
-     * @return ParameterInterface
-     */
     public function parse(Parser $parser, string $typeString): ParameterInterface
     {
+        $this->assertThatStringCanBeParsed($typeString);
         $openingArrow = (int)strpos($typeString, '<');
         $arrayTypeString = substr($typeString, $openingArrow + 1, -1);
         $types = preg_split('`,(?![\w \[\]]+>)`', $arrayTypeString);
@@ -54,5 +50,12 @@ class PsalmArrayParser implements TypeStringParsingInterface
         }
         $keyType = array_shift($types);
         return new ArrayParameter($parser->parseTypeString($keyType)[0], $parser->parseTypeString($types[0]));
+    }
+
+    public function assertThatStringCanBeParsed(string $typeString): void
+    {
+        if (strpos($typeString, 'array<') !== 0) {
+            throw new ParseException($typeString);
+        }
     }
 }

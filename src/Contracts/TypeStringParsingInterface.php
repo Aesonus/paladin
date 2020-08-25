@@ -41,4 +41,12 @@ interface TypeStringParsingInterface
      * @throws ParseException
      */
     public function parse(Parser $parser, string $typeString): ParameterInterface;
+
+    /**
+     *
+     * @param string $typeString
+     * @return void
+     * @throws ParseException
+     */
+    public function assertThatStringCanBeParsed(string $typeString): void;
 }

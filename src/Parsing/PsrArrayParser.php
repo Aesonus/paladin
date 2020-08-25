@@ -28,6 +28,7 @@ use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
 use Aesonus\Paladin\DocBlock\ArrayKeyParameter;
 use Aesonus\Paladin\DocBlock\ArrayParameter;
+use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parser;
 
 /**
@@ -39,6 +40,7 @@ class PsrArrayParser implements TypeStringParsingInterface
 {
     public function parse(Parser $parser, string $typeString): ParameterInterface
     {
+        $this->assertThatStringCanBeParsed($typeString);
         $newTypeString = substr($typeString, 0, -2);
         $openingParenth = strpos($newTypeString, '(');
         $closingParenth = strrpos($newTypeString, ')');
@@ -59,5 +61,12 @@ class PsrArrayParser implements TypeStringParsingInterface
             new ArrayKeyParameter,
             $parser->parseTypeString($newTypeString)
         );
+    }
+
+    public function assertThatStringCanBeParsed(string $typeString): void
+    {
+        if ((int)strrpos($typeString, '[]') + 2 !== strlen($typeString)) {
+            throw new ParseException($typeString);
+        }
     }
 }

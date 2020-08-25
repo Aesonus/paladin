@@ -27,6 +27,7 @@ declare(strict_types=1);
 namespace Aesonus\Paladin;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
+use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
 use Aesonus\Paladin\Contracts\UseContextInterface;
 use Aesonus\Paladin\DocBlock\UnionParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
@@ -37,7 +38,6 @@ use Aesonus\Paladin\Parsing\PsalmListParser;
 use Aesonus\Paladin\Parsing\PsrArrayParser;
 use Aesonus\Paladin\Parsing\UnionTypeSplitter;
 use function Aesonus\Paladin\Utilities\get_str_positions;
-use function Aesonus\Paladin\Utilities\str_contains_str;
 
 /**
  *
@@ -68,52 +68,33 @@ class Parser
 
     /**
      *
-     * @var AtomicParser
+     * @var TypeStringParsingInterface[]
      */
-    private $atomicTypeParser;
+    private $parsers;
 
     /**
      *
-     * @var PsalmArrayParser
+     * @param UseContextInterface $useContext
+     * @param null|TypeLinter $typeLinter
+     * @param null|UnionTypeSplitter $typeSplitter
+     * @param null|TypeStringParsingInterface[] $typeStringParsers
      */
-    private $psalmArrayParser;
-
-    /**
-     *
-     * @var PsalmListParser
-     */
-    private $psalmListParser;
-
-    /**
-     *
-     * @var PsalmClassStringParser
-     */
-    private $classStringParser;
-
-    /**
-     *
-     * @var PsrArrayParser
-     */
-    private $psrArrayParser;
-
     public function __construct(
         UseContextInterface $useContext,
         ?TypeLinter $typeLinter = null,
         ?UnionTypeSplitter $typeSplitter = null,
-        ?AtomicParser $atomicTypeParser = null,
-        ?PsalmArrayParser $psalmArrayParser = null,
-        ?PsalmListParser $psalmListParser = null,
-        ?PsrArrayParser $psrArrayParser = null,
-        ?PsalmClassStringParser $classStringParser = null
+        ?array $typeStringParsers = null
     ) {
         $this->useContext = $useContext;
         $this->typeLinter = $typeLinter ?? new TypeLinter;
         $this->typeSplitter = $typeSplitter ?? new UnionTypeSplitter;
-        $this->psalmArrayParser = $psalmArrayParser ?? new PsalmArrayParser;
-        $this->psalmListParser = $psalmListParser ?? new PsalmListParser;
-        $this->psrArrayParser = $psrArrayParser ?? new PsrArrayParser;
-        $this->classStringParser = $classStringParser ?? new PsalmClassStringParser;
-        $this->atomicTypeParser = $atomicTypeParser ?? new AtomicParser;
+        $this->parsers = $typeStringParsers ?? [
+            new PsalmArrayParser,
+            new PsalmListParser,
+            new PsrArrayParser,
+            new PsalmClassStringParser,
+            new AtomicParser,
+        ];
     }
 
     /**
@@ -188,21 +169,13 @@ class Parser
      */
     protected function parseUnionTypes(string $typeString): ParameterInterface
     {
-        $parseables = get_str_positions($typeString, 'array<', 'list<', 'class-string<');
-        if ((int)strrpos($typeString, '[]') + 2 === strlen($typeString)) {
-            return $this->psrArrayParser->parse($this, $typeString);
-        }
-        foreach ($parseables as $parseableType) {
-            switch ($parseableType['str']) {
-                case 'array<':
-                    return $this->psalmArrayParser->parse($this, $typeString);
-                case 'list<':
-                    return $this->psalmListParser->parse($this, $typeString);
-                case 'class-string<':
-                    return $this->classStringParser->parse($this, $typeString);
+        foreach ($this->parsers as $parser) {
+            try {
+                return $parser->parse($this, $typeString);
+            } catch (ParseException $exc) {
+                continue;
             }
         }
-        return $this->atomicTypeParser->parse($this, $typeString);
     }
 
     /**

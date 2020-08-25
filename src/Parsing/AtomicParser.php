@@ -87,13 +87,18 @@ class AtomicParser implements TypeStringParsingInterface
 
     public function parse(Parser $parser, string $typeString): ParameterInterface
     {
+        $this->assertThatStringCanBeParsed($typeString);
         if (is_class_string($typeString)) {
             return new ObjectParameter($parser->getUseContext()->getUsedClass($typeString));
         }
-        if (array_key_exists($typeString, self::PARAMETER_TYPES)) {
-            $parameter = self::PARAMETER_TYPES[$typeString];
-            return new $parameter;
+        $parameter = self::PARAMETER_TYPES[$typeString];
+        return new $parameter;
+    }
+
+    public function assertThatStringCanBeParsed(string $typeString): void
+    {
+        if (!is_class_string($typeString) && !array_key_exists($typeString, self::PARAMETER_TYPES)) {
+            throw new ParseException($typeString);
         }
-        throw new ParseException($typeString);
     }
 }
