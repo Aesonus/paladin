@@ -121,7 +121,7 @@ class Parser
      * @param string $docblock
      * @return ParameterInterface[]
      */
-    public function getDocBlock(string $docblock): array
+    public function getDocBlockValidators(string $docblock): array
     {
         $matches = $this->getParamMatches($docblock);
         $params = $this->getParamsInParts($matches);

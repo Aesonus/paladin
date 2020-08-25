@@ -57,7 +57,7 @@ trait ValidatesParameters
     protected function validate(callable $method, array $args): void
     {
         $docblock = (new MethodDocComment($method))->get();
-        $validators = $this->getParser()->getDocBlock($docblock);
+        $validators = $this->getParser()->getDocBlockValidators($docblock);
         /** @var mixed $argValue */
         foreach ($args as $i => $argValue) {
             if (!array_key_exists($i, $validators)) {
