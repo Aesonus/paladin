@@ -176,6 +176,7 @@ class Parser
                 continue;
             }
         }
+        throw new ParseException($typeString);
     }
 
     /**

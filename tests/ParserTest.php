@@ -572,4 +572,24 @@ class ParserTest extends BaseTestCase
             ],
         ];
     }
+
+    /**
+     * @test
+     */
+    public function getDocBlockValidatorsThrowsParseExceptionIfTypestringIsNotKnown()
+    {
+        $docblock = <<<'php'
+                /**
+                 *
+                 * @param not-good $param
+                 */
+                php;
+        $this->expectTypeSplitterCalls(['not-good', ['not-good']]);
+        $this->expectMockParsersToThrowExceptionExcept();
+
+        $this->expectException(ParseException::class);
+        $this->expectExceptionMessage('not-good');
+        
+        $this->testObj->getDocBlockValidators($docblock);
+    }
 }
