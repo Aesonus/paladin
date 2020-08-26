@@ -22,53 +22,56 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Paladin\DocBlock;
+namespace Aesonus\Tests\ParameterInterfaces;
 
-use Aesonus\Paladin\Contracts\ParameterInterface;
-use Aesonus\Paladin\Contracts\TypeExceptionVisitorInterface;
+use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
+use ArrayObject;
+use SplFileObject;
+use stdClass;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-abstract class AbstractParameter implements ParameterInterface
+class TypedClassStringParameterTest extends ParameterInterfaceTestCase
 {
     /**
-     *
-     * @var string
+     * @test
      */
-    protected string $name;
-
-    /**
-     *
-     * @var ParameterInterface[]
-     */
-    protected array $types = [];
-
-    public function acceptExceptionVisitor(TypeExceptionVisitorInterface $visitor): void
+    public function validateReturnsFalseIfGivenValueIsNotAClassString()
     {
-        $visitor->visitParameter($this);
+        $this->assertFalse((new TypedClassStringParameter([stdClass::class]))->validate(23));
     }
 
     /**
-     * {@inheritdoc}
+     * @test
+     * @dataProvider validateReturnsFalseIfGivenClassTypeIsNotCorrectClassTypesDataProvider
      */
-    public function getName(): string
+    public function validateReturnsFalseIfGivenClassTypeIsNotCorrectClassTypes(...$classTypes)
     {
-        return $this->name;
+        $testObj = new TypedClassStringParameter($classTypes);
+        $givenValue = ArrayObject::class;
+        $this->assertFalse($testObj->validate($givenValue));
     }
 
     /**
-     * {@inheritdoc}
+     * Data Provider
      */
-    public function getTypes(): array
+    public function validateReturnsFalseIfGivenClassTypeIsNotCorrectClassTypesDataProvider()
     {
-        return $this->types;
+        return [
+            'one class type' => [stdClass::class],
+            'two class types' => [stdClass::class, SplFileObject::class],
+        ];
     }
 
-    public function __toString(): string
+    /**
+     * @test
+     */
+    public function validateReturnsTrueIfGivenClassTypeIsOfCorrectClassType()
     {
-        return $this->getName();
+        $testObj = new TypedClassStringParameter([stdClass::class, ArrayObject::class]);
+        $this->assertTrue($testObj->validate(ArrayObject::class));
     }
 }

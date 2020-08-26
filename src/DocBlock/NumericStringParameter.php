@@ -24,12 +24,22 @@
  */
 namespace Aesonus\Paladin\DocBlock;
 
+use function Aesonus\Paladin\is_numeric_string;
+
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class NumericStringParameter extends AbstractAtomicParameter
+class NumericStringParameter extends AbstractParameter
 {
-    //put your code here
+    public function __construct()
+    {
+        $this->name = 'numeric-string';
+    }
+
+    public function validate($givenValue): bool
+    {
+        return is_numeric_string($givenValue);
+    }
 }

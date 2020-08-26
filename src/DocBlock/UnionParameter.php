@@ -37,8 +37,6 @@ use RuntimeException;
  */
 class UnionParameter extends AbstractParameter
 {
-
-
     /**
      *
      * @param string $name
@@ -68,12 +66,6 @@ class UnionParameter extends AbstractParameter
     {
         $valid = false;
         foreach ($types as $type) {
-//            if (!($type instanceof ParameterInterface)) {
-//                throw new RuntimeException(
-//                    'All types must be instances of '
-//                    . ParameterInterface::class
-//                );
-//            }
             $valid = $type->validate($givenValue);
             if ($valid) {
                 break;
@@ -82,7 +74,7 @@ class UnionParameter extends AbstractParameter
         return $valid;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return implode('|', $this->getTypes());
     }

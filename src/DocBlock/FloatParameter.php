@@ -29,7 +29,15 @@ namespace Aesonus\Paladin\DocBlock;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class FloatParameter extends AbstractAtomicParameter
+class FloatParameter extends AbstractParameter
 {
-    //put your code here
+    public function __construct()
+    {
+        $this->name = 'float';
+    }
+
+    public function validate($givenValue): bool
+    {
+        return is_float($givenValue);
+    }
 }

@@ -29,7 +29,7 @@ namespace Aesonus\Paladin\DocBlock;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class ObjectParameter extends AbstractAtomicParameter
+class ObjectParameter extends AbstractParameter
 {
     /**
      *
@@ -40,7 +40,7 @@ class ObjectParameter extends AbstractAtomicParameter
     public function __construct(?string $ofClass = null)
     {
         $this->ofClass = $ofClass;
-        parent::__construct();
+        $this->name = 'object';
     }
 
     public function validate($givenValue): bool

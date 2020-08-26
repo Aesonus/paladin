@@ -29,7 +29,15 @@ namespace Aesonus\Paladin\DocBlock;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class IterableParameter extends AbstractAtomicParameter
+class IterableParameter extends AbstractParameter
 {
-    //put your code here
+    public function __construct()
+    {
+        $this->name = 'iterable';
+    }
+
+    public function validate($givenValue): bool
+    {
+        return is_iterable($givenValue);
+    }
 }

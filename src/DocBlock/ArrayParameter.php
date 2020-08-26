@@ -64,7 +64,7 @@ class ArrayParameter extends UnionParameter
         $valid = true;
         /** @var mixed $value */
         foreach ($givenValue as $key => $value) {
-            $valid = parent::validate($value) && $this->validateUnionType([$this->keyType], $key);
+            $valid = parent::validate($value) && $this->keyType->validate($key);
             if (!$valid) {
                 break;
             }
@@ -72,12 +72,12 @@ class ArrayParameter extends UnionParameter
         return $valid;
     }
 
-    public function getKeyType(): string
+    public function getKeyType(): ParameterInterface
     {
         return $this->keyType;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return sprintf('array<%s, %s>', $this->getKeyType(), parent::__toString());
     }

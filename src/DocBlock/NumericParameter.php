@@ -29,7 +29,15 @@ namespace Aesonus\Paladin\DocBlock;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class NumericParameter extends AbstractAtomicParameter
+class NumericParameter extends AbstractParameter
 {
-    //put your code here
+    public function __construct()
+    {
+        $this->name = 'numeric';
+    }
+
+    public function validate($givenValue): bool
+    {
+        return is_numeric($givenValue);
+    }
 }

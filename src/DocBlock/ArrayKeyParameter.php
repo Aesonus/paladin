@@ -24,12 +24,21 @@
  */
 namespace Aesonus\Paladin\DocBlock;
 
+use function Aesonus\Paladin\is_array_key;
+
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class ArrayKeyParameter extends AbstractAtomicParameter
+class ArrayKeyParameter extends AbstractParameter
 {
-    //put your code here
+    public function __construct()
+    {
+        $this->name = 'array-key';
+    }
+    public function validate($givenValue): bool
+    {
+        return is_array_key($givenValue);
+    }
 }

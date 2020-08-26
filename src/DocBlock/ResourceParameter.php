@@ -29,7 +29,15 @@ namespace Aesonus\Paladin\DocBlock;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class ResourceParameter extends AbstractAtomicParameter
+class ResourceParameter extends AbstractParameter
 {
-    //put your code here
+    public function __construct()
+    {
+        $this->name = 'resource';
+    }
+
+    public function validate($givenValue): bool
+    {
+        return is_resource($givenValue);
+    }
 }

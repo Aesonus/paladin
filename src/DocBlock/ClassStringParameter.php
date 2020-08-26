@@ -24,12 +24,22 @@
  */
 namespace Aesonus\Paladin\DocBlock;
 
+use function Aesonus\Paladin\is_class_string;
+
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class ClassStringParameter extends AbstractAtomicParameter
+class ClassStringParameter extends AbstractParameter
 {
-    //put your code here
+    public function __construct()
+    {
+        $this->name = 'class-string';
+    }
+
+    public function validate($givenValue): bool
+    {
+        return is_class_string($givenValue);
+    }
 }

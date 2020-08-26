@@ -22,51 +22,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Paladin\DocBlock;
+namespace Aesonus\Tests\ParameterInterfaces;
 
-use const Aesonus\Paladin\FUNCTION_NAMESPACE;
+use Aesonus\Paladin\Contracts\ParameterInterface;
+use Aesonus\TestLib\BaseTestCase;
+use PHPUnit\Framework\MockObject\Rule\InvocationOrder;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-abstract class AbstractAtomicParameter extends AbstractParameter
+abstract class ParameterInterfaceTestCase extends BaseTestCase
 {
-    public function __construct()
-    {
-        $matches = [];
-        preg_match_all('/[A-Z][a-z]+(?=\w*Parameter)/', static::class, $matches);
-        /** @var array<int, array<int, string>> $matches */
-        $this->name = implode('-', array_map('strtolower', $matches[0]));
-    }
-
-    public function __toString(): string
-    {
-        return $this->getName();
-    }
-
-    public function validate($givenValue): bool
-    {
-        $type = $this->getName();
-        if ('mixed' === $type) {
-            return true;
-        }
-        $builtInCallable = 'is_' . $type;
-        if (function_exists($builtInCallable)) {
-            /** @var callable(mixed):bool $builtInCallable */
-            return $builtInCallable($givenValue);
-        }
-
-        $psalmTypeCallable = sprintf(
-            '%sis_%s',
-            FUNCTION_NAMESPACE,
-            str_replace('-', '_', $type)
-        );
-        if (function_exists($psalmTypeCallable)) {
-            /** @var callable(mixed):bool $psalmTypeCallable */
-            return $psalmTypeCallable($givenValue);
-        }
-        return false;
+    protected function expectMockParameterInterfaceValidateCall(
+        InvocationOrder $invocationRule,
+        array $withValue,
+        bool $willReturn
+    ): ParameterInterface {
+        $mock = $this->getMockBuilder(ParameterInterface::class)
+            ->getMockForAbstractClass();
+        $mock->expects($invocationRule)->method('validate')
+            ->withConsecutive(...$withValue)
+            ->willReturn($willReturn);
+        return $mock;
     }
 }

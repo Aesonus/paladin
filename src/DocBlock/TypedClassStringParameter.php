@@ -29,7 +29,7 @@ namespace Aesonus\Paladin\DocBlock;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class TypedClassStringParameter extends UnionParameter
+class TypedClassStringParameter extends ClassStringParameter
 {
     /**
      *
@@ -40,11 +40,11 @@ class TypedClassStringParameter extends UnionParameter
     /**
      *
      * @param string $name
-     * @param string[] $classTypes
+     * @param class-string[] $classTypes
      */
     public function __construct(array $classTypes)
     {
-        parent::__construct('class-string', [new ClassStringParameter]);
+        $this->name = 'class-string';
         $this->classTypes = $classTypes;
     }
 
@@ -67,7 +67,7 @@ class TypedClassStringParameter extends UnionParameter
         return $valid;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return "class-string<" . implode('|', $this->classTypes) . ">";
     }

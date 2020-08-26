@@ -29,7 +29,15 @@ namespace Aesonus\Paladin\DocBlock;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class StringParameter extends AbstractAtomicParameter
+class StringParameter extends AbstractParameter
 {
-    //put your code here
+    public function __construct()
+    {
+        $this->name = 'string';
+    }
+
+    public function validate($givenValue): bool
+    {
+        return is_string($givenValue);
+    }
 }

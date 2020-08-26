@@ -29,7 +29,15 @@ namespace Aesonus\Paladin\DocBlock;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class NullParameter extends AbstractAtomicParameter
+class NullParameter extends AbstractParameter
 {
-    //put your code here
+    public function __construct()
+    {
+        $this->name = 'null';
+    }
+
+    public function validate($givenValue): bool
+    {
+        return is_null($givenValue);
+    }
 }

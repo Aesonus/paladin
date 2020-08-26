@@ -24,12 +24,22 @@
  */
 namespace Aesonus\Paladin\DocBlock;
 
+use function Aesonus\Paladin\is_trait_string;
+
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class TraitStringParameter extends AbstractAtomicParameter
+class TraitStringParameter extends AbstractParameter
 {
-    //put your code here
+    public function __construct()
+    {
+        $this->name = 'trait-string';
+    }
+
+    public function validate($givenValue): bool
+    {
+        return is_trait_string($givenValue);
+    }
 }

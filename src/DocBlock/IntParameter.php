@@ -31,6 +31,15 @@ namespace Aesonus\Paladin\DocBlock;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class IntParameter extends AbstractAtomicParameter
+class IntParameter extends AbstractParameter
 {
+    public function __construct()
+    {
+        $this->name = 'int';
+    }
+
+    public function validate($givenValue): bool
+    {
+        return is_int($givenValue);
+    }
 }

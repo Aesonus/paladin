@@ -54,7 +54,7 @@ class IntersectionParameter extends UnionParameter
         return $valid;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return str_replace('|', '&', parent::__toString());
     }

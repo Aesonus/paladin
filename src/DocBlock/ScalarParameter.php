@@ -29,7 +29,15 @@ namespace Aesonus\Paladin\DocBlock;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class ScalarParameter extends AbstractAtomicParameter
+class ScalarParameter extends AbstractParameter
 {
-    //put your code here
+    public function __construct()
+    {
+        $this->name = 'scalar';
+    }
+
+    public function validate($givenValue): bool
+    {
+        return is_scalar($givenValue);
+    }
 }

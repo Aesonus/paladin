@@ -29,7 +29,19 @@ namespace Aesonus\Paladin\DocBlock;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class MixedParameter extends AbstractAtomicParameter
+class MixedParameter extends AbstractParameter
 {
-    //put your code here
+    public function __construct()
+    {
+        $this->name = 'mixed';
+    }
+    public function __toString(): string
+    {
+        return $this->getName();
+    }
+
+    public function validate($givenValue): bool
+    {
+        return true;
+    }
 }

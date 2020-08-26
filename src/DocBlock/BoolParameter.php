@@ -29,8 +29,13 @@ namespace Aesonus\Paladin\DocBlock;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class BoolParameter extends AbstractAtomicParameter
+class BoolParameter extends AbstractParameter
 {
+    public function __construct()
+    {
+        $this->name = 'bool';
+    }
+
     public function validate($givenValue): bool
     {
         return is_bool($givenValue);

@@ -24,12 +24,21 @@
  */
 namespace Aesonus\Paladin\DocBlock;
 
+use function Aesonus\Paladin\is_callable_string;
+
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class CallableStringParameter extends AbstractAtomicParameter
+class CallableStringParameter extends AbstractParameter
 {
-    //put your code here
+    public function __construct()
+    {
+        $this->name = 'callable-string';
+    }
+    public function validate($givenValue): bool
+    {
+        return is_callable_string($givenValue);
+    }
 }
