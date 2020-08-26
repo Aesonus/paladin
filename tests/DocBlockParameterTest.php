@@ -230,7 +230,9 @@ class DocBlockParameterTest extends BaseTestCase
         return [
             'string[] or array<string>' => [[new StringParameter], ['test', 'strings']],
             'array<string|int>' => [[new StringParameter, new IntParameter], [34, 'string', 34]],
-            'array<string|int|object>' => [[new StringParameter, new ObjectParameter, new IntParameter], [32, new stdClass, 'test']]
+            'array<string|int|object>' => [
+                [new StringParameter, new ObjectParameter, new IntParameter], [32, new stdClass, 'test']
+            ]
         ];
     }
 
@@ -313,7 +315,10 @@ class DocBlockParameterTest extends BaseTestCase
     public function validateParameterReturnsFalseIfParameterIsNotListOfTypeDataProvider()
     {
         return [
-            'list with values not starting at index 0' => [[new MixedParameter], [1 => 'test', 2 => 23, 3 => new \stdClass()]],
+            'list with values not starting at index 0' => [
+                [new MixedParameter],
+                [1 => 'test', 2 => 23, 3 => new \stdClass()]
+            ],
             'list<int> a value that is not int' => [[new IntParameter], [23, new \stdClass()]],
             'list<int> a value with string key' => [[new IntParameter], [23, 'test' => 32]],
         ];
@@ -341,8 +346,16 @@ class DocBlockParameterTest extends BaseTestCase
     {
         return [
             'array<int, string>' => [new IntParameter, [new StringParameter], ['just', 'a', 'list']],
-            'array<string, string>' => [new StringParameter, [new StringParameter], ['a' => 'just', 'b' => 'a', 'c' => 'list']],
-            'array<string, string|int>' => [new StringParameter, [new StringParameter, new IntParameter], ['a' => 'just', 'b' => 2, 'c' => 'list']],
+            'array<string, string>' => [
+                new StringParameter,
+                [new StringParameter],
+                ['a' => 'just', 'b' => 'a', 'c' => 'list']
+            ],
+            'array<string, string|int>' => [
+                new StringParameter,
+                [new StringParameter, new IntParameter],
+                ['a' => 'just', 'b' => 2, 'c' => 'list']
+            ],
         ];
     }
 
@@ -372,9 +385,21 @@ class DocBlockParameterTest extends BaseTestCase
                 [new StringParameter],
                 ['a' => 'just', 2 => 'a', 'c' => 'list']
             ],
-            'invalid element in array<int, string>' => [new IntParameter, [new StringParameter], ['just', 3.1441, 'list']],
-            'invalid key in array<string, string>' => [new StringParameter, [new StringParameter], ['just', 'a', 'list']],
-            'invalid element in array<int, string>' => [new IntParameter, [new StringParameter], ['just', 2, 'list']],
+            'invalid element in array<int, string>' => [
+                new IntParameter,
+                [new StringParameter],
+                ['just', 3.1441, 'list']
+            ],
+            'invalid key in array<string, string>' => [
+                new StringParameter,
+                [new StringParameter],
+                ['just', 'a', 'list']
+            ],
+            'invalid element in array<int, string>' => [
+                new IntParameter,
+                [new StringParameter],
+                ['just', 2, 'list']
+            ],
             'invalid key in array<string, string|int>' => [
                 new StringParameter,
                 [new StringParameter, new IntParameter],

@@ -27,35 +27,6 @@ declare(strict_types=1);
 namespace Aesonus\Paladin\Utilities;
 
 /**
- * Returns if $haystack contains any characters from $needles
- * @param string $needles
- * @param string $haystack
- * @return bool
- */
-function str_contains_chars(string $needles, string $haystack): bool
-{
-    return count(array_diff(str_split($needles), str_split($haystack))) !== strlen($needles);
-}
-
-/**
- * Searches for the first occurrence of $needle in $haystack. Returns $default if
- * $needle is not found
- *
- * @param string $haystack
- * @param string $needle
- * @param mixed $default [optional] Defaults to false, like the normal strpos function
- * @return int|mixed
- */
-function strpos_default(string $haystack, string $needle, $default = false)
-{
-    $pos = strpos($haystack, $needle);
-    if (false === $pos) {
-        return $default;
-    }
-    return $pos;
-}
-
-/**
  * Returns all positions of $needle in $haystack. Returns empty array if none are found
  * @param string $haystack
  * @param string $needle
@@ -99,20 +70,6 @@ function sign($number): int
 }
 
 /**
- * Returns the first element in the array
- * @param array $array
- * @return mixed
- */
-function array_first(array $array)
-{
-    $key = array_key_first($array);
-    if ($key !== null) {
-        return $array[$key];
-    }
-    return null;
-}
-
-/**
  * Returns the last element in the array
  * @param array $array
  * @return mixed
@@ -140,31 +97,4 @@ function implode_ext(string $glue, string $glueLast, array $pieces): string
     }
     $splitTypes = array_slice($pieces, 0, -1);
     return implode($glue, $splitTypes) . $glueLast . array_last($pieces);
-}
-
-/**
- *
- * @param string $haystack
- * @param string $needles
- * @return list<array{str: string, pos: int}>
- */
-function get_str_positions(string $haystack, string ...$needles): array
-{
-    $return = [];
-    foreach ($needles as $needle) {
-        $positions = strpos_all($haystack, $needle);
-        foreach ($positions as $pos) {
-            $return[] = ['str' => $needle, 'pos' => $pos];
-        }
-    }
-
-    usort($return, function (array $a, array $b) {
-        /**
-         * @var array{str: string, pos: int} $a
-         * @var array{str: string, pos: int} $b
-         */
-        return sign($a['pos'] - $b['pos']);
-    });
-    /** @var list<array{str: string, pos: int}> $return */
-    return $return;
 }

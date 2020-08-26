@@ -44,7 +44,9 @@ class PsrArrayParser implements TypeStringParsingInterface
         $newTypeString = substr($typeString, 0, -2);
         $openingParenth = strpos($newTypeString, '(');
         $closingParenth = strrpos($newTypeString, ')');
-        if ($openingParenth !== false && $closingParenth !== false && $closingParenth === (strlen($newTypeString) - 1)) {
+        if ($openingParenth !== false
+            && $closingParenth !== false
+            && $closingParenth === (strlen($newTypeString) - 1)) {
             return new ArrayParameter(
                 new ArrayKeyParameter,
                 $parser->parseTypeString(

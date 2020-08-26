@@ -83,7 +83,11 @@ class PsalmArrayParserTest extends ParsingTestCase
      * @test
      * @dataProvider parseReturnsArrayParameterWithKeyTypeDataProvider
      */
-    public function parseReturnsArrayParameterWithKeyType($typeString, $expectedParseTypesKeyArg, $expectedParseTypesArg)
+    public function parseReturnsArrayParameterWithKeyType(
+        $typeString,
+        $expectedParseTypesKeyArg,
+        $expectedParseTypesArg
+    )
     {
         $expectedKeyType = new IntParameter();
         $expectedArrayType = [new IntParameter()];

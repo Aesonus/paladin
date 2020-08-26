@@ -115,13 +115,7 @@ class ParserTest extends BaseTestCase
             $this->useContext,
             $this->mockTypeLinter,
             $this->mockUnionTypeSplitter,
-            [
-                $this->mockAtomicParser,
-                $this->mockPsalmArrayParser,
-                $this->mockPsalmListParser,
-                $this->mockPsrArrayParser,
-                $this->mockPsalmClassStringParser,
-            ]
+            $this->mockParsers
         );
     }
 
@@ -148,16 +142,6 @@ class ParserTest extends BaseTestCase
             $this->mockPsrArrayParser,
             $this->mockPsalmClassStringParser
         ];
-    }
-
-    public static function isDocBlockParameter($name, $types)
-    {
-        return new ConstraintDocBlockParameter($name, $types);
-    }
-
-    public static function assertDocBlockParameter($actual, $name, $types): void
-    {
-        static::assertThat($actual, static::isDocBlockParameter($name, $types));
     }
 
     private function expectMockParsersToThrowExceptionExcept(MockObject ...$except)
@@ -208,7 +192,7 @@ class ParserTest extends BaseTestCase
     /**
      * @test
      */
-    public function getDocBlockValidatorsCallsMethodsToParseSimpleTypeDocBlockAndReturnsValidators()
+    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidators()
     {
         $docblock = <<<'php'
                 /**
@@ -261,22 +245,34 @@ class ParserTest extends BaseTestCase
         $this->expectMockParsersToThrowExceptionExcept($this->mockAtomicParser);
 
         $actual = $this->testObj->getDocBlockValidators($docblock, 1)[0];
-        $this->assertEquals(new UnionParameter('$testIntString', [$expectedParserReturn, $expectedParserReturn]), $actual);
+        $this->assertEquals(
+            new UnionParameter(
+                '$testIntString',
+                [$expectedParserReturn, $expectedParserReturn]
+            ),
+            $actual
+        );
     }
 
     /**
      * @test
-     * @dataProvider getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsrArrayParserDataProvider
+     * @dataProvider getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingCorrectParserDataProvider
      */
-    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsrArrayParser($docblock, $splitterCallArg)
+    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingCorrectParser($parser)
     {
+        $docblock = <<<'php'
+                /**
+                 *
+                 * @param type-string $testParam Is a string scalar type
+                */
+                php;
         $expectedParserReturn = $this->newMockParserReturnValue();
-        $this->expectTypeSplitterCalls([$splitterCallArg, [$splitterCallArg]]);
+        $this->expectTypeSplitterCalls(['type-string', ['type-string']]);
 
-        $this->expectMockParserCallFor($this->mockPsrArrayParser, $this->once(), $splitterCallArg)
+        $this->expectMockParserCallFor($this->$parser, $this->once(), 'type-string')
             ->willReturn($expectedParserReturn);
 
-        $this->expectMockParsersToThrowExceptionExcept($this->mockPsrArrayParser);
+        $this->expectMockParsersToThrowExceptionExcept($this->$parser);
 
         $actual = $this->testObj->getDocBlockValidators($docblock, 1)[0];
         $this->assertEquals(new UnionParameter('$testParam', [$expectedParserReturn]), $actual);
@@ -285,262 +281,16 @@ class ParserTest extends BaseTestCase
     /**
      * Data Provider
      */
-    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsrArrayParserDataProvider()
+    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingCorrectParserDataProvider()
     {
         return [
-            'array with union types' => [
-                <<<'php'
-                /**
-                 *
-                 * @param (int|string)[] $testParam Is a string scalar type
-                */
-                php,
-                '(int|string)[]'
-            ],
-            'array with psr array type' => [
-                <<<'php'
-                /**
-                 *
-                 * @param int[][] $testParam Is a string scalar type
-                */
-                php,
-                'int[][]'
-            ],
-            'array with psalm array type' => [
-                <<<'php'
-                /**
-                 *
-                 * @param array<int>[] $testParam Is a string scalar type
-                */
-                php,
-                'array<int>[]'
-            ],
-            'array with psalm list type' => [
-                <<<'php'
-                /**
-                 *
-                 * @param list<string>[] $testParam Is a string scalar type
-                */
-                php,
-                'list<string>[]'
-            ],
-            'array with psalm class-string type' => [
-                <<<'php'
-                /**
-                 *
-                 * @param class-string<stdClass>[] $testParam Is a string scalar type
-                */
-                php,
-                'class-string<stdClass>[]'
-            ],
+            'atomicParser' => ['mockAtomicParser'],
+            'psrArrayParser' => ['mockPsrArrayParser'],
+            'psalmArrayParser' => ['mockPsalmArrayParser'],
+            'psalmListParser' => ['mockPsalmListParser'],
+            'psalmClassStringParser' => ['mockPsalmClassStringParser'],
         ];
     }
-
-    /**
-     * @test
-     * @dataProvider getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsalmArrayParserDataProvider
-     */
-    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsalmArrayParser($docblock, $splitterCallArg)
-    {
-        $expectedParserReturn = $this->newMockParserReturnValue();
-        $this->expectTypeSplitterCalls([$splitterCallArg, [$splitterCallArg]]);
-        $this->expectMockParserCallFor($this->mockPsalmArrayParser, $this->once(), $splitterCallArg)
-            ->willReturn($expectedParserReturn);
-        $this->expectMockParsersToThrowExceptionExcept($this->mockPsalmArrayParser);
-
-        $actual = $this->testObj->getDocBlockValidators($docblock, 1)[0];
-        $this->assertEquals(new UnionParameter('$testParam', [$expectedParserReturn]), $actual);
-    }
-
-    /**
-     * Data Provider
-     */
-    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsalmArrayParserDataProvider()
-    {
-        return [
-            'array with union types' => [
-                <<<'php'
-                /**
-                 *
-                 * @param array<int|string> $testParam Is a string scalar type
-                */
-                php,
-                'array<int|string>'
-            ],
-            'array with psr array type' => [
-                <<<'php'
-                /**
-                 *
-                 * @param array<int[]> $testParam Is a string scalar type
-                */
-                php,
-                'array<int[]>'
-            ],
-            'array with psr union typed array type' => [
-                <<<'php'
-                /**
-                 *
-                 * @param array<(class-string|string)[]> $testParam Is a string scalar type
-                */
-                php,
-                'array<(class-string|string)[]>'
-            ],
-            'array with psalm array type' => [
-                <<<'php'
-                /**
-                 *
-                 * @param array<int, array<object>> $testParam Is a string scalar type
-                */
-                php,
-                'array<int, array<object>>'
-            ],
-            'array with psalm list type' => [
-                <<<'php'
-                /**
-                 *
-                 * @param array<string, list<object>> $testParam Is a string scalar type
-                */
-                php,
-                'array<string, list<object>>'
-            ],
-            'array with psalm class-string type' => [
-                <<<'php'
-                /**
-                 *
-                 * @param array<int, class-string<stdClass>> $testParam Is a string scalar type
-                */
-                php,
-                'array<int, class-string<stdClass>>'
-            ],
-        ];
-    }
-
-    /**
-     * @test
-     * @dataProvider getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsalmListParserDataProvider
-     */
-    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsalmListParser($docblock, $splitterCallArg)
-    {
-        $expectedParserReturn = $this->newMockParserReturnValue();
-        $this->expectTypeSplitterCalls([$splitterCallArg, [$splitterCallArg]]);
-
-        $this->expectMockParserCallFor($this->mockPsalmListParser, $this->once(), $splitterCallArg)
-            ->willReturn($expectedParserReturn);
-
-        $this->expectMockParsersToThrowExceptionExcept($this->mockPsalmListParser);
-
-        $actual = $this->testObj->getDocBlockValidators($docblock, 1)[0];
-        $this->assertEquals(new UnionParameter('$testParam', [$expectedParserReturn]), $actual);
-    }
-
-    /**
-     * Data Provider
-     */
-    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingPsalmListParserDataProvider()
-    {
-        return [
-            'list with union types' => [
-                <<<'php'
-                /**
-                 *
-                 * @param list<int|string> $testParam Is a string scalar type
-                */
-                php,
-                'list<int|string>'
-            ],
-            'list with psr array type' => [
-                <<<'php'
-                /**
-                 *
-                 * @param list<int[]> $testParam Is a string scalar type
-                */
-                php,
-                'list<int[]>'
-            ],
-            'list with psr union typed array type' => [
-                <<<'php'
-                /**
-                 *
-                 * @param list<(class-string|string)[]> $testParam Is a string scalar type
-                */
-                php,
-                'list<(class-string|string)[]>'
-            ],
-            'list with psalm array type' => [
-                <<<'php'
-                /**
-                 *
-                 * @param list<array<object>> $testParam Is a string scalar type
-                */
-                php,
-                'list<array<object>>'
-            ],
-            'list with psalm list type' => [
-                <<<'php'
-                /**
-                 *
-                 * @param list<list<object>> $testParam Is a string scalar type
-                */
-                php,
-                'list<list<object>>'
-            ],
-            'list with psalm class-string type' => [
-                <<<'php'
-                /**
-                 *
-                 * @param list<class-string<stdClass>> $testParam Is a string scalar type
-                */
-                php,
-                'list<class-string<stdClass>>'
-            ],
-        ];
-    }
-
-    /**
-     * @test
-     * @dataProvider getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingClassStringParserDataProvider
-     */
-    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingClassStringParser($docblock, $splitterCallArg)
-    {
-        $expectedParserReturn = $this->newMockParserReturnValue();
-        $this->expectTypeSplitterCalls([$splitterCallArg, [$splitterCallArg]]);
-
-        $this->expectMockParserCallFor($this->mockPsalmClassStringParser, $this->once(), $splitterCallArg)
-            ->willReturn($expectedParserReturn);
-
-        $this->expectMockParsersToThrowExceptionExcept($this->mockPsalmClassStringParser);
-
-        $actual = $this->testObj->getDocBlockValidators($docblock, 1)[0];
-        $this->assertEquals(new UnionParameter('$testParam', [$expectedParserReturn]), $actual);
-    }
-
-    /**
-     * Data Provider
-     */
-    public function getDocBlockValidatorsCallsMethodsToParseDocBlockAndReturnsValidatorsUsingClassStringParserDataProvider()
-    {
-        return [
-            'class-string with simple type' => [
-                <<<'php'
-                /**
-                 *
-                 * @param class-string<stdClass> $testParam Is a string scalar type
-                */
-                php,
-                'class-string<stdClass>'
-            ],
-            'class-string with union types' => [
-                <<<'php'
-                /**
-                 *
-                 * @param class-string<stdClass|ArrayObject> $testParam Is a string scalar type
-                */
-                php,
-                'class-string<stdClass|ArrayObject>'
-            ],
-        ];
-    }
-
     /**
      * @test
      * @dataProvider getDocblockCallsLintCheckOnTypeLinterDataProvider
@@ -589,7 +339,7 @@ class ParserTest extends BaseTestCase
 
         $this->expectException(ParseException::class);
         $this->expectExceptionMessage('not-good');
-        
+
         $this->testObj->getDocBlockValidators($docblock);
     }
 }
