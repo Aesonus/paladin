@@ -84,10 +84,11 @@ class ArrayParameterTest extends ParameterInterfaceTestCase
 
     /**
      * @test
-     * @dataProvider validateReturnsFalseIfKeyParameterValidateReturnsTrueButValueParameterValidateReturnsFalseDataProvider
+     * @dataProvider validateReturnsFalseIfKeyValidateReturnsTrueButValueParameterValidateReturnsFalseDataProvider
      */
-    public function validateReturnsFalseIfKeyParameterValidateReturnsTrueButValueParameterValidateReturnsFalse($valueParameters)
-    {
+    public function validateReturnsFalseIfKeyValidateReturnsTrueButValueParameterValidateReturnsFalse(
+        $valueParameters
+    ) {
         $key = $this->expectMockParameterInterfaceValidateCall($this->any(), [[0]], true);
         $testObj = new ArrayParameter($key, $valueParameters);
         $this->assertFalse($testObj->validate(['test-value']));
@@ -96,7 +97,7 @@ class ArrayParameterTest extends ParameterInterfaceTestCase
     /**
      * Data Provider
      */
-    public function validateReturnsFalseIfKeyParameterValidateReturnsTrueButValueParameterValidateReturnsFalseDataProvider()
+    public function validateReturnsFalseIfKeyValidateReturnsTrueButValueParameterValidateReturnsFalseDataProvider()
     {
         return [
             'one type' => [

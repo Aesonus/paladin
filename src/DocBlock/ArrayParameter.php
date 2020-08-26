@@ -79,6 +79,6 @@ class ArrayParameter extends UnionParameter
 
     public function __toString(): string
     {
-        return sprintf('array<%s, %s>', $this->getKeyType(), parent::__toString());
+        return sprintf('array<%s, %s>', (string)$this->getKeyType(), parent::__toString());
     }
 }

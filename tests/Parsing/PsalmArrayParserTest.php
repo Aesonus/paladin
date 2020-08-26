@@ -87,8 +87,7 @@ class PsalmArrayParserTest extends ParsingTestCase
         $typeString,
         $expectedParseTypesKeyArg,
         $expectedParseTypesArg
-    )
-    {
+    ) {
         $expectedKeyType = new IntParameter();
         $expectedArrayType = [new IntParameter()];
         $this->mockParser->expects($this->exactly(2))->method('parseTypeString')
