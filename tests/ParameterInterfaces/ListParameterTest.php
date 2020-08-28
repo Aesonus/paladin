@@ -99,4 +99,22 @@ class ListParameterTest extends ParameterInterfaceTestCase
             'non-zero keys' => [[1 => 'test-value']],
         ];
     }
+
+    /**
+     * @test
+     */
+    public function toStringReturnsStringRepresentationOfListType()
+    {
+        $expected = 'list<int|float>';
+
+        $valueTypes[0] = $this->getMockParameterInterface();
+        $valueTypes[0]->expects($this->once())->method('__toString')
+            ->willReturn('int');
+        $valueTypes[1] = $this->getMockParameterInterface();
+        $valueTypes[1]->expects($this->once())->method('__toString')
+            ->willReturn('float');
+
+        $testObj = new ListParameter($valueTypes);
+        $this->assertSame($expected, (string)$testObj);
+    }
 }

@@ -72,4 +72,24 @@ class ValueParameterTest extends ParameterInterfaceTestCase
             'string' => ['string value', 3],
         ];
     }
+
+    /**
+     * @test
+     * @dataProvider toStringReturnsExpectedValueAsStringDataProvider
+     */
+    public function toStringReturnsExpectedValueAsString($value, $expected)
+    {
+        $this->assertSame($expected, (string)(new ValueParameter($value)));
+    }
+
+    /**
+     * Data Provider
+     */
+    public function toStringReturnsExpectedValueAsStringDataProvider()
+    {
+        return [
+            'numeric' => [3, '"3"'],
+            'string' => ['test', '"test"']
+        ];
+    }
 }

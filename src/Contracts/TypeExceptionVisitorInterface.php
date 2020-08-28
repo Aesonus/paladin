@@ -24,6 +24,7 @@
  */
 namespace Aesonus\Paladin\Contracts;
 
+use Aesonus\Paladin\DocBlock\UnionParameter;
 use Aesonus\Paladin\Exceptions\TypeException;
 
 /**
@@ -34,9 +35,9 @@ interface TypeExceptionVisitorInterface
 {
     /**
      *
-     * @param ParameterInterface $docblock
+     * @param UnionParameter $docblock
      * @return void
      * @throws TypeException
      */
-    public function visitParameter(ParameterInterface $docblock): void;
+    public function visitParameter(UnionParameter $docblock): void;
 }

@@ -79,6 +79,11 @@ class ArrayParameter extends UnionParameter
 
     public function __toString(): string
     {
+        if ($this->getKeyType() instanceof ArrayKeyParameter
+            && count($this->getTypes()) === 1
+            && $this->getTypes()[0] instanceof MixedParameter) {
+            return 'array';
+        }
         return sprintf('array<%s, %s>', (string)$this->getKeyType(), parent::__toString());
     }
 }

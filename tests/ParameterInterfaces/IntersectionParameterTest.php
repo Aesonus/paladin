@@ -129,4 +129,20 @@ class IntersectionParameterTest extends ParameterInterfaceTestCase
             ],
         ];
     }
+
+    /**
+     * @test
+     */
+    public function toStringReturnsStringRepresentationOfIntersectingTypes()
+    {
+        $expected = 'int&float';
+        $types[0] = $this->getMockParameterInterface();
+        $types[0]->expects($this->once())->method('__toString')
+            ->willReturn('int');
+        $types[1] = $this->getMockParameterInterface();
+        $types[1]->expects($this->once())->method('__toString')
+            ->willReturn('float');
+        $testObj = new IntersectionParameter($types);
+        $this->assertSame($expected, (string)$testObj);
+    }
 }

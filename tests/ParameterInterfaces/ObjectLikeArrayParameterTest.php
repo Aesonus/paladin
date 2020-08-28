@@ -134,4 +134,43 @@ class ObjectLikeArrayParameterTest extends ParameterInterfaceTestCase
         );
         $this->assertFalse($testObj->validate([0 => 'int-key', 'string' => 'string-key', 'optional' => 32.4]));
     }
+
+    /**
+     * @test
+     */
+    public function toStringReturnsStringRepresentationOfObjectLikeArrayParameterWithoutOptional()
+    {
+        $expected = 'array{0: int, string: float}';
+        $required[0] = $this->getMockParameterInterface();
+        $required[0]->expects($this->once())->method('__toString')
+            ->willReturn('int');
+        $required['string'] = $this->getMockParameterInterface();
+        $required['string']->expects($this->once())->method('__toString')
+            ->willReturn('float');
+
+        $testObj = new ObjectLikeArrayParameter($required);
+
+        $this->assertSame($expected, (string)$testObj);
+    }
+
+    /**
+     * @test
+     */
+    public function toStringReturnsStringRepresentationOfObjectLikeArrayParameterWithOptional()
+    {
+        $expected = 'array{0: int, string: float, optional?: object}';
+        $required[0] = $this->getMockParameterInterface();
+        $required[0]->expects($this->once())->method('__toString')
+            ->willReturn('int');
+        $required['string'] = $this->getMockParameterInterface();
+        $required['string']->expects($this->once())->method('__toString')
+            ->willReturn('float');
+        $optional['optional'] = $this->getMockParameterInterface();
+        $optional['optional']->expects($this->once())->method('__toString')
+            ->willReturn('object');
+
+        $testObj = new ObjectLikeArrayParameter($required, $optional);
+
+        $this->assertSame($expected, (string)$testObj);
+    }
 }

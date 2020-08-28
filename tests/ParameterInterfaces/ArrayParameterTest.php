@@ -113,4 +113,23 @@ class ArrayParameterTest extends ParameterInterfaceTestCase
             ],
         ];
     }
+
+    /**
+     * @test
+     */
+    public function toStringReturnsStringRepresentationOfArrayType()
+    {
+        $expected = 'array<array-key, int|float>';
+        $key = $this->getMockParameterInterface();
+        $key->expects($this->once())->method('__toString')
+            ->willReturn('array-key');
+        $value[0] = $this->getMockParameterInterface();
+        $value[0]->expects($this->once())->method('__toString')
+            ->willReturn('int');
+        $value[1] = $this->getMockParameterInterface();
+        $value[1]->expects($this->once())->method('__toString')
+            ->willReturn('float');
+        $testObj = new ArrayParameter($key, $value);
+        $this->assertSame($expected, (string)$testObj);
+    }
 }

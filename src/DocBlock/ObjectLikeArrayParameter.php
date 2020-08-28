@@ -25,6 +25,7 @@
 namespace Aesonus\Paladin\DocBlock;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
+use function Aesonus\Paladin\Utilities\implode_ext;
 
 /**
  *
@@ -79,5 +80,26 @@ class ObjectLikeArrayParameter extends AbstractParameter implements ParameterInt
             }
         }
         return true;
+    }
+
+    public function __toString(): string
+    {
+        $string = 'array{';
+        $required = array_map(
+            fn ($value, $key) => "$key: $value",
+            $this->requiredKeyPairs,
+            array_keys($this->requiredKeyPairs)
+        );
+        $optional = array_map(
+            fn ($value, $key) => "$key?: $value",
+            $this->optionalKeyPairs,
+            array_keys($this->optionalKeyPairs)
+        );
+        $string .= implode(', ', $required);
+        if (!empty($optional)) {
+            $string .= ', ' . implode(', ', $optional);
+        }
+        $string .= "}";
+        return $string;
     }
 }

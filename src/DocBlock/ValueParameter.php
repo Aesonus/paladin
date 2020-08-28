@@ -51,4 +51,9 @@ class ValueParameter extends AbstractParameter
     {
         return $this->expectedValue === $givenValue;
     }
+
+    public function __toString(): string
+    {
+        return '"' . parent::__toString() . '"';
+    }
 }

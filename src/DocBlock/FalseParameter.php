@@ -31,6 +31,11 @@ namespace Aesonus\Paladin\DocBlock;
  */
 class FalseParameter extends BoolParameter
 {
+    public function __construct()
+    {
+        $this->name = 'false';
+    }
+
     public function validate($givenValue): bool
     {
         return parent::validate($givenValue) && $givenValue === false;

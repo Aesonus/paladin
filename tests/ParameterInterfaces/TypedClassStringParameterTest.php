@@ -74,4 +74,16 @@ class TypedClassStringParameterTest extends ParameterInterfaceTestCase
         $testObj = new TypedClassStringParameter([stdClass::class, ArrayObject::class]);
         $this->assertTrue($testObj->validate(ArrayObject::class));
     }
+
+    /**
+     * @test
+     */
+    public function toStringReturnsStringRepresentationOfTypedClassStringParameter()
+    {
+        $expected = 'class-string<int|float>'; //Note this is just for testing purposes
+
+        $classTypes = ['int', 'float'];
+        $testObj = new TypedClassStringParameter($classTypes);
+        $this->assertSame($expected, (string)$testObj);
+    }
 }

@@ -28,7 +28,8 @@ declare(strict_types=1);
 namespace Aesonus\Paladin\DocBlock;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
-use RuntimeException;
+use Aesonus\Paladin\Contracts\TypeExceptionVisitorInterface;
+use Aesonus\Paladin\Exceptions\TypeException;
 
 /**
  *
@@ -47,6 +48,34 @@ class UnionParameter extends AbstractParameter
         $this->name = $name;
         $this->types = $types;
     }
+
+    /**
+     *
+     * @var ParameterInterface[]
+     */
+    protected array $types = [];
+
+    /**
+     *
+     * @return ParameterInterface[]
+     */
+    public function getTypes(): array
+    {
+        return $this->types;
+    }
+
+    /**
+     *
+     * @param TypeExceptionVisitorInterface $visitor
+     * @return void
+     * @throws TypeException
+     */
+    public function acceptExceptionVisitor(TypeExceptionVisitorInterface $visitor): void
+    {
+        $visitor->visitParameter($this);
+    }
+
+
 
     /**
      * {@inheritdoc}

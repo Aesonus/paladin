@@ -35,13 +35,18 @@ use PHPUnit\Framework\MockObject\Rule\InvocationOrder;
  */
 abstract class ParameterInterfaceTestCase extends BaseTestCase
 {
+    protected function getMockParameterInterface(): ParameterInterface
+    {
+        return $this->getMockBuilder(ParameterInterface::class)
+            ->getMockForAbstractClass();
+    }
+
     protected function expectMockParameterInterfaceValidateCall(
         InvocationOrder $invocationRule,
         array $withValue,
         bool $willReturn
     ): ParameterInterface {
-        $mock = $this->getMockBuilder(ParameterInterface::class)
-            ->getMockForAbstractClass();
+        $mock = $this->getMockParameterInterface();
         $mock->expects($invocationRule)->method('validate')
             ->withConsecutive(...$withValue)
             ->willReturn($willReturn);

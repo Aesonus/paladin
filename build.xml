@@ -182,6 +182,7 @@
 
     <target name="psalm-ci" unless="psalm.done" depends="prepare" description="Find coding standard violations using Psalm and log result in XML format. Intended for usage within a continuous integration environment.">
         <exec executable="${psalm}" taskname="psalm">
+            <arg value="--long-progress" />
             <arg value="--report=${basedir}/build/logs/psalm/checkstyle.xml" />
             <arg path="${basedir}/src" />
         </exec>

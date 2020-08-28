@@ -154,4 +154,42 @@ class AbstractAtomicParameterTest extends BaseTestCase
             'false for resource' => [ResourceParameter::class, false],
         ];
     }
+
+    /**
+     * @test
+     * @dataProvider toStringReturnsStringRepresentationOfTypeDataProvider
+     */
+    public function toStringReturnsStringRepresentationOfType($parameterClass, $expected)
+    {
+        $this->assertSame($expected, (string)(new $parameterClass));
+    }
+
+    /**
+     * Data Provider
+     */
+    public function toStringReturnsStringRepresentationOfTypeDataProvider()
+    {
+        return [
+            MixedParameter::class => [MixedParameter::class, 'mixed'],
+            StringParameter::class => [StringParameter::class, 'string'],
+            IntParameter::class => [IntParameter::class, 'int'],
+            BoolParameter::class => [BoolParameter::class, 'bool'],
+            TrueParameter::class => [TrueParameter::class, 'true'],
+            FalseParameter::class => [FalseParameter::class, 'false'],
+            FloatParameter::class => [FloatParameter::class, 'float'],
+            ArrayParameter::class => [ArrayParameter::class, 'array'],
+            ObjectParameter::class => [ObjectParameter::class, 'object'],
+            ScalarParameter::class => [ScalarParameter::class, 'scalar'],
+            NumericParameter::class => [NumericParameter::class, 'numeric'],
+            CallableParameter::class => [CallableParameter::class, 'callable'],
+            CallableStringParameter::class => [CallableStringParameter::class, 'callable-string'],
+            ArrayKeyParameter::class => [ArrayKeyParameter::class, 'array-key'],
+            ClassStringParameter::class => [ClassStringParameter::class, 'class-string'],
+            TraitStringParameter::class => [TraitStringParameter::class, 'trait-string'],
+            NumericStringParameter::class => [NumericStringParameter::class, 'numeric-string'],
+            IterableParameter::class => [IterableParameter::class, 'iterable'],
+            NullParameter::class => [NullParameter::class, 'null'],
+            ResourceParameter::class => [ResourceParameter::class, 'resource'],
+        ];
+    }
 }

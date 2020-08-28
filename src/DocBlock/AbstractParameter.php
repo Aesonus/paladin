@@ -25,7 +25,6 @@
 namespace Aesonus\Paladin\DocBlock;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
-use Aesonus\Paladin\Contracts\TypeExceptionVisitorInterface;
 
 /**
  *
@@ -41,17 +40,6 @@ abstract class AbstractParameter implements ParameterInterface
     protected string $name;
 
     /**
-     *
-     * @var ParameterInterface[]
-     */
-    protected array $types = [];
-
-    public function acceptExceptionVisitor(TypeExceptionVisitorInterface $visitor): void
-    {
-        $visitor->visitParameter($this);
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function getName(): string
@@ -59,13 +47,6 @@ abstract class AbstractParameter implements ParameterInterface
         return $this->name;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTypes(): array
-    {
-        return $this->types;
-    }
 
     public function __toString(): string
     {

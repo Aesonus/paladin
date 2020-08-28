@@ -27,6 +27,7 @@ namespace Aesonus\Paladin;
 use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\TypeExceptionVisitorInterface;
 use Aesonus\Paladin\DocBlock\IntersectionParameter;
+use Aesonus\Paladin\DocBlock\UnionParameter;
 use Aesonus\Paladin\Exceptions\TypeException;
 use function Aesonus\Paladin\Utilities\implode_ext;
 
@@ -55,7 +56,7 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
     /**
      * {@inheritdoc}
      */
-    public function visitParameter(ParameterInterface $docblock): void
+    public function visitParameter(UnionParameter $docblock): void
     {
         if ($docblock->validate($this->givenValue)) {
             return;
@@ -147,7 +148,7 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
             }
             $foundKeyType = $this->getType($key);
         }
-        return sprintf('array<%s, %s>', $foundKeyType, implode('|', $foundTypes));
+        return sprintf('array<%s, %s>', $foundKeyType, implode('|', array_unique($foundTypes)));
     }
 
     /**
@@ -159,8 +160,6 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
     {
         if (is_int($value)) {
             return 'int';
-        } elseif (is_array($value)) {
-            return $this->getGivenArrayType($value);
         }
         return gettype($value);
     }

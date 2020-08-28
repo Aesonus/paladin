@@ -46,4 +46,10 @@ class ListParameter extends ArrayParameter
     {
         return parent::validate($givenValue) && $givenValue === array_values($givenValue);
     }
+
+    public function __toString(): string
+    {
+        $arrayString = parent::__toString();
+        return str_replace('array<int, ', 'list<', $arrayString);
+    }
 }

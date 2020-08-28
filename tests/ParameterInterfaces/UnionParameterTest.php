@@ -24,6 +24,7 @@
  */
 namespace Aesonus\Tests\ParameterInterfaces;
 
+use Aesonus\Paladin\Contracts\TypeExceptionVisitorInterface;
 use Aesonus\Paladin\DocBlock\UnionParameter;
 
 /**
@@ -102,5 +103,34 @@ class UnionParameterTest extends ParameterInterfaceTestCase
                 ]
             ],
         ];
+    }
+
+    /**
+     * @test
+     */
+    public function toStringReturnsStringRepresentationOfUnionType()
+    {
+        $expected = 'int|float';
+        $types[0] = $this->getMockParameterInterface();
+        $types[0]->expects($this->once())->method('__toString')
+            ->willReturn('int');
+        $types[1] = $this->getMockParameterInterface();
+        $types[1]->expects($this->once())->method('__toString')
+            ->willReturn('float');
+        $testObj = new UnionParameter('$param', $types);
+        $this->assertSame($expected, (string)$testObj);
+    }
+
+    /**
+     * @test
+     */
+    public function acceptExceptionVisitorCallsVisitParameterOnVisitor()
+    {
+        $mockVisitor = $this->getMockBuilder(TypeExceptionVisitorInterface::class)
+            ->getMockForAbstractClass();
+        $mockVisitor->expects($this->once())->method('visitParameter');
+        $testObj = new UnionParameter('$param', []);
+
+        $testObj->acceptExceptionVisitor($mockVisitor);
     }
 }
