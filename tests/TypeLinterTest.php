@@ -68,6 +68,9 @@ class TypeLinterTest extends BaseTestCase
             'trailing bar psalm array type union' => [
                 '$param', 'array<int|>', 'A trailing bar was found'
             ],
+            'trailing bar object like array type union' => [
+                '$param', 'array{string: int|}', 'A trailing bar was found'
+            ],
             'leading bar plain union' => [
                 '$param', '|class-string', 'A leading bar was found'
             ],
@@ -76,6 +79,9 @@ class TypeLinterTest extends BaseTestCase
             ],
             'leading bar psalm array type union' => [
                 '$param', 'array< |int>', 'A leading bar was found'
+            ],
+            'leading bar object like array type union' => [
+                '$param', 'array{string: |int}', 'A leading bar was found'
             ],
             'missing type after comma in psalm array' => [
                 '$param', 'array<int, >', 'Missing type after comma in array type'
@@ -91,6 +97,48 @@ class TypeLinterTest extends BaseTestCase
                 '$param', 'array<string[], array<int>>', 'Unexpected array type \'string[]\'; '
                 . 'expects array-key, int, or string'
             ],
+            'missing opening curly brace' => [
+                '$param', 'array0: int}', 'Missing an opening curly brace'
+            ],
+            'missing closing curly brace' => [
+                '$param', 'array{0: int', 'Missing a closing curly brace'
+            ],
+            'no keys in object like array' => [
+                '$param', 'array{no-keys}', 'Object like array must have keys and values'
+            ],
+            'no keys before : in object like array' => [
+                '$param', 'array{:string}', 'Object like array must have keys and values'
+            ],
+            'no values after : in object like array' => [
+                '$param', 'array{string: }', 'Object like array must have keys and values'
+            ],
+            'no keys before ?: in object like array' => [
+                '$param', 'array{?:string}', 'Object like array must have keys and values'
+            ],
+            'no values after ?: in object like array' => [
+                '$param', 'array{string?: }', 'Object like array must have keys and values'
+            ],
+            'no keys in deep object like array' => [
+                '$param', 'array{key: array{no-keys}}', 'Object like array must have keys and values'
+            ],
+            'no keys before : in deep object like array' => [
+                '$param', 'array{key: array{:string}}', 'Object like array must have keys and values'
+            ],
+            'no keys after : in deep object like array' => [
+                '$param', 'array{key: array{string:}}', 'Object like array must have keys and values'
+            ],
+            'no keys before ?: in deep object like array' => [
+                '$param', 'array{key: array{?:string}}', 'Object like array must have keys and values'
+            ],
+            'no keys after ?: in deep object like array' => [
+                '$param', 'array{key: array{string?:}}', 'Object like array must have keys and values'
+            ],
+            'no keys before : outside deep object like array' => [
+                '$param', 'array{:array{key: string}}', 'Object like array must have keys and values'
+            ],
+            'no keys before ?: outside deep object like array' => [
+                '$param', 'array{?: array{key?:string}}', 'Object like array must have keys and values'
+            ],
         ];
     }
 
@@ -100,8 +148,8 @@ class TypeLinterTest extends BaseTestCase
      */
     public function properFormDocblockDoesNothing($typeString)
     {
-        $this->expectNotToPerformAssertions();
-        $this->testObj->lintCheck('$param', $typeString);
+        $actual = $this->testObj->lintCheck('$param', $typeString);
+        $this->assertNull($actual);
     }
 
     /**
@@ -121,6 +169,9 @@ class TypeLinterTest extends BaseTestCase
             ],
             'simple type' => ['int'],
             'simple union type' => ['int|string'],
+            'object like array type' => ['array{0: string|int, optional?: false}'],
+            'deep object like array type' => ['array{0: string|class-string<stdClass>, optional?: false}'],
+            'object like array type in object like array' => ['array{0: array{string: value}, optional?: false}']
         ];
     }
 }

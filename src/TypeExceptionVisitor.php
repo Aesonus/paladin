@@ -64,7 +64,7 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
         throw new TypeException($docblock->getName(), $this->getExceptionMessage($docblock));
     }
 
-    protected function getExceptionMessage(ParameterInterface $docblock): string
+    protected function getExceptionMessage(UnionParameter $docblock): string
     {
         return 'must be '
             . $this->getExceptedTypeMessage($docblock)
@@ -104,10 +104,10 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
 
     /**
      *
-     * @param ParameterInterface $docblock
+     * @param UnionParameter $docblock
      * @return string
      */
-    protected function getExceptedTypeMessage(ParameterInterface $docblock): string
+    protected function getExceptedTypeMessage(UnionParameter $docblock): string
     {
         $types = array_map([$this, 'getTypeClause'], $docblock->getTypes());
         return implode_ext(', ', ', or ', $types);

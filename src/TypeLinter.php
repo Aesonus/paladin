@@ -42,12 +42,15 @@ class TypeLinter
     const MISSING_CLOSING_ARROW = 'Missing a closing arrow';
     const MISSING_OPENING_BRACKET = 'Missing an opening bracket';
     const MISSING_CLOSING_BRACKET = 'Missing a closing bracket';
+    const MISSING_OPENING_CURLY_BRACE = 'Missing an opening curly brace';
+    const MISSING_CLOSING_CURLY_BRACE = 'Missing a closing curly brace';
     const LEADING_BAR = 'A leading bar was found';
     const TRAILING_BAR = 'A trailing bar was found';
     const TRAILING_COMMA_IN_ARRAY_TYPE = 'Missing type after comma in array type';
     const LEADING_COMMA_IN_ARRAY_TYPE = 'Missing type before comma in array type';
     const INVALID_ARRAY_KEY_TYPE_TEMPLATE = 'Unexpected array type \'%s\'; '
         . 'expects array-key, int, or string';
+    const OBJECT_LIKE_ARRAY_MISSING_KEYS_OR_VALUES = 'Object like array must have keys and values';
 
     /**
      *
@@ -82,9 +85,11 @@ class TypeLinter
         $this->checkParenthesis();
         $this->checkArrows();
         $this->checkBrackets();
+        $this->checkCurlyBraces();
         $this->checkBars();
         $this->checkCommas();
         $this->checkPsalmArrayTypes();
+        $this->checkObjectLikeArrays();
     }
 
     /**
@@ -98,6 +103,24 @@ class TypeLinter
             1 => self::MISSING_CLOSING_PARENTHESIS,
         ];
         $result = $this->checkForPairs('(', ')');
+        if ($result !== 0) {
+            $this->triggerErrorWithMessage(
+                $message[$result]
+            );
+        }
+    }
+
+    /**
+     *
+     * @return void
+     */
+    private function checkCurlyBraces(): void
+    {
+        $message = [
+            -1 => self::MISSING_OPENING_CURLY_BRACE,
+            1 => self::MISSING_CLOSING_CURLY_BRACE,
+        ];
+        $result = $this->checkForPairs('{', '}');
         if ($result !== 0) {
             $this->triggerErrorWithMessage(
                 $message[$result]
@@ -145,16 +168,47 @@ class TypeLinter
      *
      * @return void
      */
+    private function checkObjectLikeArrays(): void
+    {
+        $typeDefLength = strlen('array{');
+        $typePositions = strpos_all($this->typeString, 'array{');
+        $endTypeDefPositions = array_reverse(strpos_all($this->typeString, '}'));
+        $segments = [];
+        foreach ($typePositions as $index => $typePosition) {
+            $typeString = substr(
+                $this->typeString,
+                $typePosition + $typeDefLength,
+                $endTypeDefPositions[$index] - ($typePosition + $typeDefLength)
+            );
+            array_push($segments, ...explode(',', $typeString));
+        }
+        foreach ($segments as $segment) {
+            if (strpos($segment, ':') === false && strpos($segment, '?:') === false) {
+                $this->triggerErrorWithMessage(self::OBJECT_LIKE_ARRAY_MISSING_KEYS_OR_VALUES);
+            }
+            list($key, $value) = explode(':', $segment);
+            if ($key === '' || $key === '?' || $value === '') {
+                $this->triggerErrorWithMessage(self::OBJECT_LIKE_ARRAY_MISSING_KEYS_OR_VALUES);
+            }
+        }
+    }
+
+    /**
+     *
+     * @return void
+     */
     private function checkBars(): void
     {
         if (str_contains_str($this->typeString, '|)')
             || str_contains_str($this->typeString, '|>')
+            || str_contains_str($this->typeString, '|}')
             || strpos($this->typeString, '|') === strlen($this->typeString) - 1
         ) {
             $this->triggerErrorWithMessage(self::TRAILING_BAR);
         }
         if (str_contains_str($this->typeString, '(|')
             || str_contains_str($this->typeString, '<|')
+            || str_contains_str($this->typeString, ':|')
             || strpos($this->typeString, '|') === 0
         ) {
             $this->triggerErrorWithMessage(self::LEADING_BAR);

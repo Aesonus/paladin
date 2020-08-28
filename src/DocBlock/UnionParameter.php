@@ -38,6 +38,13 @@ use Aesonus\Paladin\Exceptions\TypeException;
  */
 class UnionParameter extends AbstractParameter
 {
+    
+    /**
+     *
+     * @var ParameterInterface[]
+     */
+    protected array $types = [];
+
     /**
      *
      * @param string $name
@@ -48,12 +55,6 @@ class UnionParameter extends AbstractParameter
         $this->name = $name;
         $this->types = $types;
     }
-
-    /**
-     *
-     * @var ParameterInterface[]
-     */
-    protected array $types = [];
 
     /**
      *
