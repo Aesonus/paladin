@@ -24,12 +24,60 @@
  */
 namespace Aesonus\Paladin\DocBlock;
 
+use Aesonus\Paladin\Contracts\ParameterInterface;
+
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class ObjectLikeArrayParameter extends UnionParameter
+class ObjectLikeArrayParameter extends AbstractParameter implements ParameterInterface
 {
-    //put your code here
+    /**
+     *
+     * @var ParameterInterface[]
+     */
+    protected $requiredKeyPairs;
+
+    /**
+     *
+     * @var ParameterInterface[]
+     */
+    protected $optionalKeyPairs;
+
+    /**
+     *
+     * @param ParameterInterface[] $requiredKeyPairs
+     * @param ParameterInterface[] $optionalKeyPairs
+     */
+    public function __construct(array $requiredKeyPairs, array $optionalKeyPairs = [])
+    {
+        $this->name = 'object-like-array';
+        $this->requiredKeyPairs = $requiredKeyPairs;
+        $this->optionalKeyPairs = $optionalKeyPairs;
+    }
+
+    public function validate($givenValue): bool
+    {
+        if (!is_array($givenValue)) {
+            return false;
+        }
+        /** @var bool $valid */
+        $valid = true;
+        foreach ($this->requiredKeyPairs as $expectedKey => $valueType) {
+            $valid = array_key_exists($expectedKey, $givenValue) && $valueType->validate($givenValue[$expectedKey]);
+            if (!$valid) {
+                return false;
+            }
+        }
+        foreach ($this->optionalKeyPairs as $expectedKey => $valueType) {
+            if (array_key_exists($expectedKey, $givenValue)) {
+                $valid = $valueType->validate($givenValue[$expectedKey]);
+            }
+            if (!$valid) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

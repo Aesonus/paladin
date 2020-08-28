@@ -22,33 +22,54 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Aesonus\Paladin\DocBlock;
+namespace Aesonus\Tests\ParameterInterfaces;
+
+use Aesonus\Paladin\DocBlock\ValueParameter;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class ValueParameter extends AbstractParameter
+class ValueParameterTest extends ParameterInterfaceTestCase
 {
     /**
-     *
-     * @var string|numeric
+     * @test
+     * @dataProvider validateReturnsTrueIfGivenValueIsExpectedValueDataProvider
      */
-    private $expectedValue;
-
-    /**
-     *
-     * @param string|numeric $expectedValue
-     */
-    public function __construct($expectedValue)
+    public function validateReturnsTrueIfGivenValueIsExpectedValue($expectedValue)
     {
-        $this->name = (string)$expectedValue;
-        $this->expectedValue = $expectedValue;
+        $this->assertTrue((new ValueParameter($expectedValue))->validate($expectedValue));
     }
 
-    public function validate($givenValue): bool
+    /**
+     * Data Provider
+     */
+    public function validateReturnsTrueIfGivenValueIsExpectedValueDataProvider()
     {
-        return $this->expectedValue === $givenValue;
+        return [
+            'numeric' => [3],
+            'string' => ['string value'],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider validateReturnsFalseIfGivenValueIsNotExpectedValueDataProvider
+     */
+    public function validateReturnsFalseIfGivenValueIsNotExpectedValue($expectedValue, $givenValue)
+    {
+        $this->assertFalse((new ValueParameter($expectedValue))->validate($givenValue));
+    }
+
+    /**
+     * Data Provider
+     */
+    public function validateReturnsFalseIfGivenValueIsNotExpectedValueDataProvider()
+    {
+        return [
+            'numeric' => [3, '3'],
+            'string' => ['string value', 3],
+        ];
     }
 }
