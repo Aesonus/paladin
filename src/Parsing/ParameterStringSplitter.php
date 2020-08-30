@@ -31,45 +31,46 @@ use function Aesonus\Paladin\Utilities\array_last;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class UnionTypeSplitter
+class ParameterStringSplitter
 {
     /**
      *
      * @param string $typeString
+     * @param string $glue
      * @return string[]
      */
-    public function split(string $typeString): array
+    public function split(string $typeString, string $glue = '|'): array
     {
-        return $this->processParamPatternMatches(explode('|', str_replace(' ', '', $typeString)));
+        return $this->processParamPatternMatches(explode($glue, str_replace(' ', '', $typeString)), $glue);
     }
 
     /**
      *
      * @param array<array-key, mixed> $matches
+     * @param string $glue
      * @return array<array-key, string>
      */
-    private function processParamPatternMatches(array $matches): array
+    private function processParamPatternMatches(array $matches, string $glue): array
     {
-        //echo "Raw:\n", var_dump($matches[0]);
         //We want to combine split parameter types back together if the are part of a
         //compound psalm array type (whew)
         $concat = false;
         /**  @var array<array-key, string> $return */
-        $return = array_reduce($matches, function (array $carry, string $param) use (&$concat): array {
+        $return = array_reduce($matches, function (array $carry, string $param) use (&$concat, $glue): array {
             if (!$concat) {
                 $carry[] = $param;
             } else {
                 /** @psalm-suppress MixedOperand */
-                $carry[array_key_last($carry) ?? 0] .= "|$param";
+                $carry[array_key_last($carry) ?? 0] .= "$glue$param";
             }
             /** @var string $newCarry */
             $newCarry = array_last($carry);
             $concat =
                 substr_count($newCarry, '<') !== substr_count($newCarry, '>')
-                || substr_count($newCarry, '(') !== substr_count($newCarry, ')');
+                || substr_count($newCarry, '(') !== substr_count($newCarry, ')')
+                || substr_count($newCarry, '{') !== substr_count($newCarry, '}');
             return $carry;
         }, []);
         return $return;
-        //echo "Reduced:\n", var_dump($return);
     }
 }

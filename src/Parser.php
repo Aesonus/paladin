@@ -36,7 +36,7 @@ use Aesonus\Paladin\Parsing\PsalmArrayParser;
 use Aesonus\Paladin\Parsing\PsalmClassStringParser;
 use Aesonus\Paladin\Parsing\PsalmListParser;
 use Aesonus\Paladin\Parsing\PsrArrayParser;
-use Aesonus\Paladin\Parsing\UnionTypeSplitter;
+use Aesonus\Paladin\Parsing\ParameterStringSplitter;
 use function Aesonus\Paladin\Utilities\get_str_positions;
 
 /**
@@ -62,7 +62,7 @@ class Parser
 
     /**
      *
-     * @var UnionTypeSplitter
+     * @var ParameterStringSplitter
      */
     private $typeSplitter;
 
@@ -76,18 +76,18 @@ class Parser
      *
      * @param UseContextInterface $useContext
      * @param null|TypeLinter $typeLinter
-     * @param null|UnionTypeSplitter $typeSplitter
+     * @param null|ParameterStringSplitter $typeSplitter
      * @param null|TypeStringParsingInterface[] $typeStringParsers
      */
     public function __construct(
         UseContextInterface $useContext,
         ?TypeLinter $typeLinter = null,
-        ?UnionTypeSplitter $typeSplitter = null,
+        ?ParameterStringSplitter $typeSplitter = null,
         ?array $typeStringParsers = null
     ) {
         $this->useContext = $useContext;
         $this->typeLinter = $typeLinter ?? new TypeLinter;
-        $this->typeSplitter = $typeSplitter ?? new UnionTypeSplitter;
+        $this->typeSplitter = $typeSplitter ?? new ParameterStringSplitter;
         $this->parsers = $typeStringParsers ?? [
             new PsalmArrayParser,
             new PsalmListParser,

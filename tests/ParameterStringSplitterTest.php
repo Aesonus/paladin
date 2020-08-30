@@ -24,6 +24,7 @@
  */
 namespace Aesonus\Tests;
 
+use Aesonus\Paladin\Parsing\ParameterStringSplitter;
 use Aesonus\TestLib\BaseTestCase;
 
 /**
@@ -31,13 +32,13 @@ use Aesonus\TestLib\BaseTestCase;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class UnionTypeSplitterTest extends BaseTestCase
+class ParameterStringSplitterTest extends BaseTestCase
 {
     public $testObj;
 
     protected function setUp(): void
     {
-        $this->testObj = new \Aesonus\Paladin\Parsing\UnionTypeSplitter;
+        $this->testObj = new ParameterStringSplitter;
     }
     /**
      * @test
@@ -45,7 +46,7 @@ class UnionTypeSplitterTest extends BaseTestCase
      */
     public function splitSplitsUpBaseLevelUnions($typeString, $expected)
     {
-        $this->assertSame($expected, $this->testObj->split($typeString));
+        $this->assertSame($expected, $this->testObj->split($typeString, '|'));
     }
 
     /**
@@ -159,6 +160,66 @@ class UnionTypeSplitterTest extends BaseTestCase
                 'array<class-string<stdClass>|class-string<TestClass>>|float|class-string<stdClass>',
                 ['array<class-string<stdClass>|class-string<TestClass>>', 'float', 'class-string<stdClass>']
             ],
+            [
+                'array{0: string, key: array{0: string|int}}',
+                ['array{0:string,key:array{0:string|int}}']
+            ],
+            [
+                'array{0: string, key: array{0: string|int}}|array{0: float|string}',
+                ['array{0:string,key:array{0:string|int}}', 'array{0:float|string}']
+            ],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider splitSplitsUpObjectLikeArrayIntoKeyPairsDataProvider
+     */
+    public function splitSplitsUpObjectLikeArrayIntoKeyPairs($typeString, $expected)
+    {
+        $this->assertSame($expected, $this->testObj->split($typeString, ','));
+    }
+
+    /**
+     * Data Provider
+     */
+    public function splitSplitsUpObjectLikeArrayIntoKeyPairsDataProvider()
+    {
+        return [
+            [
+                '0: string, key: array{0: string|int, key: int}',
+                ['0:string', 'key:array{0:string|int,key:int}']
+            ],
+            [
+                'string:array<int>,0:array{0:string,array{key:float},key:int}',
+                ['string:array<int>', '0:array{0:string,array{key:float},key:int}']
+            ]
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider splitSplitsUpObjectLikeArrayKeysAndValuesDataProvider
+     */
+    public function splitSplitsUpObjectLikeArrayKeysAndValues($typeString, $expected)
+    {
+        $this->assertSame($expected, $this->testObj->split($typeString, ':'));
+    }
+
+    /**
+     * Data Provider
+     */
+    public function splitSplitsUpObjectLikeArrayKeysAndValuesDataProvider()
+    {
+        return [
+            [
+                '0:array{0:string,array{key:float},key:int}',
+                ['0', 'array{0:string,array{key:float},key:int}']
+            ],
+            [
+                'key:array{other:string}',
+                ['key', 'array{other:string}']
+            ]
         ];
     }
 }

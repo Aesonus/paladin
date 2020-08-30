@@ -34,7 +34,7 @@ use Aesonus\Paladin\Parsing\PsalmArrayParser;
 use Aesonus\Paladin\Parsing\PsalmClassStringParser;
 use Aesonus\Paladin\Parsing\PsalmListParser;
 use Aesonus\Paladin\Parsing\PsrArrayParser;
-use Aesonus\Paladin\Parsing\UnionTypeSplitter;
+use Aesonus\Paladin\Parsing\ParameterStringSplitter;
 use Aesonus\Paladin\TypeLinter;
 use Aesonus\Paladin\UseContext;
 use Aesonus\TestLib\BaseTestCase;
@@ -67,7 +67,7 @@ class ParserTest extends BaseTestCase
 
     /**
      *
-     * @var MockObject|UnionTypeSplitter
+     * @var MockObject|ParameterStringSplitter
      */
     protected $mockUnionTypeSplitter;
 
@@ -123,7 +123,7 @@ class ParserTest extends BaseTestCase
     {
         $this->mockTypeLinter = $this->getMockBuilder(TypeLinter::class)
             ->getMock();
-        $this->mockUnionTypeSplitter = $this->getMockBuilder(UnionTypeSplitter::class)
+        $this->mockUnionTypeSplitter = $this->getMockBuilder(ParameterStringSplitter::class)
             ->getMock();
         $this->mockAtomicParser = $this->getMockBuilder(AtomicParser::class)
             ->getMock();
