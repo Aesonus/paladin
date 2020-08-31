@@ -27,6 +27,7 @@ namespace Aesonus\Paladin;
 use Aesonus\Paladin\Contracts\TypeExceptionVisitorInterface;
 use Aesonus\Paladin\Contracts\UseContextInterface;
 use Aesonus\Paladin\Exceptions\TypeException;
+use Aesonus\Paladin\Factories\MethodParserFactory;
 use InvalidArgumentException;
 
 /**
@@ -43,12 +44,6 @@ trait ValidatesParameters
 
     /**
      *
-     * @var null|UseContextInterface
-     */
-    private $useContext = null;
-
-    /**
-     *
      * @param callable-string $method
      * @param mixed[] $args
      * @return void
@@ -56,7 +51,7 @@ trait ValidatesParameters
      */
     protected function validate(callable $method, array $args): void
     {
-        $docblock = (new MethodDocComment($method))->get();
+        $docblock = (new MethodDocblockSource($method))->get();
         $validators = $this->getParser()->getDocBlockValidators($docblock);
         /** @var mixed $argValue */
         foreach ($args as $i => $argValue) {
@@ -78,17 +73,9 @@ trait ValidatesParameters
     private function getParser(): Parser
     {
         if (!isset($this->parser)) {
-            $this->parser = new Parser($this->getUseContext());
+            $this->parser = MethodParserFactory::createParser(get_class($this));
         }
         return $this->parser;
-    }
-
-    private function getUseContext(): UseContextInterface
-    {
-        if (!isset($this->useContext)) {
-            $this->useContext = new UseContext(get_class($this));
-        }
-        return $this->useContext;
     }
 
     /**

@@ -26,7 +26,7 @@ namespace Aesonus\Paladin\Parsing;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
-use Aesonus\Paladin\DocBlock\ListParameter;
+use Aesonus\Paladin\DocblockParameters\ListParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parser;
 

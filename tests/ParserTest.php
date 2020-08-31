@@ -25,16 +25,17 @@
 namespace Aesonus\Tests;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
+use Aesonus\Paladin\Contracts\DocblockParamSplitterInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
-use Aesonus\Paladin\DocBlock\UnionParameter;
+use Aesonus\Paladin\DocblockParameters\UnionParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parser;
 use Aesonus\Paladin\Parsing\AtomicParser;
+use Aesonus\Paladin\Parsing\TypeStringSplitter;
 use Aesonus\Paladin\Parsing\PsalmArrayParser;
 use Aesonus\Paladin\Parsing\PsalmClassStringParser;
 use Aesonus\Paladin\Parsing\PsalmListParser;
 use Aesonus\Paladin\Parsing\PsrArrayParser;
-use Aesonus\Paladin\Parsing\ParameterStringSplitter;
 use Aesonus\Paladin\TypeLinter;
 use Aesonus\Paladin\UseContext;
 use Aesonus\TestLib\BaseTestCase;
@@ -61,13 +62,19 @@ class ParserTest extends BaseTestCase
 
     /**
      *
+     * @var MockObject|DocblockParamSplitterInterface
+     */
+    protected $mockDocParamSplitter;
+
+    /**
+     *
      * @var MockObject|TypeLinter
      */
     protected $mockTypeLinter;
 
     /**
      *
-     * @var MockObject|ParameterStringSplitter
+     * @var MockObject|TypeStringSplitter
      */
     protected $mockUnionTypeSplitter;
 
@@ -113,6 +120,7 @@ class ParserTest extends BaseTestCase
         $this->setUpMocks();
         $this->testObj = new Parser(
             $this->useContext,
+            $this->mockDocParamSplitter,
             $this->mockTypeLinter,
             $this->mockUnionTypeSplitter,
             $this->mockParsers
@@ -123,7 +131,7 @@ class ParserTest extends BaseTestCase
     {
         $this->mockTypeLinter = $this->getMockBuilder(TypeLinter::class)
             ->getMock();
-        $this->mockUnionTypeSplitter = $this->getMockBuilder(ParameterStringSplitter::class)
+        $this->mockUnionTypeSplitter = $this->getMockBuilder(TypeStringSplitter::class)
             ->getMock();
         $this->mockAtomicParser = $this->getMockBuilder(AtomicParser::class)
             ->getMock();
@@ -142,6 +150,8 @@ class ParserTest extends BaseTestCase
             $this->mockPsrArrayParser,
             $this->mockPsalmClassStringParser
         ];
+        $this->mockDocParamSplitter = $this->getMockBuilder(DocblockParamSplitterInterface::class)
+            ->getMockForAbstractClass();
     }
 
     private function expectMockParsersToThrowExceptionExcept(MockObject ...$except)
@@ -165,6 +175,14 @@ class ParserTest extends BaseTestCase
         return $this->mockUnionTypeSplitter->expects($this->exactly(count($args)))->method('split')
             ->withConsecutive(...$consecutiveArgs)
             ->willReturnOnConsecutiveCalls(...$consecutiveReturns);
+    }
+
+    private function expectDocParamSplitterCall($arg, $return): InvocationMocker
+    {
+        return $this->mockDocParamSplitter->expects($this->once())
+            ->method('getDocblockParameters')
+            ->with($arg)
+            ->willReturn($return);
     }
 
     private function expectMockParserCallFor(
@@ -202,8 +220,15 @@ class ParserTest extends BaseTestCase
                  * @param array $testArray
                 */
                 php;
-
         $expectedParserReturn = $this->newMockParserReturnValue();
+        $this->expectDocParamSplitterCall(
+            $docblock,
+            [
+                ['name' => '$testList', 'type' => 'list'],
+                ['name' => '$testClassString', 'type' => 'class-string'],
+                ['name' => '$testArray', 'type' => 'array'],
+            ]
+        );
         $this->expectTypeSplitterCalls(
             ['list', ['list']],
             ['class-string', ['class-string']],
@@ -235,8 +260,13 @@ class ParserTest extends BaseTestCase
                  * @param int|string $testIntString Is a string scalar type
                 */
                 php;
-
         $expectedParserReturn = $this->newMockParserReturnValue();
+        $this->expectDocParamSplitterCall(
+            $docblock,
+            [
+                ['name' => '$testIntString', 'type' => 'int|string'],
+            ]
+        );
         $this->expectTypeSplitterCalls(['int|string', ['int', 'string']]);
 
         $this->expectMockParserCallFor($this->mockAtomicParser, $this->exactly(2), 'int', 'string')
@@ -267,8 +297,14 @@ class ParserTest extends BaseTestCase
                 */
                 php;
         $expectedParserReturn = $this->newMockParserReturnValue();
-        $this->expectTypeSplitterCalls(['type-string', ['type-string']]);
 
+        $this->expectTypeSplitterCalls(['type-string', ['type-string']]);
+        $this->expectDocParamSplitterCall(
+            $docblock,
+            [
+                ['name' => '$testParam', 'type' => 'type-string'],
+            ]
+        );
         $this->expectMockParserCallFor($this->$parser, $this->once(), 'type-string')
             ->willReturn($expectedParserReturn);
 
@@ -293,34 +329,26 @@ class ParserTest extends BaseTestCase
     }
     /**
      * @test
-     * @dataProvider getDocblockCallsLintCheckOnTypeLinterDataProvider
      */
-    public function getDocblockCallsLintCheckOnTypeLinter($docblock)
+    public function getDocblockCallsLintCheckOnTypeLinter()
     {
-        $this->mockTypeLinter->expects($this->once())->method('lintCheck')
-            ->with($this->equalTo('$param'), $this->isType('string'))
-            ->willThrowException(new RuntimeException);
-        try {
-            $this->testObj->getDocBlockValidators($docblock, 1);
-        } catch (RuntimeException $ex) {
-        }
-    }
-
-    /**
-     * Data Provider
-     */
-    public function getDocblockCallsLintCheckOnTypeLinterDataProvider()
-    {
-        return [
-            'missing closing parenthesis' => [
-                <<<'php'
+        $docblock = <<<'php'
                 /**
                  *
                  * @param (int|string[] $param
                  */
-                php
-            ],
-        ];
+                php;
+        $this->expectDocParamSplitterCall(
+            $docblock,
+            [
+                ['name' => '$param', 'type' => '(int|string[]'],
+            ]
+        );
+        $this->mockTypeLinter->expects($this->once())->method('lintCheck')
+            ->with($this->equalTo('$param'), $this->isType('string'))
+            ->willThrowException(new RuntimeException);
+        $this->expectException(RuntimeException::class);
+        $this->testObj->getDocBlockValidators($docblock, 1);
     }
 
     /**
@@ -334,6 +362,12 @@ class ParserTest extends BaseTestCase
                  * @param not-good $param
                  */
                 php;
+        $this->expectDocParamSplitterCall(
+            $docblock,
+            [
+                ['name' => '$param', 'type' => 'not-good'],
+            ]
+        );
         $this->expectTypeSplitterCalls(['not-good', ['not-good']]);
         $this->expectMockParsersToThrowExceptionExcept();
 

@@ -24,7 +24,7 @@
  */
 namespace Aesonus\Tests\ParameterInterfaces;
 
-use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
+use Aesonus\Paladin\DocblockParameters\TypedClassStringParameter;
 use ArrayObject;
 use SplFileObject;
 use stdClass;

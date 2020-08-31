@@ -24,7 +24,7 @@
  */
 namespace Aesonus\Tests\ParameterInterfaces;
 
-use Aesonus\Paladin\DocBlock\ListParameter;
+use Aesonus\Paladin\DocblockParameters\ListParameter;
 
 /**
  *

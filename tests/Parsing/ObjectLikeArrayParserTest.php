@@ -24,12 +24,12 @@
  */
 namespace Aesonus\Tests\Parsing;
 
-use Aesonus\Paladin\DocBlock\IntParameter;
-use Aesonus\Paladin\DocBlock\ObjectLikeArrayParameter;
-use Aesonus\Paladin\DocBlock\UnionParameter;
+use Aesonus\Paladin\DocblockParameters\IntParameter;
+use Aesonus\Paladin\DocblockParameters\ObjectLikeArrayParameter;
+use Aesonus\Paladin\DocblockParameters\UnionParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parsing\ObjectLikeArrayParser;
-use Aesonus\Paladin\Parsing\ParameterStringSplitter;
+use Aesonus\Paladin\Parsing\TypeStringSplitter;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -47,14 +47,14 @@ class ObjectLikeArrayParserTest extends ParsingTestCase
 
     /**
      *
-     * @var MockObject|ParameterStringSplitter
+     * @var MockObject|TypeStringSplitter
      */
     protected $mockStringSplitter;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->mockStringSplitter = $this->getMockBuilder(ParameterStringSplitter::class)
+        $this->mockStringSplitter = $this->getMockBuilder(TypeStringSplitter::class)
             ->getMock();
         $this->testObj = new ObjectLikeArrayParser($this->mockStringSplitter);
     }

@@ -24,7 +24,7 @@
  */
 namespace Aesonus\Paladin\Contracts;
 
-use Aesonus\Paladin\DocBlock\UnionParameter;
+use Aesonus\Paladin\DocblockParameters\UnionParameter;
 use Aesonus\Paladin\Exceptions\TypeException;
 
 /**

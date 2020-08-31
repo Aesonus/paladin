@@ -25,7 +25,7 @@
 namespace Aesonus\Tests\ParameterInterfaces;
 
 use Aesonus\Paladin\Contracts\TypeExceptionVisitorInterface;
-use Aesonus\Paladin\DocBlock\UnionParameter;
+use Aesonus\Paladin\DocblockParameters\UnionParameter;
 
 /**
  *

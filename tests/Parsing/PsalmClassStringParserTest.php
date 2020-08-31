@@ -24,7 +24,7 @@
  */
 namespace Aesonus\Tests\Parsing;
 
-use Aesonus\Paladin\DocBlock\TypedClassStringParameter;
+use Aesonus\Paladin\DocblockParameters\TypedClassStringParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parsing\PsalmClassStringParser;
 use ArrayObject;
@@ -99,6 +99,7 @@ class PsalmClassStringParserTest extends ParsingTestCase
             'psr array type' => ['array[]'],
             'list type' => ['list<int>'],
             'class-string inside list' => ['list<class-string<stdClass>>'],
+            'object like array' => ['array{key: mixed}'],
         ];
     }
 }

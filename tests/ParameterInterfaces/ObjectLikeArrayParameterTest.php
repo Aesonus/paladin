@@ -24,7 +24,7 @@
  */
 namespace Aesonus\Tests\ParameterInterfaces;
 
-use Aesonus\Paladin\DocBlock\ObjectLikeArrayParameter;
+use Aesonus\Paladin\DocblockParameters\ObjectLikeArrayParameter;
 
 /**
  *

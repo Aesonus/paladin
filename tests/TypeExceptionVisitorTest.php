@@ -25,9 +25,9 @@
 namespace Aesonus\Tests;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
-use Aesonus\Paladin\DocBlock\IntersectionParameter;
-use Aesonus\Paladin\DocBlock\ObjectParameter;
-use Aesonus\Paladin\DocBlock\UnionParameter;
+use Aesonus\Paladin\DocblockParameters\IntersectionParameter;
+use Aesonus\Paladin\DocblockParameters\ObjectParameter;
+use Aesonus\Paladin\DocblockParameters\UnionParameter;
 use Aesonus\Paladin\Exceptions\TypeException;
 use Aesonus\Paladin\TypeExceptionVisitor;
 use Aesonus\TestLib\BaseTestCase;

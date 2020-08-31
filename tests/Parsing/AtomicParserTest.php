@@ -24,27 +24,27 @@
  */
 namespace Aesonus\Tests\Parsing;
 
-use Aesonus\Paladin\DocBlock\ArrayKeyParameter;
-use Aesonus\Paladin\DocBlock\ArrayParameter;
-use Aesonus\Paladin\DocBlock\BoolParameter;
-use Aesonus\Paladin\DocBlock\CallableParameter;
-use Aesonus\Paladin\DocBlock\CallableStringParameter;
-use Aesonus\Paladin\DocBlock\ClassStringParameter;
-use Aesonus\Paladin\DocBlock\FalseParameter;
-use Aesonus\Paladin\DocBlock\FloatParameter;
-use Aesonus\Paladin\DocBlock\IntParameter;
-use Aesonus\Paladin\DocBlock\IterableParameter;
-use Aesonus\Paladin\DocBlock\ListParameter;
-use Aesonus\Paladin\DocBlock\MixedParameter;
-use Aesonus\Paladin\DocBlock\NullParameter;
-use Aesonus\Paladin\DocBlock\NumericParameter;
-use Aesonus\Paladin\DocBlock\NumericStringParameter;
-use Aesonus\Paladin\DocBlock\ObjectParameter;
-use Aesonus\Paladin\DocBlock\ResourceParameter;
-use Aesonus\Paladin\DocBlock\ScalarParameter;
-use Aesonus\Paladin\DocBlock\StringParameter;
-use Aesonus\Paladin\DocBlock\TraitStringParameter;
-use Aesonus\Paladin\DocBlock\TrueParameter;
+use Aesonus\Paladin\DocblockParameters\ArrayKeyParameter;
+use Aesonus\Paladin\DocblockParameters\ArrayParameter;
+use Aesonus\Paladin\DocblockParameters\BoolParameter;
+use Aesonus\Paladin\DocblockParameters\CallableParameter;
+use Aesonus\Paladin\DocblockParameters\CallableStringParameter;
+use Aesonus\Paladin\DocblockParameters\ClassStringParameter;
+use Aesonus\Paladin\DocblockParameters\FalseParameter;
+use Aesonus\Paladin\DocblockParameters\FloatParameter;
+use Aesonus\Paladin\DocblockParameters\IntParameter;
+use Aesonus\Paladin\DocblockParameters\IterableParameter;
+use Aesonus\Paladin\DocblockParameters\ListParameter;
+use Aesonus\Paladin\DocblockParameters\MixedParameter;
+use Aesonus\Paladin\DocblockParameters\NullParameter;
+use Aesonus\Paladin\DocblockParameters\NumericParameter;
+use Aesonus\Paladin\DocblockParameters\NumericStringParameter;
+use Aesonus\Paladin\DocblockParameters\ObjectParameter;
+use Aesonus\Paladin\DocblockParameters\ResourceParameter;
+use Aesonus\Paladin\DocblockParameters\ScalarParameter;
+use Aesonus\Paladin\DocblockParameters\StringParameter;
+use Aesonus\Paladin\DocblockParameters\TraitStringParameter;
+use Aesonus\Paladin\DocblockParameters\TrueParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parsing\AtomicParser;
 use stdClass;
@@ -172,6 +172,7 @@ class AtomicParserTest extends ParsingTestCase
             'psr array type' => ['array[]'],
             'list type' => ['list<int>'],
             'class-string type' => ['class-string<stdClass>'],
+            'object like array' => ['array{key: mixed}'],
         ];
     }
 }

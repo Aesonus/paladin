@@ -26,8 +26,8 @@ namespace Aesonus\Paladin;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\TypeExceptionVisitorInterface;
-use Aesonus\Paladin\DocBlock\IntersectionParameter;
-use Aesonus\Paladin\DocBlock\UnionParameter;
+use Aesonus\Paladin\DocblockParameters\IntersectionParameter;
+use Aesonus\Paladin\DocblockParameters\UnionParameter;
 use Aesonus\Paladin\Exceptions\TypeException;
 use function Aesonus\Paladin\Utilities\implode_ext;
 

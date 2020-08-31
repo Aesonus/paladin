@@ -24,7 +24,7 @@
  */
 namespace Aesonus\Tests\ParameterInterfaces;
 
-use Aesonus\Paladin\DocBlock\IntersectionParameter;
+use Aesonus\Paladin\DocblockParameters\IntersectionParameter;
 use ArrayObject;
 
 /**

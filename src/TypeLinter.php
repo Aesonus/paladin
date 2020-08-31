@@ -24,6 +24,7 @@
  */
 namespace Aesonus\Paladin;
 
+use Aesonus\Paladin\Contracts\TypeLinterInterface;
 use function Aesonus\Paladin\Utilities\array_last;
 use function Aesonus\Paladin\Utilities\sign;
 use function Aesonus\Paladin\Utilities\str_contains_str;
@@ -34,7 +35,7 @@ use function Aesonus\Paladin\Utilities\strpos_all;
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class TypeLinter
+class TypeLinter implements TypeLinterInterface
 {
     const MISSING_OPENING_PARENTHESIS = 'Missing an opening parenthesis';
     const MISSING_CLOSING_PARENTHESIS = 'Missing a closing parenthesis';
@@ -70,12 +71,6 @@ class TypeLinter
      */
     private $paramName = '';
 
-    /**
-     *
-     * @param string $paramName
-     * @param string $typeString
-     * @return void
-     */
     public function lintCheck(string $paramName, string $typeString): void
     {
         $this->originalTypeString = $typeString;

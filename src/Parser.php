@@ -27,24 +27,21 @@ declare(strict_types=1);
 namespace Aesonus\Paladin;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
+use Aesonus\Paladin\Contracts\ParserInterface;
+use Aesonus\Paladin\Contracts\DocblockParamSplitterInterface;
+use Aesonus\Paladin\Contracts\TypeLinterInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
 use Aesonus\Paladin\Contracts\UseContextInterface;
-use Aesonus\Paladin\DocBlock\UnionParameter;
+use Aesonus\Paladin\DocblockParameters\UnionParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
-use Aesonus\Paladin\Parsing\AtomicParser;
-use Aesonus\Paladin\Parsing\PsalmArrayParser;
-use Aesonus\Paladin\Parsing\PsalmClassStringParser;
-use Aesonus\Paladin\Parsing\PsalmListParser;
-use Aesonus\Paladin\Parsing\PsrArrayParser;
-use Aesonus\Paladin\Parsing\ParameterStringSplitter;
-use function Aesonus\Paladin\Utilities\get_str_positions;
+use Aesonus\Paladin\Parsing\TypeStringSplitter;
 
 /**
  *
  *
  * @author Aesonus <corylcomposinger at gmail.com>
  */
-class Parser
+class Parser implements ParserInterface
 {
     const MAX_LENGTH = 99999999999999999999999999999999999999999999;
 
@@ -62,7 +59,7 @@ class Parser
 
     /**
      *
-     * @var ParameterStringSplitter
+     * @var TypeStringSplitter
      */
     private $typeSplitter;
 
@@ -74,52 +71,46 @@ class Parser
 
     /**
      *
+     * @var DocblockParamSplitterInterface
+     */
+    private $docParamSplitter;
+
+    /**
+     *
      * @param UseContextInterface $useContext
-     * @param null|TypeLinter $typeLinter
-     * @param null|ParameterStringSplitter $typeSplitter
-     * @param null|TypeStringParsingInterface[] $typeStringParsers
+     * @param DocblockParamSplitterInterface $docParamSplitter
+     * @param TypeLinterInterface $typeLinter
+     * @param TypeStringSplitter $typeSplitter
+     * @param TypeStringParsingInterface[] $typeStringParsers
      */
     public function __construct(
         UseContextInterface $useContext,
-        ?TypeLinter $typeLinter = null,
-        ?ParameterStringSplitter $typeSplitter = null,
-        ?array $typeStringParsers = null
+        DocblockParamSplitterInterface $docParamSplitter,
+        TypeLinterInterface $typeLinter,
+        TypeStringSplitter $typeSplitter,
+        array $typeStringParsers
     ) {
         $this->useContext = $useContext;
-        $this->typeLinter = $typeLinter ?? new TypeLinter;
-        $this->typeSplitter = $typeSplitter ?? new ParameterStringSplitter;
-        $this->parsers = $typeStringParsers ?? [
-            new PsalmArrayParser,
-            new PsalmListParser,
-            new PsrArrayParser,
-            new PsalmClassStringParser,
-            new AtomicParser,
-        ];
+        $this->docParamSplitter = $docParamSplitter;
+        $this->typeLinter = $typeLinter;
+        $this->typeSplitter = $typeSplitter;
+        $this->parsers = $typeStringParsers;
     }
 
-    /**
-     *
-     * @param string $docblock
-     * @return ParameterInterface[]
-     */
     public function getDocBlockValidators(string $docblock): array
     {
-        $matches = $this->getParamMatches($docblock);
-        $params = $this->getParamsInParts($matches);
+        $params = $this->docParamSplitter->getDocblockParameters($docblock);
         return $this->constructDocBlockParameters($params);
     }
 
-    /**
-     *
-     * @param string $docblock
-     * @return list<string>
-     */
-    private function getParamMatches(string $docblock): array
+    public function parseTypeString(string $typeString): array
     {
-        $matches = [];
-        preg_match_all('/@param.+/', $docblock, $matches);
-        /** @var list<list<string>> $matches */
-        return $matches[0];
+        $unionTypes = $this->typeSplitter->split($typeString);
+
+        return array_map(
+            fn (string $typeString): ParameterInterface => $this->parseUnionTypes($typeString),
+            $unionTypes
+        );
     }
 
     public function getUseContext(): UseContextInterface
@@ -132,7 +123,7 @@ class Parser
      * @param array<int, array{name: string, type: string}> $paramParts
      * @return ParameterInterface[]
      */
-    protected function constructDocBlockParameters(array $paramParts): array
+    private function constructDocBlockParameters(array $paramParts): array
     {
         $return = [];
         foreach ($paramParts as $param) {
@@ -146,28 +137,12 @@ class Parser
     }
 
     /**
-     * Parses a type string and returns all of its parts
-     * @param string $typeString
-     * @return ParameterInterface[]
-     * @throws ParseException
-     */
-    public function parseTypeString(string $typeString): array
-    {
-        $unionTypes = $this->typeSplitter->split($typeString);
-
-        return array_map(
-            fn (string $typeString): ParameterInterface => $this->parseUnionTypes($typeString),
-            $unionTypes
-        );
-    }
-
-    /**
      *
      * @param string $typeString
      * @return ParameterInterface
      * @throws ParseException
      */
-    protected function parseUnionTypes(string $typeString): ParameterInterface
+    private function parseUnionTypes(string $typeString): ParameterInterface
     {
         foreach ($this->parsers as $parser) {
             try {
@@ -177,21 +152,5 @@ class Parser
             }
         }
         throw new ParseException($typeString);
-    }
-
-    /**
-     *
-     * @param array<int, string> $params
-     * @return array<int, array{name: string, type: string}>
-     */
-    protected function getParamsInParts(array $params): array
-    {
-        $return = [];
-        foreach ($params as $param) {
-            $raw = array_slice(array_filter(preg_split('/(?<!,) /', $param)), 1, 2);
-            /** @var array{name: string, type: string, required: bool} */
-            $return[] = array_combine(['type', 'name'], $raw);
-        }
-        return $return;
     }
 }

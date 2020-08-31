@@ -26,8 +26,8 @@ namespace Aesonus\Paladin\Parsing;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
-use Aesonus\Paladin\DocBlock\ArrayKeyParameter;
-use Aesonus\Paladin\DocBlock\ArrayParameter;
+use Aesonus\Paladin\DocblockParameters\ArrayKeyParameter;
+use Aesonus\Paladin\DocblockParameters\ArrayParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parser;
 

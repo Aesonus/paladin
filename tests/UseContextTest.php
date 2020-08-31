@@ -25,7 +25,7 @@
 namespace Aesonus\Tests;
 
 use Aesonus\Paladin\Contracts\ParameterInterface;
-use Aesonus\Paladin\DocBlock\UnionParameter;
+use Aesonus\Paladin\DocblockParameters\UnionParameter;
 use Aesonus\Paladin\UseContext;
 use Aesonus\TestLib\BaseTestCase;
 use Aesonus\Tests\Fixtures\TestClass;

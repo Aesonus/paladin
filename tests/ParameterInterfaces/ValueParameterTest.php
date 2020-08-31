@@ -24,7 +24,7 @@
  */
 namespace Aesonus\Tests\ParameterInterfaces;
 
-use Aesonus\Paladin\DocBlock\ValueParameter;
+use Aesonus\Paladin\DocblockParameters\ValueParameter;
 
 /**
  *
