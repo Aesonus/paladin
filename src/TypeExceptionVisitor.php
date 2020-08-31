@@ -69,7 +69,7 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
         return 'must be '
             . $this->getExceptedTypeMessage($docblock)
             . '; '
-            . $this->getGivenTypeMessage($docblock)
+            . $this->getGivenTypeMessage()
             .' given';
     }
 
@@ -115,10 +115,9 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
 
     /**
      *
-     * @param ParameterInterface $docblock
      * @return string
      */
-    protected function getGivenTypeMessage(ParameterInterface $docblock): string
+    protected function getGivenTypeMessage(): string
     {
         if (is_object($this->givenValue)) {
             return 'instance of ' . get_class($this->givenValue);

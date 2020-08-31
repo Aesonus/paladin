@@ -54,23 +54,34 @@ class TypeStringSplitter
     {
         //We want to combine split parameter types back together if the are part of a
         //compound psalm array type (whew)
+        /** @var bool $concat */
         $concat = false;
         /**  @var array<array-key, string> $return */
         $return = array_reduce($matches, function (array $carry, string $param) use (&$concat, $glue): array {
-            if (!$concat) {
-                $carry[] = $param;
-            } else {
-                /** @psalm-suppress MixedOperand */
-                $carry[array_key_last($carry) ?? 0] .= "$glue$param";
-            }
+            $this->alterCarry($carry, $param, $glue, $concat);
             /** @var string $newCarry */
             $newCarry = array_last($carry);
+            /** @var bool $concat */
             $concat =
-                substr_count($newCarry, '<') !== substr_count($newCarry, '>')
-                || substr_count($newCarry, '(') !== substr_count($newCarry, ')')
-                || substr_count($newCarry, '{') !== substr_count($newCarry, '}');
+                (substr_count($newCarry, '<') !== substr_count($newCarry, '>'))
+                || (substr_count($newCarry, '(') !== substr_count($newCarry, ')'))
+                || (substr_count($newCarry, '{') !== substr_count($newCarry, '}'));
             return $carry;
         }, []);
         return $return;
+    }
+
+    private function alterCarry(
+        array &$carry,
+        string $param,
+        string $glue,
+        bool $concat
+    ): void {
+        if (!$concat) {
+            $carry[] = $param;
+            return;
+        }
+        /** @psalm-suppress MixedOperand */
+        $carry[array_key_last($carry) ?? 0] .= "$glue$param";
     }
 }
