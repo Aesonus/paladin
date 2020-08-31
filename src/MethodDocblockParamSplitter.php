@@ -56,8 +56,8 @@ class MethodDocblockParamSplitter implements DocblockParamSplitterInterface
 
     /**
      *
-     * @param list<int, string> $params
-     * @return list<int, array{name: string, type: string}>
+     * @param list<string> $params
+     * @return list<array{name: string, type: string}>
      */
     private function getParamsInParts(array $params): array
     {

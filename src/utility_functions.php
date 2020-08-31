@@ -96,5 +96,9 @@ function implode_ext(string $glue, string $glueLast, array $pieces): string
         return implode($glueLast, $pieces);
     }
     $splitTypes = array_slice($pieces, 0, -1);
+    /**
+     * The array_last function will return a string since the pieces should be strings
+     * @psalm-suppress MixedOperand
+     */
     return implode($glue, $splitTypes) . $glueLast . array_last($pieces);
 }

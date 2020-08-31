@@ -26,9 +26,9 @@ declare(strict_types=1);
 
 namespace Aesonus\Paladin;
 
+use Aesonus\Paladin\Contracts\DocblockParamSplitterInterface;
 use Aesonus\Paladin\Contracts\ParameterInterface;
 use Aesonus\Paladin\Contracts\ParserInterface;
-use Aesonus\Paladin\Contracts\DocblockParamSplitterInterface;
 use Aesonus\Paladin\Contracts\TypeLinterInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
 use Aesonus\Paladin\Contracts\UseContextInterface;
@@ -53,7 +53,7 @@ class Parser implements ParserInterface
 
     /**
      *
-     * @var TypeLinter
+     * @var TypeLinterInterface
      */
     private $typeLinter;
 

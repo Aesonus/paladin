@@ -33,7 +33,7 @@ interface DocblockParamSplitterInterface
     /**
      *
      * @param string $docblock
-     * @return list<int, array{name: string, type: string}>
+     * @return list<array{name: string, type: string}>
      */
     public function getDocblockParameters(string $docblock): array;
 }
