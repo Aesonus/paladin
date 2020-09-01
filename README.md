@@ -23,7 +23,7 @@ use Aesonus\Paladin\ValidatesParameters;
 To validate parameters, just call the protected method validate with the method name
 and arguments:
 
-```
+```php
 
 /**
  *
