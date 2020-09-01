@@ -34,6 +34,8 @@ public function myMethod(array $param)
     $this->validate(__METHOD__, func_get_args());
 }
 
+```
+
 The previous example will throw an exception if the passed argument is not an
 array of only int types.
 
