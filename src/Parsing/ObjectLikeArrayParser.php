@@ -24,10 +24,10 @@
  */
 namespace Aesonus\Paladin\Parsing;
 
-use Aesonus\Paladin\Contracts\ParameterInterface;
+use Aesonus\Paladin\Contracts\ParameterValidatorInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
-use Aesonus\Paladin\DocblockParameters\ObjectLikeArrayParameter;
-use Aesonus\Paladin\DocblockParameters\UnionParameter;
+use Aesonus\Paladin\ParameterValidators\ObjectLikeArrayParameter;
+use Aesonus\Paladin\ParameterValidators\UnionParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parser;
 use function Aesonus\Paladin\Utilities\str_contains_str;
@@ -41,11 +41,11 @@ class ObjectLikeArrayParser implements TypeStringParsingInterface
 {
     /**
      *
-     * @var TypeStringSplitter
+     * @var \Aesonus\Paladin\TypeStringSplitter
      */
     private $stringSplitter;
 
-    public function __construct(TypeStringSplitter $stringSplitter)
+    public function __construct(\Aesonus\Paladin\TypeStringSplitter $stringSplitter)
     {
         $this->stringSplitter = $stringSplitter;
     }
@@ -57,7 +57,7 @@ class ObjectLikeArrayParser implements TypeStringParsingInterface
         }
     }
 
-    public function parse(Parser $parser, string $typeString): ParameterInterface
+    public function parse(Parser $parser, string $typeString): ParameterValidatorInterface
     {
         $this->assertThatStringCanBeParsed($typeString);
         $openingBrace = (int) strpos($typeString, '{');

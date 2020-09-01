@@ -24,14 +24,14 @@
  */
 namespace Aesonus\Tests;
 
-use Aesonus\Paladin\Contracts\ParameterInterface;
-use Aesonus\Paladin\Contracts\DocblockParamSplitterInterface;
+use Aesonus\Paladin\Contracts\ParameterValidatorInterface;
+use Aesonus\Paladin\Contracts\DocblockSplitterInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
-use Aesonus\Paladin\DocblockParameters\UnionParameter;
+use Aesonus\Paladin\ParameterValidators\UnionParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parser;
 use Aesonus\Paladin\Parsing\AtomicParser;
-use Aesonus\Paladin\Parsing\TypeStringSplitter;
+use Aesonus\Paladin\TypeStringSplitter;
 use Aesonus\Paladin\Parsing\PsalmArrayParser;
 use Aesonus\Paladin\Parsing\PsalmClassStringParser;
 use Aesonus\Paladin\Parsing\PsalmListParser;
@@ -62,7 +62,7 @@ class ParserTest extends BaseTestCase
 
     /**
      *
-     * @var MockObject|DocblockParamSplitterInterface
+     * @var MockObject|DocblockSplitterInterface
      */
     protected $mockDocParamSplitter;
 
@@ -136,6 +136,7 @@ class ParserTest extends BaseTestCase
         $this->mockAtomicParser = $this->getMockBuilder(AtomicParser::class)
             ->getMock();
         $this->mockPsalmArrayParser = $this->getMockBuilder(PsalmArrayParser::class)
+            ->disableOriginalConstructor()
             ->getMock();
         $this->mockPsalmListParser = $this->getMockBuilder(PsalmListParser::class)
             ->getMock();
@@ -150,7 +151,7 @@ class ParserTest extends BaseTestCase
             $this->mockPsrArrayParser,
             $this->mockPsalmClassStringParser
         ];
-        $this->mockDocParamSplitter = $this->getMockBuilder(DocblockParamSplitterInterface::class)
+        $this->mockDocParamSplitter = $this->getMockBuilder(DocblockSplitterInterface::class)
             ->getMockForAbstractClass();
     }
 
@@ -194,7 +195,7 @@ class ParserTest extends BaseTestCase
             ->withConsecutive(...array_map(fn ($arg) => [$this->testObj, $arg], $consecutiveArgs));
     }
 
-    private function newMockParserReturnValue(): ParameterInterface
+    private function newMockParserReturnValue(): ParameterValidatorInterface
     {
         return new UnionParameter('test', []);
     }

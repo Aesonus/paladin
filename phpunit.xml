@@ -7,9 +7,6 @@
         <testsuite name="Main Test suite">
             <directory>tests</directory>
         </testsuite>
-        <testsuite name="Parsing Test suite">
-            <directory>tests/Parsing</directory>
-        </testsuite>
     </testsuites>
     <coverage processUncoveredFiles="true">
         <include>

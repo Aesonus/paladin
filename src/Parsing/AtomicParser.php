@@ -24,29 +24,29 @@
  */
 namespace Aesonus\Paladin\Parsing;
 
-use Aesonus\Paladin\Contracts\ParameterInterface;
+use Aesonus\Paladin\Contracts\ParameterValidatorInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
-use Aesonus\Paladin\DocblockParameters\ArrayKeyParameter;
-use Aesonus\Paladin\DocblockParameters\ArrayParameter;
-use Aesonus\Paladin\DocblockParameters\BoolParameter;
-use Aesonus\Paladin\DocblockParameters\CallableParameter;
-use Aesonus\Paladin\DocblockParameters\CallableStringParameter;
-use Aesonus\Paladin\DocblockParameters\ClassStringParameter;
-use Aesonus\Paladin\DocblockParameters\FalseParameter;
-use Aesonus\Paladin\DocblockParameters\FloatParameter;
-use Aesonus\Paladin\DocblockParameters\IntParameter;
-use Aesonus\Paladin\DocblockParameters\IterableParameter;
-use Aesonus\Paladin\DocblockParameters\ListParameter;
-use Aesonus\Paladin\DocblockParameters\MixedParameter;
-use Aesonus\Paladin\DocblockParameters\NullParameter;
-use Aesonus\Paladin\DocblockParameters\NumericParameter;
-use Aesonus\Paladin\DocblockParameters\NumericStringParameter;
-use Aesonus\Paladin\DocblockParameters\ObjectParameter;
-use Aesonus\Paladin\DocblockParameters\ResourceParameter;
-use Aesonus\Paladin\DocblockParameters\ScalarParameter;
-use Aesonus\Paladin\DocblockParameters\StringParameter;
-use Aesonus\Paladin\DocblockParameters\TraitStringParameter;
-use Aesonus\Paladin\DocblockParameters\TrueParameter;
+use Aesonus\Paladin\ParameterValidators\ArrayKeyParameter;
+use Aesonus\Paladin\ParameterValidators\ArrayParameter;
+use Aesonus\Paladin\ParameterValidators\BoolParameter;
+use Aesonus\Paladin\ParameterValidators\CallableParameter;
+use Aesonus\Paladin\ParameterValidators\CallableStringParameter;
+use Aesonus\Paladin\ParameterValidators\ClassStringParameter;
+use Aesonus\Paladin\ParameterValidators\FalseParameter;
+use Aesonus\Paladin\ParameterValidators\FloatParameter;
+use Aesonus\Paladin\ParameterValidators\IntParameter;
+use Aesonus\Paladin\ParameterValidators\IterableParameter;
+use Aesonus\Paladin\ParameterValidators\ListParameter;
+use Aesonus\Paladin\ParameterValidators\MixedParameter;
+use Aesonus\Paladin\ParameterValidators\NullParameter;
+use Aesonus\Paladin\ParameterValidators\NumericParameter;
+use Aesonus\Paladin\ParameterValidators\NumericStringParameter;
+use Aesonus\Paladin\ParameterValidators\ObjectParameter;
+use Aesonus\Paladin\ParameterValidators\ResourceParameter;
+use Aesonus\Paladin\ParameterValidators\ScalarParameter;
+use Aesonus\Paladin\ParameterValidators\StringParameter;
+use Aesonus\Paladin\ParameterValidators\TraitStringParameter;
+use Aesonus\Paladin\ParameterValidators\TrueParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parser;
 use function Aesonus\Paladin\is_class_string;
@@ -85,7 +85,7 @@ class AtomicParser implements TypeStringParsingInterface
         'list' => ListParameter::class,
     ];
 
-    public function parse(Parser $parser, string $typeString): ParameterInterface
+    public function parse(Parser $parser, string $typeString): ParameterValidatorInterface
     {
         $this->assertThatStringCanBeParsed($typeString);
         if (is_class_string($typeString)) {

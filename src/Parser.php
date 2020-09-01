@@ -26,15 +26,15 @@ declare(strict_types=1);
 
 namespace Aesonus\Paladin;
 
-use Aesonus\Paladin\Contracts\DocblockParamSplitterInterface;
-use Aesonus\Paladin\Contracts\ParameterInterface;
+use Aesonus\Paladin\Contracts\DocblockSplitterInterface;
+use Aesonus\Paladin\Contracts\ParameterValidatorInterface;
 use Aesonus\Paladin\Contracts\ParserInterface;
 use Aesonus\Paladin\Contracts\TypeLinterInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
 use Aesonus\Paladin\Contracts\UseContextInterface;
-use Aesonus\Paladin\DocblockParameters\UnionParameter;
+use Aesonus\Paladin\ParameterValidators\UnionParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
-use Aesonus\Paladin\Parsing\TypeStringSplitter;
+use Aesonus\Paladin\TypeStringSplitter;
 
 /**
  *
@@ -43,7 +43,6 @@ use Aesonus\Paladin\Parsing\TypeStringSplitter;
  */
 class Parser implements ParserInterface
 {
-    const MAX_LENGTH = 99999999999999999999999999999999999999999999;
 
     /**
      *
@@ -71,21 +70,21 @@ class Parser implements ParserInterface
 
     /**
      *
-     * @var DocblockParamSplitterInterface
+     * @var DocblockSplitterInterface
      */
     private $docParamSplitter;
 
     /**
      *
      * @param UseContextInterface $useContext
-     * @param DocblockParamSplitterInterface $docParamSplitter
+     * @param DocblockSplitterInterface $docParamSplitter
      * @param TypeLinterInterface $typeLinter
      * @param TypeStringSplitter $typeSplitter
      * @param TypeStringParsingInterface[] $typeStringParsers
      */
     public function __construct(
         UseContextInterface $useContext,
-        DocblockParamSplitterInterface $docParamSplitter,
+        DocblockSplitterInterface $docParamSplitter,
         TypeLinterInterface $typeLinter,
         TypeStringSplitter $typeSplitter,
         array $typeStringParsers
@@ -108,7 +107,7 @@ class Parser implements ParserInterface
         $unionTypes = $this->typeSplitter->split($typeString);
 
         return array_map(
-            fn (string $typeString): ParameterInterface => $this->parseUnionTypes($typeString),
+            fn (string $typeString): ParameterValidatorInterface => $this->parseUnionTypes($typeString),
             $unionTypes
         );
     }
@@ -121,7 +120,7 @@ class Parser implements ParserInterface
     /**
      *
      * @param array<int, array{name: string, type: string}> $paramParts
-     * @return ParameterInterface[]
+     * @return ParameterValidatorInterface[]
      */
     private function constructDocBlockParameters(array $paramParts): array
     {
@@ -139,10 +138,10 @@ class Parser implements ParserInterface
     /**
      *
      * @param string $typeString
-     * @return ParameterInterface
+     * @return ParameterValidatorInterface
      * @throws ParseException
      */
-    private function parseUnionTypes(string $typeString): ParameterInterface
+    private function parseUnionTypes(string $typeString): ParameterValidatorInterface
     {
         foreach ($this->parsers as $parser) {
             try {

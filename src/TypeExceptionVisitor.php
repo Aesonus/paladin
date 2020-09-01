@@ -24,10 +24,10 @@
  */
 namespace Aesonus\Paladin;
 
-use Aesonus\Paladin\Contracts\ParameterInterface;
+use Aesonus\Paladin\Contracts\ParameterValidatorInterface;
 use Aesonus\Paladin\Contracts\TypeExceptionVisitorInterface;
-use Aesonus\Paladin\DocblockParameters\IntersectionParameter;
-use Aesonus\Paladin\DocblockParameters\UnionParameter;
+use Aesonus\Paladin\ParameterValidators\IntersectionParameter;
+use Aesonus\Paladin\ParameterValidators\UnionParameter;
 use Aesonus\Paladin\Exceptions\TypeException;
 use function Aesonus\Paladin\Utilities\implode_ext;
 
@@ -75,10 +75,10 @@ class TypeExceptionVisitor implements TypeExceptionVisitorInterface
 
     /**
      *
-     * @param ParameterInterface $type
+     * @param ParameterValidatorInterface $type
      * @return string
      */
-    protected function getTypeClause(ParameterInterface $type): string
+    protected function getTypeClause(ParameterValidatorInterface $type): string
     {
         if ($type instanceof IntersectionParameter) {
             return $this->getIntersectionType($type);

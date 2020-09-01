@@ -24,7 +24,7 @@
  */
 namespace Aesonus\Tests;
 
-use Aesonus\Paladin\Parsing\TypeStringSplitter;
+use Aesonus\Paladin\TypeStringSplitter;
 use Aesonus\TestLib\BaseTestCase;
 
 /**

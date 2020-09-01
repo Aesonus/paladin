@@ -24,10 +24,10 @@
  */
 namespace Aesonus\Paladin\Parsing;
 
-use Aesonus\Paladin\Contracts\ParameterInterface;
+use Aesonus\Paladin\Contracts\ParameterValidatorInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
-use Aesonus\Paladin\DocblockParameters\ArrayKeyParameter;
-use Aesonus\Paladin\DocblockParameters\ArrayParameter;
+use Aesonus\Paladin\ParameterValidators\ArrayKeyParameter;
+use Aesonus\Paladin\ParameterValidators\ArrayParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parser;
 
@@ -38,7 +38,7 @@ use Aesonus\Paladin\Parser;
  */
 class PsrArrayParser implements TypeStringParsingInterface
 {
-    public function parse(Parser $parser, string $typeString): ParameterInterface
+    public function parse(Parser $parser, string $typeString): ParameterValidatorInterface
     {
         $this->assertThatStringCanBeParsed($typeString);
         $newTypeString = substr($typeString, 0, -2);

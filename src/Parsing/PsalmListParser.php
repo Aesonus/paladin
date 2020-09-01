@@ -24,9 +24,9 @@
  */
 namespace Aesonus\Paladin\Parsing;
 
-use Aesonus\Paladin\Contracts\ParameterInterface;
+use Aesonus\Paladin\Contracts\ParameterValidatorInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
-use Aesonus\Paladin\DocblockParameters\ListParameter;
+use Aesonus\Paladin\ParameterValidators\ListParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parser;
 
@@ -37,7 +37,7 @@ use Aesonus\Paladin\Parser;
  */
 class PsalmListParser implements TypeStringParsingInterface
 {
-    public function parse(Parser $parser, string $typeString): ParameterInterface
+    public function parse(Parser $parser, string $typeString): ParameterValidatorInterface
     {
         $this->assertThatStringCanBeParsed($typeString);
         $openingArrow = (int)strpos($typeString, '<');

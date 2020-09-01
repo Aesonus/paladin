@@ -32,7 +32,7 @@ use Aesonus\Paladin\Parsing\PsalmArrayParser;
 use Aesonus\Paladin\Parsing\PsalmClassStringParser;
 use Aesonus\Paladin\Parsing\PsalmListParser;
 use Aesonus\Paladin\Parsing\PsrArrayParser;
-use Aesonus\Paladin\Parsing\TypeStringSplitter;
+use Aesonus\Paladin\TypeStringSplitter;
 
 /**
  *
@@ -56,7 +56,7 @@ abstract class AbstractParserFactory
     protected static function getTypeStringParsers(TypeStringSplitter $stringSplitter): array
     {
         return [
-            new PsalmArrayParser(),
+            new PsalmArrayParser($stringSplitter),
             new PsalmClassStringParser(),
             new PsalmListParser(),
             new PsrArrayParser(),

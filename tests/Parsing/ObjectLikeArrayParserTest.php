@@ -24,12 +24,12 @@
  */
 namespace Aesonus\Tests\Parsing;
 
-use Aesonus\Paladin\DocblockParameters\IntParameter;
-use Aesonus\Paladin\DocblockParameters\ObjectLikeArrayParameter;
-use Aesonus\Paladin\DocblockParameters\UnionParameter;
+use Aesonus\Paladin\ParameterValidators\IntParameter;
+use Aesonus\Paladin\ParameterValidators\ObjectLikeArrayParameter;
+use Aesonus\Paladin\ParameterValidators\UnionParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parsing\ObjectLikeArrayParser;
-use Aesonus\Paladin\Parsing\TypeStringSplitter;
+use Aesonus\Paladin\TypeStringSplitter;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**

@@ -24,7 +24,7 @@
  */
 namespace Aesonus\Paladin\Contracts;
 
-use Aesonus\Paladin\Contracts\ParameterInterface;
+use Aesonus\Paladin\Contracts\ParameterValidatorInterface;
 use Aesonus\Paladin\Exceptions\ParseException;
 
 /**
@@ -36,7 +36,7 @@ interface ParserInterface
     /**
      *
      * @param string $docblock
-     * @return ParameterInterface[]
+     * @return ParameterValidatorInterface[]
      */
     public function getDocBlockValidators(string $docblock): array;
 
@@ -49,7 +49,7 @@ interface ParserInterface
     /**
      * Parses a type string and returns all of its parts
      * @param string $typeString
-     * @return ParameterInterface[]
+     * @return ParameterValidatorInterface[]
      * @throws ParseException
      */
     public function parseTypeString(string $typeString): array;

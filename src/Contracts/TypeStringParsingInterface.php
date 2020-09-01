@@ -37,10 +37,10 @@ interface TypeStringParsingInterface
      *
      * @param Parser $parser
      * @param string $typeString
-     * @return ParameterInterface
+     * @return ParameterValidatorInterface
      * @throws ParseException
      */
-    public function parse(Parser $parser, string $typeString): ParameterInterface;
+    public function parse(Parser $parser, string $typeString): ParameterValidatorInterface;
 
     /**
      *

@@ -25,9 +25,9 @@
 namespace Aesonus\Paladin\Factories;
 
 use Aesonus\Paladin\Contracts\ParserInterface;
-use Aesonus\Paladin\MethodDocblockParamSplitter;
+use Aesonus\Paladin\MethodDocblockSplitter;
 use Aesonus\Paladin\Parser;
-use Aesonus\Paladin\Parsing\TypeStringSplitter;
+use Aesonus\Paladin\TypeStringSplitter;
 use Aesonus\Paladin\TypeLinter;
 use Aesonus\Paladin\UseContext;
 
@@ -43,7 +43,7 @@ class MethodParserFactory extends AbstractParserFactory
         $stringSplitter = new TypeStringSplitter();
         return new Parser(
             new UseContext($useContextClass),
-            new MethodDocblockParamSplitter(),
+            new MethodDocblockSplitter(),
             new TypeLinter(),
             $stringSplitter,
             static::getTypeStringParsers($stringSplitter)

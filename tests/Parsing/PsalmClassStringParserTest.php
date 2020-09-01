@@ -24,7 +24,7 @@
  */
 namespace Aesonus\Tests\Parsing;
 
-use Aesonus\Paladin\DocblockParameters\TypedClassStringParameter;
+use Aesonus\Paladin\ParameterValidators\TypedClassStringParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parsing\PsalmClassStringParser;
 use ArrayObject;

@@ -24,10 +24,10 @@
  */
 namespace Aesonus\Tests;
 
-use Aesonus\Paladin\Contracts\ParameterInterface;
-use Aesonus\Paladin\DocblockParameters\IntersectionParameter;
-use Aesonus\Paladin\DocblockParameters\ObjectParameter;
-use Aesonus\Paladin\DocblockParameters\UnionParameter;
+use Aesonus\Paladin\Contracts\ParameterValidatorInterface;
+use Aesonus\Paladin\ParameterValidators\IntersectionParameter;
+use Aesonus\Paladin\ParameterValidators\ObjectParameter;
+use Aesonus\Paladin\ParameterValidators\UnionParameter;
 use Aesonus\Paladin\Exceptions\TypeException;
 use Aesonus\Paladin\TypeExceptionVisitor;
 use Aesonus\TestLib\BaseTestCase;
@@ -54,9 +54,9 @@ class TypeExceptionVisitorTest extends BaseTestCase
             ->getMock();
     }
 
-    private function getMockParameterInterface(): ParameterInterface
+    private function getMockParameterInterface(): ParameterValidatorInterface
     {
-        return $this->getMockBuilder(ParameterInterface::class)
+        return $this->getMockBuilder(ParameterValidatorInterface::class)
             ->getMockForAbstractClass();
     }
 

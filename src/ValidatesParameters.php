@@ -25,7 +25,6 @@
 namespace Aesonus\Paladin;
 
 use Aesonus\Paladin\Contracts\TypeExceptionVisitorInterface;
-use Aesonus\Paladin\Contracts\UseContextInterface;
 use Aesonus\Paladin\Exceptions\TypeException;
 use Aesonus\Paladin\Factories\MethodParserFactory;
 use InvalidArgumentException;

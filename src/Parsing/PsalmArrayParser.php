@@ -24,12 +24,13 @@
  */
 namespace Aesonus\Paladin\Parsing;
 
-use Aesonus\Paladin\Contracts\ParameterInterface;
+use Aesonus\Paladin\Contracts\ParameterValidatorInterface;
 use Aesonus\Paladin\Contracts\TypeStringParsingInterface;
-use Aesonus\Paladin\DocblockParameters\ArrayKeyParameter;
-use Aesonus\Paladin\DocblockParameters\ArrayParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
+use Aesonus\Paladin\ParameterValidators\ArrayKeyParameter;
+use Aesonus\Paladin\ParameterValidators\ArrayParameter;
 use Aesonus\Paladin\Parser;
+use Aesonus\Paladin\TypeStringSplitter;
 
 /**
  *
@@ -38,12 +39,23 @@ use Aesonus\Paladin\Parser;
  */
 class PsalmArrayParser implements TypeStringParsingInterface
 {
-    public function parse(Parser $parser, string $typeString): ParameterInterface
+    /**
+     *
+     * @var TypeStringSplitter
+     */
+    private $typeStringSplitter;
+
+    public function __construct(TypeStringSplitter $typeStringSplitter)
+    {
+        $this->typeStringSplitter = $typeStringSplitter;
+    }
+
+    public function parse(Parser $parser, string $typeString): ParameterValidatorInterface
     {
         $this->assertThatStringCanBeParsed($typeString);
         $openingArrow = (int)strpos($typeString, '<');
         $arrayTypeString = substr($typeString, $openingArrow + 1, -1);
-        $types = preg_split('`,(?![\w \[\]]+>)`', $arrayTypeString);
+        $types = $this->typeStringSplitter->split($arrayTypeString, ',');
         //echo "Split Psalm\n", var_dump($types);
         if (count($types) === 1) {
             return new ArrayParameter(new ArrayKeyParameter, $parser->parseTypeString($types[0]));

@@ -24,8 +24,8 @@
  */
 namespace Aesonus\Tests;
 
-use Aesonus\Paladin\Contracts\ParameterInterface;
-use Aesonus\Paladin\DocblockParameters\UnionParameter;
+use Aesonus\Paladin\Contracts\ParameterValidatorInterface;
+use Aesonus\Paladin\ParameterValidators\UnionParameter;
 use Aesonus\Paladin\UseContext;
 use Aesonus\TestLib\BaseTestCase;
 use Aesonus\Tests\Fixtures\TestClass;
@@ -56,7 +56,7 @@ class UseContextTest extends BaseTestCase
     public function getUsedClassReturnsFQCNOfAliasDataProvider()
     {
         return [
-            [ParameterInterface::class, 'ParameterInterface'],
+            [ParameterValidatorInterface::class, 'ParameterValidatorInterface'],
             [Iterator::class, Iterator::class],
             [TestClass::class, TestClass::class]
         ];

@@ -24,8 +24,8 @@
  */
 namespace Aesonus\Tests\Parsing;
 
-use Aesonus\Paladin\DocblockParameters\ListParameter;
-use Aesonus\Paladin\DocblockParameters\MixedParameter;
+use Aesonus\Paladin\ParameterValidators\ListParameter;
+use Aesonus\Paladin\ParameterValidators\MixedParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parsing\PsalmListParser;
 

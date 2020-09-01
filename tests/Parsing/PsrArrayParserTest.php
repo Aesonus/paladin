@@ -24,10 +24,10 @@
  */
 namespace Aesonus\Tests\Parsing;
 
-use Aesonus\Paladin\DocblockParameters\ArrayKeyParameter;
-use Aesonus\Paladin\DocblockParameters\ArrayParameter;
-use Aesonus\Paladin\DocblockParameters\FloatParameter;
-use Aesonus\Paladin\DocblockParameters\IntParameter;
+use Aesonus\Paladin\ParameterValidators\ArrayKeyParameter;
+use Aesonus\Paladin\ParameterValidators\ArrayParameter;
+use Aesonus\Paladin\ParameterValidators\FloatParameter;
+use Aesonus\Paladin\ParameterValidators\IntParameter;
 use Aesonus\Paladin\Exceptions\ParseException;
 use Aesonus\Paladin\Parsing\PsrArrayParser;
 
