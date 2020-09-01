@@ -64,7 +64,7 @@ class MethodDocblockSplitter implements DocblockSplitterInterface
         $return = [];
         foreach ($params as $param) {
             $raw = array_slice(array_filter(preg_split('/(?<!,) /', $param)), 1, 2);
-            /** @var array{name: string, type: string, required: bool} */
+            /** @var array{name: string, type: string} */
             $return[] = array_combine(['type', 'name'], $raw);
         }
         return $return;
