@@ -62,8 +62,11 @@ class PsalmArrayParserTest extends ParsingTestCase
      * @test
      * @dataProvider parseReturnsArrayParameterWithDefaultKeyTypeDataProvider
      */
-    public function parseReturnsArrayParameterWithDefaultKeyType($typeString, $expectedSplitterArg, $expectedParseTypesArg)
-    {
+    public function parseReturnsArrayParameterWithDefaultKeyType(
+        $typeString,
+        $expectedSplitterArg,
+        $expectedParseTypesArg
+    ) {
         $expectedArrayType = [new IntParameter()];
         $this->mockTypeStringSplitter->expects($this->once())->method('split')->with($expectedSplitterArg, ',')
             ->willReturn([$expectedParseTypesArg]);
